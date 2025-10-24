@@ -1,3 +1,9 @@
+import sys
+import os
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+
+from src.types.user_types import AdminComplaint
+
 class UserAccount:
     def __init__(self, name: str, spotify_id: str, profile_pic: str, my_groups: list = None, all_groups: list = None, all_users: list = None, is_admin: bool = False, my_complaints: list = None):
         self.name = name
@@ -38,3 +44,11 @@ class UserAccount:
             print(f"Group {group_id} does not exist in allGroups")
             return False
         return False #user is not admin or group does not exist in allGroups
+    
+
+    def create_complaint(self, complaint: AdminComplaint):
+        self.myComplaints.append(complaint)
+
+    def remove_complaint(self, id: str):
+        # create a new array with all complaints except the one with the given id
+        self.myComplaints = [obj for obj in self.myComplaints if obj.id != id]
