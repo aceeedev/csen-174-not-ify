@@ -5,7 +5,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import pytest
 from src.models.user_account import UserAccount
 
-
+    
 def test_user_constructor():
     test_user = UserAccount("Test", "spotify_123", "pic.jpg", is_admin=True)
 

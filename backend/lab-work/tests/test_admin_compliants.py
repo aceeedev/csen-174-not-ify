@@ -5,6 +5,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from src.models.user_account import UserAccount
 from src.types.user_types import AdminComplaint
 
+
 complaint_1 = AdminComplaint(
     id = '1',
     complainant_id = '123',
