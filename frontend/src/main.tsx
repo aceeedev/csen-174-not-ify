@@ -4,6 +4,7 @@ import './index.css'
 import App from './App.tsx'
 import TestPage from './pages/TestPage.tsx'
 import TestAuthPage from './pages/TestAuthPage.tsx'
+import Callback from './pages/CallbackPage.tsx';
 
 createRoot(document.getElementById('root')!).render(
   <BrowserRouter>
@@ -11,6 +12,7 @@ createRoot(document.getElementById('root')!).render(
       <Route path="/" element={<App />} />
       <Route path="/test" element={<TestPage />} />
       <Route path="/auth" element={<TestAuthPage />} />
+      <Route path="/callback" element={<Callback />} />
     </Routes>
   </BrowserRouter>,
 )
