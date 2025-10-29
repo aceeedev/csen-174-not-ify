@@ -1,7 +1,8 @@
 #api key
 spotifyAPI/.env
 firebase/serviceAccount.json
-
+.env
+serviceAccount.json
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]

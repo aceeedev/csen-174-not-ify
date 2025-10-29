@@ -1,4 +1,5 @@
 from flask import Flask, jsonify
+import FireStoreInterface as FSI
 from flask_cors import CORS
 
 app = Flask(__name__)
@@ -16,6 +17,15 @@ def get_data():
         "city": "New York"
     }
     return jsonify(data)
+
+
+@app.route('/api/data/users')
+def get_users():
+    return jsonify(FSI.getUserList())
+
+@app.route('/api/data/songs/<songID>')
+def get_song(songID):
+    return jsonify(FSI.getSongInfo(songID))
 
 if __name__ == "__main__":
     app.run(debug=True, host='0.0.0.0', port=5000)
