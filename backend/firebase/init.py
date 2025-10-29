@@ -4,14 +4,14 @@ from firebase_admin import firestore
 
 # Use a service account.
 cred = credentials.Certificate('serviceAccount.json')
-
+print("got creds")
 app = firebase_admin.initialize_app(cred)
-
+print("initialized")
 db = firestore.client()
-
-# Reference to the 'cities' collection
+print("db var init")
+# Reference to the 'Users' collection
 users_ref = db.collection('Users')
-
+print("referenced Users")
 # Stream all documents in the collection
 docs = users_ref.stream()
 
