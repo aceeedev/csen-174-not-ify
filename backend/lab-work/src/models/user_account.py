@@ -5,10 +5,11 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from src.types.user_types import AdminComplaint
 
 class UserAccount:
-    def __init__(self, name: str, spotify_id: str, profile_pic: str, my_groups: list = None, is_admin: bool = False, my_complaints: list = None):
+    def __init__(self, name: str, spotify_id: str, profile_pic: str, library: list = None, my_groups: list = None, is_admin: bool = False, my_complaints: list = None):
         self.name = name
         self.spotify_id = spotify_id
         self.profile_pic = profile_pic
+        self.library = library #UC1
         self.myGroups = my_groups or []
         self.isAdmin = is_admin
         self.myComplaints = my_complaints or []
@@ -28,3 +29,7 @@ class UserAccount:
     def remove_complaint(self, id: str):
         # create a new array with all complaints except the one with the given id
         self.myComplaints = [obj for obj in self.myComplaints if obj.id != id]
+
+    def save_playlist(self, playlist):
+        self.library.append(playlist) #UC1. User has playlist relationship checked in playlist
+    
