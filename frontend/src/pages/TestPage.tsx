@@ -7,7 +7,7 @@ interface TestData {
   city: string;
 }
 
-const MyComponent: React.FC = () => {
+const TestPage: React.FC = () => {
   const [data, setData] = useState<TestData | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -46,4 +46,4 @@ const MyComponent: React.FC = () => {
   );
 };
 
-export default MyComponent;
+export default TestPage;
