@@ -46,12 +46,90 @@ def createDoc(collection, data: dict): #how to get random slug as ID
     db = getFirestoreDB()
     db.collection(collection).document().set(data)
 
-# makeGroup
-# deleteGroup
-# getGroups
+def deleteDoc(collection, docID):
+    db = getFirestoreDB()
+    db.collection(collection).document(docID).delete()
+    return True
 
+def updateDoc(collection, docID, data: dict):
+    db = getFirestoreDB()
+    db.collection(collection).document(docID).update(data)
+    return True
+
+# makeGroup
+def makeGroup(groupName: str, ownerID: str, maxMembers: int, description: str, maxPLists: int):
+    #check values 
+    if maxMembers < 1 or maxMembers > 20:
+        raise ValueError("Max members must be between 1 and 20")
+    if maxPLists < 1 or maxPLists > 20:
+        raise ValueError("Max playlists must be between 1 and 20")
+    if len(groupName) < 1 or len(groupName) > 50:
+        raise ValueError("Group name must be between 1 and 50 characters")
+    if len(description) > 100:
+        raise ValueError("Description must be less than 100 characters") 
+    # Check if owner exists
+    owner_data = getDocInfo('Users', ownerID)
+    if 'error' in owner_data:
+        raise ValueError("Owner ID must be a valid user ID")
+    
+    # Check if group name is unique
+    all_groups = getGroups()
+    for group in all_groups:
+        if group.get('groupName') == groupName:
+            raise ValueError("Group name must be unique")
+   
+    #create group
+
+    data = {
+        'groupName': groupName,
+        'ownerID': ownerID,
+        'maxMembers': maxMembers,
+        'description': description,
+        'maxPLists': maxPLists
+    }
+    createDoc('Groups', data)
+    
+# deleteGroup
+def deleteGroup(groupID: str):
+    deleteDoc('Groups', groupID)
+    return True 
+# getGroups
+def getGroups():
+    return getCollection('Groups')
 # addMember
+def addMember(groupID: str, memberID: str):
+    group_data = getDocInfo('Groups', groupID)
+    if 'error' in group_data:
+        raise ValueError("Group ID must be a valid group ID")
+    
+    # Check if member exists
+    member_data = group_data.get('memberIDs', [])  # Initialize to empty list if doesn't exist
+    if memberID in member_data:
+        raise ValueError("Member already in group")
+    if len(member_data) >= group_data.get('maxMembers', 20):
+        raise ValueError("Group is already at maximum capacity, cannot add more members.")
+    member_data.append(memberID)
+    updateDoc('Groups', groupID, {'memberIDs': member_data})
+    return True
 # removeMember
+def removeMember(groupID: str, memberID: str):
+    group_data = getDocInfo('Groups', groupID)
+    if 'error' in group_data:
+        raise ValueError("Group ID must be a valid group ID")
+    
+    if 'memberIDs' not in group_data:
+        raise ValueError("Group has no members")
+    
+    if memberID not in group_data['memberIDs']:
+        raise ValueError("Member ID not in group")
+    
+    group_data['memberIDs'].remove(memberID)
+    updateDoc('Groups', groupID, {'memberIDs': group_data['memberIDs']})
+    return True
+
+
+
+    
 # getMemberIDs
 
 # addPlaylistToBoard
@@ -89,7 +167,7 @@ def getSongs():
 # deleteUser
 # getUserInfo
 def getUserInfo(userID: str):
-    return getUserInfo('Users', userID)
+    return getDocInfo('Users', userID)
 # getUserList
 def getUserList():
     return getCollection('Users')
