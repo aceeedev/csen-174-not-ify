@@ -1,3 +1,4 @@
+from typing import Any
 import random
 import string
 
@@ -5,6 +6,7 @@ import string
 #Update Code: Editor, date
 #UC1: Katie, 10/29/2025 
 #   General: Changed plistBoard to shelf
+#UC2: Katie 10/31/2025
 
 
 class Group:
@@ -19,9 +21,27 @@ class Group:
         self.maxMembers = 20
         self.groupID = ''.join (random.choices(string.digits, k=10)) #Make a random 10 digit groupID
 
-    def __eq__(self, other) -> bool:
-        # return self.ownerID == other.ownerID, self.memberIDs ==  other.memberIDs, self.shelf == other.shelf, self.description == other.description, self.groupName == other.groupName
-        return self.groupID == other.groupID #UC1 
+    def to_dict(self) -> dict[str, Any]: #UC2
+        return {
+            #firebase = object variable
+            "description": self.description, 
+            "maxMembers": self.maxMembers,
+            "maxPlaylists": self.maxPLists,
+            "memberIDs": self.memberIDs,
+            "shelf": self.shelf
+        }
+
+    @classmethod
+    def from_dict(cls, data): #UC2
+        return cls(
+            #object var = from firebase
+            description=data['description'],
+            maxMembers=data['maxMembers'],
+            maxPlaylists=data['maxPlaylists'],
+            memberIDs=data['memberIDs'],
+            shelf=data['shelf']   
+        )
+    
 
     def inviteMember(self, callerID: str, inviteeID: str):
         #Error Handling
