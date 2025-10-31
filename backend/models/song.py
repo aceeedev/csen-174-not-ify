@@ -1,27 +1,29 @@
+from typing import Any
+
 class Song:
-    def __init__(self, spotifyID: str, cover: str, artistName: str, title: str) -> None:
+    def __init__(self, spotifyID: str, albumCover: str, albumName: str, artistName: str, title: str) -> None:
         self.spotifyID = spotifyID
-        self.cover = cover
+        self.albumCover = albumCover
+        self.albumName = albumName
         self.title = title
         self.artistName = artistName
 
 
-    def __eq__(self, other) -> bool:
-        return self.spotifyID == other.spotifyID and self.cover == other.cover and self.title == other.title and self.artistName == other.artistName
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "spotifyID": self.spotifyID, 
+            "albumCover": self.albumCover,
+            "albumName": self.albumName,
+            "title": self.title,
+            "artistName": self.artistName
+        }
 
     @classmethod
-    def search_song(self, query: str) :
-        """
-        Simulates a search
-        """
-        if query == 'Bohemian Rhapsody':
-        
-            return self(
-                spotifyID='12345',
-                cover='https://image.com',
-                artistName='Queen',
-                title='Bohemian Rhapsody'
-            )
-
-        else:
-            return None
+    def from_dict(cls, data):
+        return cls(
+            spotifyId=data['spotifyID'],
+            albumCover=data['albumCover'],
+            albumName=data['albumName'],
+            title=data['title'],
+            artistName=data['artistName']   
+        )
