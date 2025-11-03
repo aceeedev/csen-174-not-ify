@@ -10,6 +10,12 @@ from models.song import Song
 from models.user import User
 
 
+USER_COLLECTION = "Users"
+GROUP_COLLECTION = "Groups"
+SONG_COLLECTION = "Songs"
+PLAYLIST_COLLECTION = "Playlists"
+
+
 class FirebaseManager:
     _instance: Optional["FirebaseManager"] = None
 
@@ -205,20 +211,56 @@ class FirebaseManager:
     def getSongs(self):
         return self.getCollection('Songs')
 
-    # Users
-    def createUser(self, user: User) -> str:
-        return self.createDoc("Users", user.to_dict())
 
-    def deleteUser(self, user_id: str):
-        self.deleteDoc("Users", user_id)
+    # Users:
+    def create_user(self, user: User) -> str:
+        return self.createDoc(USER_COLLECTION, user.to_dict())
+
+    def delete_user(self, user_id: str):
+        self.deleteDoc(USER_COLLECTION, user_id)
     
-    def updateUser(self, user_id: str, user: User):
-        self.updateDoc("Users", user_id, user.to_dict())
+    def update_user(self, user_id: str, user: User):
+        self.updateDoc(USER_COLLECTION, user_id, user.to_dict())
 
-    def getUserInfo(self, userID: str) -> User:
-        print(self.getDocInfo('Users', userID))
-        return User.from_dict(self.getDocInfo('Users', userID))
+    def get_user_info(self, user_id: str) -> User:
+        return User.from_dict(self.getDocInfo(USER_COLLECTION, user_id))
+    
+    # Groups:
+    def create_group(self, group: Group) -> str:
+        return self.createDoc(GROUP_COLLECTION, group.to_dict())
 
-    # addGroup
-    # removeGroup
+    def delete_group(self, group_id: str):
+        self.deleteDoc(GROUP_COLLECTION, group_id)
+    
+    def update_group(self, group_id: str, group: Group):
+        self.updateDoc(GROUP_COLLECTION, group_id, group.to_dict())
+
+    def get_group_info(self, group_id: str) -> User:
+        return Group.from_dict(self.getDocInfo(GROUP_COLLECTION, group_id))
+    
+    # Songs:
+    def create_song(self, song: Song) -> str:
+        return self.createDoc(SONG_COLLECTION, song.to_dict())
+
+    def delete_song(self, song_id: str):
+        self.deleteDoc(SONG_COLLECTION, song_id)
+    
+    def update_song(self, song_id: str, song: Song):
+        self.updateDoc(SONG_COLLECTION, song_id, song.to_dict())
+
+    def get_song_info(self, song_id: str) -> User:
+        return Song.from_dict(self.getDocInfo(SONG_COLLECTION, song_id))
+
+    # Playlists:
+    def create_playlist(self, playlist: Playlist) -> str:
+        return self.createDoc(PLAYLIST_COLLECTION, playlist.to_dict())
+
+    def delete_playlist(self, playlist_id: str):
+        self.deleteDoc(PLAYLIST_COLLECTION, playlist_id)
+    
+    def update_playlist(self, playlist_id: str, playlist: Playlist):
+        self.updateDoc(PLAYLIST_COLLECTION, playlist_id, playlist.to_dict())
+
+    def get_playlist_info(self, playlist_id: str) -> User:
+        return Playlist.from_dict(self.getDocInfo(PLAYLIST_COLLECTION, playlist_id))
 
