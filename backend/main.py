@@ -4,11 +4,10 @@ from flask_cors import CORS
 from FireStoreInterface import FirebaseManager
 from spotifyInterface import SpotifyManager
 
-from models import group
-from models import playlist
-from models import song
-from models import user
-from models import song
+from models.group import Group
+from models.playlist import Playlist
+from models.song import Song
+from models.user import User
 
 app = Flask(__name__)
 CORS(app)
@@ -27,6 +26,16 @@ def get_data():
     }
     return jsonify(data)
 
+def validate_params(required_params: list[str]):
+    missing = [p for p in required_params if not request.args.get(p)]
+
+    if missing:
+        return jsonify({
+            "error": f"Missing required parameter(s): {', '.join(missing)}"
+        }), 400
+    
+    return None
+
 @app.route('/spotify/auth-url')
 def get_auth_url():    
     spotify = SpotifyManager()
@@ -38,10 +47,12 @@ def get_auth_url():
 @app.route('/spotify/auth-callback') #function name
 @FirebaseManager.require_firebase_auth
 def auth_callback(): #definition
-    code: str = request.args.get("code") #parameters
-    if not code: #error handling
-        return jsonify({"error": "Missing code parameter"}), 400
+    error = validate_params(['code'])
+    if error: #error handling
+        return error
     
+    code: str = request.args.get("code") #parameters
+
     spotify = SpotifyManager() #Logic
 
     access_token: str = spotify.get_access_token(code)
