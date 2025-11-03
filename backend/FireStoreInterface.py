@@ -2,14 +2,14 @@
 import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import firestore
-from typing import Optional
+from typing import Optional, Any
 
 from models.group import Group
 from models.playlist import Playlist
 from models.song import Song
 from models.user import User
 
-    # Helpers
+
 class FirebaseManager:
     _instance: Optional["FirebaseManager"] = None
 
@@ -32,7 +32,7 @@ class FirebaseManager:
         self.db = firestore.client(app=self.app)
 
     
-    def streamToDict(self, docs):
+    def streamToDict(self, docs) -> list:
         user_list = []
         for doc in docs:
             data = doc.to_dict()
@@ -43,8 +43,8 @@ class FirebaseManager:
 
         return user_list
 
-    def getDocInfo(self, collection, docID):
-        doc_ref = self.db.collection(collection).document(docID)
+    def getDocInfo(self, collectionName: str, docID: str):
+        doc_ref = self.db.collection(collectionName).document(docID)
         doc = doc_ref.get()
         if doc.exists:
             return doc.to_dict()
@@ -57,26 +57,42 @@ class FirebaseManager:
 
         return self.streamToDict(docs)
 
-    def createDoc(self, collectionName: str, data: dict): #how to get random slug as ID
-        # creates a new doc in a collection, the calling function must ensure data is valid for the collection
-        self.db.collection(collectionName).document().set(data)
+    def createDoc(self, collectionName: str, data: dict[str, Any]) -> str:
+        """
+        Creates a new document in the specified Firestore collection.
 
-        return True
+        Args:
+            collectionName (str): The name of the Firestore collection where the document will be created.
+            data (dict[str, Any]): The document data to write. Must match the schema expected by the collection.
+
+        Returns:
+            str: The auto-generated document ID of the newly created document.
+
+        Example:
+            >>> doc_id = firestoreClient.createDoc("users", {"name": "Andrew", "age": 22})
+            >>> print(doc_id)
+            '2JvP9mXb73UsaYf2S3hW'
+        """
+
+        doc_ref = self.db.collection(collectionName).document()
+        doc_ref.set(data)
+
+        return doc_ref.id
 
     def deleteDoc(self, collectionName: str, docID: str):
         self.db.collection(collectionName).document(docID).delete()
         
         return True
 
-    def updateDoc(self, collectionName: str, docID, data: dict):
+    def updateDoc(self, collectionName: str, docID: str, data: dict):
         self.db.collection(collectionName).document(docID).update(data)
         
         return True
     
-    # GROUPS:
 
+    # GROUPS:
     def createGroup(self, groupName: str, ownerID: str, maxMembers: int, description: str, maxPLists: int):
-        #check values 
+        #check values
         if maxMembers < 1 or maxMembers > 20:
             raise ValueError("Max members must be between 1 and 20")
         if maxPLists < 1 or maxPLists > 20:
@@ -154,10 +170,10 @@ class FirebaseManager:
     # removePlaylistFromBoard
     # getPlaylistBoardIDs
 
-    # changeOwner
+    # TODO later: changeOwner
     # getOwnerUID
 
-    # changeDescription
+    # TODO later: changeDescription
     # getDescription
 
         # Playlists
@@ -177,11 +193,6 @@ class FirebaseManager:
         playlist = self.getPlaylistInfo(playlistID)
         songs = playlist["songs"]
         return songs
-    # getOwnerUID
-    def getPlaylistOwnerUID(self, playlistID: str): #might be unnecessary
-        playlist = self.getPlaylistInfo(playlistID)
-        ownerUID = playlist["ownerUserID"]
-        return ownerUID
 
         # Songs
 
@@ -196,37 +207,19 @@ class FirebaseManager:
 
         # Users
 
-    # createUser
-    def createUser(self, accessToken, name, groups=[], isAdmin=False, spotifyUID=None):
+    def createUser(self, user: User) -> str:
+        return self.createDoc("Users", user.to_dict())
 
-        userData = {
-            "accessToken" : accessToken,
-            "groups" : groups,
-            "isAdmin" : isAdmin,
-            "name" : name,
-            "spotifyUID" : spotifyUID
-
-        }
-        self.createDoc("Users", userData)
-    # deleteUser
     def deleteUser(self, userID):
         self.deleteDoc("Users", userID)
 
-    # getUserInfo
-    def getUserInfo(self, userID: str):
-        return self.getDocInfo('Users', userID)
-    # getUserList
-    def getUserList(self):
+    def getUserInfo(self, userID: str) -> User:
+        print(self.getDocInfo('Users', userID))
+        return User.from_dict(self.getDocInfo('Users', userID))
+    
+    def getUsers(self):
         return self.getCollection('Users')
 
     # addGroup
     # removeGroup
-    # isAdmin
-    # setAdminStatus
-    # getSpotifyUID
-    def getSpotifyUID(self, UID):
-        user = self.getUserInfo(UID)
-        return user["spotifyUID"]
-    # setSpotifyUID
-    def setSpotifyUID(self, UID):
-        return
+

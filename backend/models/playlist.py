@@ -1,4 +1,4 @@
-from song import Song
+#from song import Song
 from typing import Any
 
 #Changelog
@@ -37,31 +37,31 @@ class Playlist:
 
 
     ### OLD code that needs to be moved:
-    def add_to_library(self, user): #UC1
-        if self not in user.library:
-            user.save_playlist(self)
-        else:
-            raise Exception("User {user} already has a copy of {self.title}")
-            errorCaught = True
+    # def add_to_library(self, user): #UC1
+    #     if self not in user.library:
+    #         user.save_playlist(self)
+    #     else:
+    #         raise Exception("User {user} already has a copy of {self.title}")
+    #         errorCaught = True
 
 
-    def export_to_spotify(self, spotify_client):
-        """Export the playlist to Spotify using the provided Spotify client."""
-        pass
+    # def export_to_spotify(self, spotify_client):
+    #     """Export the playlist to Spotify using the provided Spotify client."""
+    #     pass
 
-    def get_playlist(self):
-        return self
+    # def get_playlist(self):
+    #     return self
 
-    def add_song(self, song: Song):
-        if song not in self.songs:
-            self.songs.append(song)
+    # def add_song(self, song: Song):
+    #     if song not in self.songs:
+    #         self.songs.append(song)
 
-    def remove_song(self, song: Song):
-        self.songs = [obj for obj in self.songs if obj != song]
+    # def remove_song(self, song: Song):
+    #     self.songs = [obj for obj in self.songs if obj != song]
 
 
-    def change_cover(self, new_cover: str):
-        self.cover = new_cover
+    # def change_cover(self, new_cover: str):
+    #     self.cover = new_cover
 
-    def change_title(self, new_title: str):
-        self.title = new_title
+    # def change_title(self, new_title: str):
+    #     self.title = new_title
