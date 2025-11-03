@@ -37,23 +37,3 @@ class User:
             my_complaints=data['my_complaints'],
             is_admin=data['is_admin'],
         )
-
-
-    # def spotify_login(self, spotify_user):
-    #     pass
-
-    # def respond_to_complaint(self, complaint_id: str, response: str, action: str) -> bool:
-    #     return self.isAdmin
-
-    # '''
-    # def create_complaint(self, complaint: AdminComplaint):
-    #     self.myComplaints.append(complaint)
-    # '''
-
-    # def remove_complaint(self, id: str):
-    #     # create a new array with all complaints except the one with the given id
-    #     self.myComplaints = [obj for obj in self.myComplaints if obj.id != id]
-
-    # def save_playlist(self, playlist):
-    #     self.library.append(playlist) #UC1. User has playlist relationship checked in playlist
-    
