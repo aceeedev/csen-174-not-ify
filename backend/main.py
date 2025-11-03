@@ -1,7 +1,7 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 
-import FireStoreInterface as FSI
+from FireStoreInterface import FirebaseManager
 from spotifyInterface import SpotifyManager
 
 from models import group
@@ -18,7 +18,7 @@ CORS(app)
 def hello_world():
     return "<p>Hello, World!</p>"
 
-@app.route('/api/data')
+@app.route('/data')
 def get_data():
     data = {
         "name": "Alice",
@@ -27,7 +27,7 @@ def get_data():
     }
     return jsonify(data)
 
-@app.route('/api/data/auth-url')
+@app.route('/spotify/auth-url')
 def get_auth_url():    
     spotify = SpotifyManager()
 
@@ -35,7 +35,8 @@ def get_auth_url():
 
     return jsonify({'auth_url': auth_url}) 
 
-@app.route('/api/data/auth-callback') #function name
+@app.route('/spotify/auth-callback') #function name
+@FirebaseManager.require_firebase_auth
 def auth_callback(): #definition
     code: str = request.args.get("code") #parameters
     if not code: #error handling
@@ -45,17 +46,11 @@ def auth_callback(): #definition
 
     access_token: str = spotify.get_access_token(code)
     print(access_token)
+    
+    # add access token under user in firebase
 
     return jsonify({'access_token': access_token}) 
 
-
-@app.route('/api/data/users')
-def get_users():
-    return jsonify(FSI.getUserList())
-
-@app.route('/api/data/songs/<songID>')
-def get_song(songID):
-    return jsonify(FSI.getSongInfo(songID))
 
 if __name__ == "__main__":
     app.run(debug=True, host='0.0.0.0', port=5000)

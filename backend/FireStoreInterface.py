@@ -1,7 +1,7 @@
-# imports
 import firebase_admin
-from firebase_admin import credentials
-from firebase_admin import firestore
+from firebase_admin import auth, credentials, firestore
+from flask import request, jsonify
+from functools import wraps
 from typing import Optional, Any
 
 from models.group import Group
@@ -263,4 +263,41 @@ class FirebaseManager:
 
     def get_playlist_info(self, playlist_id: str) -> User:
         return Playlist.from_dict(self.getDocInfo(PLAYLIST_COLLECTION, playlist_id))
+
+    # Authorization:
+    def require_firebase_auth(f):
+        """
+        Flask decorator that verifies the Firebase user ID token from the request's Authorization header.
+        If the token is invalid, missing, or expired, returns a 401 Unauthorized response.
+
+        Expected header format:
+            Authorization: Bearer <Firebase ID Token>
+
+        Usage:
+            @app.route("/protected")
+            @require_firebase_auth
+            def protected_route():
+                user_id = request.user_id
+
+                return jsonify({"message": f"You are authenticated as {user_id}!"})
+        """
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            # Get the Authorization header
+            auth_header = request.headers.get("Authorization")
+            if not auth_header or not auth_header.startswith("Bearer "):
+                return jsonify({"error": "Missing or invalid Authorization header"}), 401
+
+            id_token = auth_header.split("Bearer ")[1]
+
+            try:
+                # Verify the Firebase token
+                decoded_token = auth.verify_id_token(id_token)
+                request.user_id = decoded_token['uid']  # Attach the user info to the request for later use
+            except Exception as e:
+                return jsonify({"error": "Invalid or expired token", "details": str(e)}), 401
+
+            return f(*args, **kwargs)
+
+        return decorated_function
 
