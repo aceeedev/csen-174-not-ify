@@ -46,6 +46,8 @@ def createDoc(collection, data: dict): #how to get random slug as ID
     db = getFirestoreDB()
     db.collection(collection).document().set(data)
 
+    #Groups
+
 # makeGroup
 # deleteGroup
 # getGroups

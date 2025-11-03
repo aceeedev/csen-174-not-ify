@@ -8,7 +8,7 @@ from models import group
 from models import playlist
 from models import song
 from models import user
-
+from models import song
 
 app = Flask(__name__)
 CORS(app)
@@ -35,13 +35,13 @@ def get_auth_url():
 
     return jsonify({'auth_url': auth_url}) 
 
-@app.route('/api/data/auth-callback')
-def auth_callback():
-    code: str = request.args.get("code")
-    if not code:
+@app.route('/api/data/auth-callback') #function name
+def auth_callback(): #definition
+    code: str = request.args.get("code") #parameters
+    if not code: #error handling
         return jsonify({"error": "Missing code parameter"}), 400
     
-    spotify = SpotifyManager()
+    spotify = SpotifyManager() #Logic
 
     access_token: str = spotify.get_access_token(code)
     print(access_token)
@@ -59,6 +59,110 @@ def get_song(songID):
 
 if __name__ == "__main__":
     app.run(debug=True, host='0.0.0.0', port=5000)
+
+### Endpoint Functions ###
+    
+#TODO: Get current groups -- endpoint
+@app.route('/get/groups')
+def get_groups():
+    userID: str = request.args.get("userID") #also owner ID
+    if not userID:
+        return jsonify({"error": "Missing userID parameter"}), 400
+    
+    #return the list of all groups that user userID is a member of
+    raise NotImplementedError
+
+#TODO: Create Group -- endpoint
+@app.route('/create/group')
+def create_group():
+    userID: str = request.args.get("userID") #also owner ID
+    groupName: str = request.args.get("groupName")
+    description: str = request.args.get("description")
+
+    if not userID:
+        return jsonify({"error": "Missing userID parameter"}), 400
+    if not groupName:
+        return jsonify({"error": "Missing groupName parameter"}), 400
+    if not description:
+        return jsonify({"error": "Missing description parameter"}), 400
+    
+    raise NotImplementedError
+    #Make group using firebase call
+
+
+#TODO: Join Group -- endpoint
+@app.route('/join/group')
+def join_group():
+    userID: str = request.args.get("userID")
+    groupID: str = request.args.get("groupID")
+
+    if not userID:
+        return jsonify({"error": "Missing userID parameter"}), 400
+    if not groupID:
+        return jsonify({"error": "Missing groupID parameter"}), 400
+    
+    #Access the list of group's members
+    #Check to see if the requesting user is a member of the group - error if false
+    #Check to see if the group is full - error if true
+    #Check and see if the user is already a member - error if true
+    #Add the new user ID to the group 
+    #return completed
+
+    raise NotImplementedError
+
+#TODO: edit group
+@app.route('/remove/group')
+def edit_group():
+    userID: str = request.args.get("userID")
+    groupID: str = request.args.get("groupID")
+    action: str = request.args.get("action")
+    params: str = request.args.get("params")
+
+    if not userID:
+        return jsonify({"error": "Missing userID parameter"}), 400
+    if not groupID:
+        return jsonify({"error": "Missing groupID parameter"}), 400
+    if not action:
+        return jsonify({"error": "Missing action parameter"}), 400   
+    if not params and action != "remove_user":
+        return jsonify({"error": "Missing params parameter"}), 400
+    
+    #Check if the userID == group owner ID
+    #Parse the action parameter and determine if it is 'remove_user' or 'del_group'
+    #If actions == remove_user: remove user from group functionality:
+        #Params = the userID of the user we want to remove
+        #params != ownerID (Can't remove the owner)
+        #Find userID=params in the group provided by groupID's members array
+        #Remove that user from the array.
+    #If actions == del_group: deleting the group functionality
+        #Go to the group referenced by groupID
+        #for each user in group's members array:
+            #remove groupID from the member's myGroup's array
+        #Delete the group from the firebase
+    
+    raise NotImplementedError
+
+@app.route('/get/users/playlists') #Getting spotify playlists, as opposed to get library 
+def get_users_playlists():
+    userID: str = request.args.get("userID")
+
+    if not userID:
+        return jsonify({"error": "Missing userID parameter"}), 400
+    
+    #Get the spotify user ID from the firebase
+    #With the access token, go to spotify and retrive all of those user's playlists
+    #Pass those spotify playlists to our converter and get them as instances of our playlist object
+    #Return those playlists
+
+    raise NotImplementedError
+
+@app.route('/add/playlist/group')
+def add_playlist_to_group():
+    userID: str = request.args.get("userID")
+    groupID: str = request.args.get("groupID")
+    playlistID: str = request.args.get("playlistID")
+
+    
 
 ### Class Functions ###
 
