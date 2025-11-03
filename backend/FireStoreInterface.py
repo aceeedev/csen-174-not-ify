@@ -209,8 +209,11 @@ class FirebaseManager:
     def createUser(self, user: User) -> str:
         return self.createDoc("Users", user.to_dict())
 
-    def deleteUser(self, userID: str):
-        self.deleteDoc("Users", userID)
+    def deleteUser(self, user_id: str):
+        self.deleteDoc("Users", user_id)
+    
+    def updateUser(self, user_id: str, user: User):
+        self.updateDoc("Users", user_id, user.to_dict())
 
     def getUserInfo(self, userID: str) -> User:
         print(self.getDocInfo('Users', userID))
