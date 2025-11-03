@@ -205,20 +205,16 @@ class FirebaseManager:
     def getSongs(self):
         return self.getCollection('Songs')
 
-        # Users
-
+    # Users
     def createUser(self, user: User) -> str:
         return self.createDoc("Users", user.to_dict())
 
-    def deleteUser(self, userID):
+    def deleteUser(self, userID: str):
         self.deleteDoc("Users", userID)
 
     def getUserInfo(self, userID: str) -> User:
         print(self.getDocInfo('Users', userID))
         return User.from_dict(self.getDocInfo('Users', userID))
-    
-    def getUsers(self):
-        return self.getCollection('Users')
 
     # addGroup
     # removeGroup
