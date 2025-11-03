@@ -46,6 +46,12 @@ def createDoc(collection, data: dict): #how to get random slug as ID
     db = getFirestoreDB()
     db.collection(collection).document().set(data)
 
+def removeDoc(collection, ID: str):
+    db = getFirestoreDB()
+    db.collection(collection).document(ID).delete()
+
+    # groups
+
 # makeGroup
 # deleteGroup
 # getGroups
@@ -68,8 +74,24 @@ def createDoc(collection, data: dict): #how to get random slug as ID
 
 # addPlaylist
 # removePlaylist
+def deletePlaylist(playlistID):
+    # does this need to also remove it from any group boards it's on
+
+    pass
+
+# getPlaylistInfo
+def getPlaylistInfo(playlistID: str):
+    return getDocInfo('Playlists', playlistID)
 # getPlaylistSongs
+def getPlaylistSongs(playlistID: str): #might be unnecessary
+    playlist = getPlaylistInfo(playlistID)
+    songs = playlist["songs"]
+    return songs
 # getOwnerUID
+def getPlaylistOwnerUID(playlistID: str): #might be unnecessary
+    playlist = getPlaylistInfo(playlistID)
+    ownerUID = playlist["ownerUserID"]
+    return ownerUID
 
     # Songs
 
@@ -82,11 +104,24 @@ def getSongInfo(songID: str):
 def getSongs():
     return getCollection('Songs')
 
-
     # Users
 
-# createUser - get passed a UID
+# createUser
+def createUser(accessToken, name, groups=[], isAdmin=False, spotifyUID=None):
+
+    userData = {
+        "accessToken" : accessToken,
+        "groups" : groups,
+        "isAdmin" : isAdmin,
+        "name" : name,
+        "spotifyUID" : spotifyUID
+
+    }
+    createDoc("Users", userData)
 # deleteUser
+def deleteUser(userID):
+    removeDoc("Users", userID)
+
 # getUserInfo
 def getUserInfo(userID: str):
     return getUserInfo('Users', userID)
@@ -99,4 +134,9 @@ def getUserList():
 # isAdmin
 # setAdminStatus
 # getSpotifyUID
+def getSpotifyUID(UID):
+    user = getUserInfo(UID)
+    return user["spotifyUID"]
 # setSpotifyUID
+def setSpotifyUID(UID):
+    return
