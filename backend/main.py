@@ -212,10 +212,31 @@ def get_users_playlists():
 
     return jsonify(spotify.get_users_playlists(user.access_token)), 200
 
+@app.route('/get/playlist/group')
+@FirebaseManager.require_firebase_auth
+def get_group_playlists():
+    error = validate_params(['group_id'])
+    if error:
+        return error
+    
+    user_id = request.user_id
+
+    group_id: str = request.args.get("group_id")
+
+    firebase = FirebaseManager()
+
+    group = firebase.get_group_info(group_id)
+
+    playlist_ids = group.get_remaining_playlists_on_shelf(user_id)
+
+    playlists = [ firebase.get_playlist_info(id).to_dict() for id in playlist_ids ]
+
+    return jsonify({"playlists": playlists}), 200
+
 @app.route('/add/playlist/group')
 @FirebaseManager.require_firebase_auth
 def add_playlist_to_group():
-    error = validate_params(['code'])
+    error = validate_params(['group_id', 'spotify_playlist_id'])
     if error:
         return error
     
