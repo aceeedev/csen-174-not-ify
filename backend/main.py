@@ -200,18 +200,17 @@ def edit_group():
         return jsonify({"error": "Selected action is not provided"}), 400
 
 @app.route('/get/users/playlists') #Getting spotify playlists, as opposed to get library 
+@FirebaseManager.require_firebase_auth
 def get_users_playlists():
-    userID: str = request.args.get("userID")
+    user_id = request.user_id
 
-    if not userID:
-        return jsonify({"error": "Missing userID parameter"}), 400
+    spotify = SpotifyManager()
+    firebase = FirebaseManager()
     
-    #Get the spotify user ID from the firebase
-    #With the access token, go to spotify and retrive all of those user's playlists
-    #Pass those spotify playlists to our converter and get them as instances of our playlist object
-    #Return those playlists
+    # get the user's firebase object so we can get the spotify access token
+    user = firebase.get_user_info(user_id)
 
-    raise NotImplementedError
+    return jsonify(spotify.get_users_playlists(user.access_token)), 200
 
 @app.route('/add/playlist/group')
 @FirebaseManager.require_firebase_auth
