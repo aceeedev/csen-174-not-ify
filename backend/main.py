@@ -70,28 +70,27 @@ def auth_callback():
     
 #TODO: Get current groups -- endpoint
 @app.route('/get/groups')
+@FirebaseManager.require_firebase_auth
 def get_groups():
-    userID: str = request.args.get("userID") #also owner ID
-    if not userID:
-        return jsonify({"error": "Missing userID parameter"}), 400
+    user_id = request.user_id
     
     #return the list of all groups that user userID is a member of
     raise NotImplementedError
 
 #TODO: Create Group -- endpoint
 @app.route('/create/group')
+@FirebaseManager.require_firebase_auth
 def create_group():
+    error = validate_params(['groupName', 'description'])
+    if error:
+        return error
+
     fb = FirebaseManager()
-    userID: str = request.args.get("userID") #also owner ID
+
+    userID: str = request.user_id
+
     groupName: str = request.args.get("groupName")
     description: str = request.args.get("description")
-
-    if not userID:
-        return jsonify({"error": "Missing userID parameter"}), 400
-    if not groupName:
-        return jsonify({"error": "Missing groupName parameter"}), 400
-    if not description:
-        return jsonify({"error": "Missing description parameter"}), 400
     
     #Make group object from group.py in models
     ownersMemberData = GroupMemberData.default()
@@ -315,7 +314,7 @@ def add_playlist_to_group():
 @FirebaseManager.require_firebase_auth
 def take_playlist_from_group():
     fb = FirebaseManager()
-    error = validate_params(["groupID", "action", "params"])
+    error = validate_params(["groupID", "playlistID"])
     if error:
         return error
 
