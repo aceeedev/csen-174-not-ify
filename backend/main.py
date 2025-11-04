@@ -98,9 +98,14 @@ def create_group():
         return jsonify({"error": "Missing description parameter"}), 400
     
     #Make group object from group.py in models
-    ownersMemberData = GroupMemberData(0, datetime.(2023, 11, 03)) #default 
-    newGroup = Group()
+    ownersMemberData = GroupMemberData(0, datetime.datetime(2023, 11, 3), [], []) #default 
+    newGroup = Group(userID, [], description, groupName, {userID:ownersMemberData}) #default
+
     #Make group using firebase call, passing the object group
+    create_group(newGroup)
+    print("Group {groupName} successfully created by user {userID}")
+    
+
 
 
 #TODO: Join Group -- endpoint
