@@ -113,8 +113,8 @@ class FirebaseManager:
         
         return User.from_dict(result)
     
-    def get_firebase_user_info(self, user_id: str):
-        pass
+    def get_firebase_user_info(self, user_id: str) -> auth.UserRecord:
+        return auth.get_user(user_id)
     
     # Groups:
     def create_group(self, group: Group) -> str:

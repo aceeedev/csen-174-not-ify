@@ -33,26 +33,39 @@ def get_auth_url():
 
     return jsonify({'auth_url': auth_url}) 
 
-@app.route('/spotify/auth-callback') #function name
+@app.route('/spotify/auth-callback')
 @FirebaseManager.require_firebase_auth
-def auth_callback(): #definition
+def auth_callback():
     error = validate_params(['code'])
-    if error: #error handling
+    if error:
         return error
     
     user_id = request.user_id
-    code: str = request.args.get("code") #parameters
+    code: str = request.args.get("code")
 
-    spotify = SpotifyManager() #Logic
+    spotify = SpotifyManager()
 
     access_token: str = spotify.get_access_token(code)
-    print(access_token)
     
-    print(user_id)
-    
-    # add access token under user in firebase
+    # Add user to firebase
+    firebase = FirebaseManager()
 
-    return jsonify({'access_token': access_token}) 
+    firebase_user = firebase.get_firebase_user_info(user_id)
+
+    user = User(
+        name=firebase_user.display_name,
+        spotify_id="", # TODO: get from spotify_manager
+        access_token=access_token,
+        profile_pic=firebase_user.photo_url,
+        library=[],
+        my_groups=[],
+        my_complaints=[],
+        is_admin=False
+    )
+
+    firebase.create_user(user_id, user)
+
+    return jsonify({"message": "Success!"}), 200
 
 
 if __name__ == "__main__":
