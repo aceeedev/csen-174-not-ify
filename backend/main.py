@@ -15,19 +15,6 @@ app = Flask(__name__)
 CORS(app)
 
 
-@app.route("/")
-def hello_world():
-    return "<p>Hello, World!</p>"
-
-@app.route('/data')
-def get_data():
-    data = {
-        "name": "Alice",
-        "age": 30,
-        "city": "New York"
-    }
-    return jsonify(data)
-
 def validate_params(required_params: list[str]):
     missing = [p for p in required_params if not request.args.get(p)]
 
@@ -108,25 +95,40 @@ def create_group():
 
 
 
-#TODO: Join Group -- endpoint
 @app.route('/join/group')
+@FirebaseManager.require_firebase_auth
 def join_group():
-    userID: str = request.args.get("userID")
-    groupID: str = request.args.get("groupID")
+    error = validate_params(["group_id"])
+    if error:
+        return error
 
-    if not userID:
-        return jsonify({"error": "Missing userID parameter"}), 400
-    if not groupID:
-        return jsonify({"error": "Missing groupID parameter"}), 400
+    user_id: str = request.user_id
+    group_id: str = request.args.get("group_id")
+
+
+    # get firebase objects
+    firebase = FirebaseManager()
+
+    group = firebase.get_group_info(group_id)
+    user = firebase.get_user_info(user_id)
+
+    # check to see if the user is already a member of the group
+    if user_id in group.member_ids:
+        return jsonify({"error": "User already member of this group"}), 400
     
-    #Access the list of group's members
-    #Check to see if the requesting user is a member of the group - error if false
-    #Check to see if the group is full - error if true
-    #Check and see if the user is already a member - error if true
-    #Add the new user ID to the group 
-    #return completed
+    # check to see if the group is full
+    if len(group.member_ids) >= group.maxMembers:
+        return jsonify({"error": "This group has already reached the max number of members"}), 400
+    
+    # add the user to the group
+    group.member_ids.append(user_id)
+    group.group_member_data[user_id] = GroupMemberData() # TODO: initialize with values
 
-    raise NotImplementedError
+    user.my_groups.append(group_id)
+
+    # update the firebase objects
+    firebase.update_group(group_id, group)
+    firebase.update_user(user_id, user)
 
 #TODO: edit group
 @app.route('/remove/group')
