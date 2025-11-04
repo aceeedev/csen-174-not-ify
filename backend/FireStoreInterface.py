@@ -166,9 +166,6 @@ class FirebaseManager:
         group_data['memberIDs'].remove(memberID)
         self.updateDoc('Groups', groupID, {'memberIDs': group_data['memberIDs']})
         return True
-
-
-
         
     # getMemberIDs
 
@@ -176,40 +173,11 @@ class FirebaseManager:
     # removePlaylistFromBoard
     # getPlaylistBoardIDs
 
-    # TODO later: changeOwner
-    # getOwnerUID
-
-    # TODO later: changeDescription
-    # getDescription
-
-        # Playlists
-
-    # addPlaylist
-    # removePlaylist
-    def deletePlaylist(self, playlistID):
-        # does this need to also remove it from any group boards it's on
-
-        pass
-
-    # getPlaylistInfo
-    def getPlaylistInfo(self, playlistID: str):
-        return self.getDocInfo('Playlists', playlistID)
     # getPlaylistSongs
     def getPlaylistSongs(self, playlistID: str): #might be unnecessary
         playlist = self.getPlaylistInfo(playlistID)
         songs = playlist["songs"]
         return songs
-
-        # Songs
-
-    # addSong
-    # removeSong
-    # getSongInfo
-    def getSongInfo(self, songID: str):
-        return self.getDocInfo('Songs', songID)
-    # getSongs
-    def getSongs(self):
-        return self.getCollection('Songs')
 
 
     # Users:
