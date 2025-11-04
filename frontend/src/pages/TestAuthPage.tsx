@@ -33,7 +33,7 @@ const TestAuthPage: React.FC = () => {
     }
 
     const signInToSpotify = async () => {
-      const res = await fetch("http://localhost:5000/api/data/auth-url");
+      const res = await fetch("http://localhost:5000/spotify/auth-url");
       const data = await res.json();
       
       window.location.href = data.auth_url;
@@ -51,11 +51,6 @@ const TestAuthPage: React.FC = () => {
       )}
 
       <button onClick={signInToSpotify} disabled={loading}>Login with Spotify</button>
-      {user && (
-        <div>
-          {user.user.displayName}
-        </div>
-      )}
     </div>
   );
 };
