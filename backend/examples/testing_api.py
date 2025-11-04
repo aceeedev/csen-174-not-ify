@@ -1,0 +1,18 @@
+import requests
+
+base_url = "http://localhost:5000"
+token = "eyJhbGciOiJSUzI1NiIsImtpZCI6IjU0NTEzMjA5OWFkNmJmNjEzODJiNmI0Y2RlOWEyZGZlZDhjYjMwZjAiLCJ0eXAiOiJKV1QifQ.eyJuYW1lIjoiQW5kcmV3IENvbGxpbnMiLCJwaWN0dXJlIjoiaHR0cHM6Ly9saDMuZ29vZ2xldXNlcmNvbnRlbnQuY29tL2EvQUNnOG9jTEZvN1JramMtSWtFSjJwQWZpdl80YXoyUEJlVlgtazlVMnF4UndvNmZpZE9MUlZRPXM5Ni1jIiwiaXNzIjoiaHR0cHM6Ly9zZWN1cmV0b2tlbi5nb29nbGUuY29tL2NzZW4tMTc0LW5vdC1pZnkiLCJhdWQiOiJjc2VuLTE3NC1ub3QtaWZ5IiwiYXV0aF90aW1lIjoxNzYyMjM5NTI2LCJ1c2VyX2lkIjoicEdHdUlpc3hxY1BmWE80RFB6UEFPN2NRZGhGMiIsInN1YiI6InBHR3VJaXN4cWNQZlhPNERQelBBTzdjUWRoRjIiLCJpYXQiOjE3NjIyMzk1MjYsImV4cCI6MTc2MjI0MzEyNiwiZW1haWwiOiJhY29sbGluczJAc2N1LmVkdSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJmaXJlYmFzZSI6eyJpZGVudGl0aWVzIjp7Imdvb2dsZS5jb20iOlsiMTEyNTAzNjc1ODY3MDgyNDY4NzQ2Il0sImVtYWlsIjpbImFjb2xsaW5zMkBzY3UuZWR1Il19LCJzaWduX2luX3Byb3ZpZGVyIjoiZ29vZ2xlLmNvbSJ9fQ.efX6dxTg1Oo8jweua3Z5j6OBxNz85eljWVryxYoCuEbNgah-gyFgzaJDZVF204-1ZvXpdIz_VgAqq-4fXGALFANsszzGdK8Ytl2TRQWNFJkCGvPMQhgLuhPRkmCzIb5Uxw2xOmcxyEUDGoGgT7vNZ07Vbv6PdbTIp-whNcfUzPxXVcaO68rAh1BeEj8CRifOSvJHN-SxaBGGTLJSKCKSIqPfEzQiN1sYfV_Xzv2IfRCgOxodCUtDS8_a7wtrrrtDXbSBt1uqEHFDY3j9PTasig-Uuo-5aopmEXAhVymEXf3_m51BSNcQ-xPsDbNA5jNPu26XpkZqESbWZS7RJBMx_g"
+
+headers = {
+    "Authorization": f"Bearer {token}"
+}
+
+response = requests.get(
+    f"{base_url}/create/group",
+    params={"groupName": "Best Group", "description": "A really cool group"},
+    headers=headers
+)
+
+print("Endpoint:", response.url)
+print("Status Code:", response.status_code)
+print("Json Returned:", response.json())

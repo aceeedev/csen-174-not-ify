@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { auth, authProvider } from '../firebase';
+import { auth, authProvider, getIdToken } from '../firebase';
 import { signInWithPopup, GoogleAuthProvider, type UserCredential } from "firebase/auth";
 
 const TestAuthPage: React.FC = () => {
@@ -39,6 +39,10 @@ const TestAuthPage: React.FC = () => {
       window.location.href = data.auth_url;
     };
 
+    const printTokenID = async () => {
+      console.log("User token ID:", await getIdToken())
+    }
+
   return (
     <div>
       <button onClick={signInToGoogle} disabled={loading}>
@@ -51,6 +55,7 @@ const TestAuthPage: React.FC = () => {
       )}
 
       <button onClick={signInToSpotify} disabled={loading}>Login with Spotify</button>
+      <button onClick={printTokenID} disabled={loading}>Get user token iD</button>
     </div>
   );
 };

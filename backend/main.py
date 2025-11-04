@@ -94,12 +94,28 @@ def create_group():
     
     #Make group object from group.py in models
     ownersMemberData = GroupMemberData.default()
-    newGroup = Group(userID, [], description, groupName, {userID:ownersMemberData}) #default
+    newGroup = Group(
+        owner_id=userID, 
+        member_ids=[userID], 
+        description=description,
+        group_name=groupName, 
+        group_member_data={
+            userID: ownersMemberData
+        }
+    ) #default
 
     #Make group using firebase call, passing the object group
-    fb.create_group(newGroup)
+    group_id = fb.create_group(newGroup)
+
+    # add group id to the user's groups
+    user = fb.get_user_info(userID)
+    user.my_groups.append(group_id)
+
+    fb.update_user(userID, user)
+
     print("Group {groupName} successfully created by user {userID}")
 
+    return jsonify({"message": "Success!"}), 200
 
 @app.route('/join/group')
 @FirebaseManager.require_firebase_auth
