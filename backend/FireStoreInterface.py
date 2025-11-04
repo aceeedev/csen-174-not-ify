@@ -63,7 +63,7 @@ class FirebaseManager:
 
         return self.streamToDict(docs)
 
-    def createDoc(self, collectionName: str, data: dict[str, Any]) -> str:
+    def createDoc(self, collectionName: str, data: dict[str, Any], documentID: str | None = None) -> str:
         """
         Creates a new document in the specified Firestore collection.
 
@@ -80,7 +80,7 @@ class FirebaseManager:
             '2JvP9mXb73UsaYf2S3hW'
         """
 
-        doc_ref = self.db.collection(collectionName).document()
+        doc_ref = self.db.collection(collectionName).document(documentID)
         doc_ref.set(data)
 
         return doc_ref.id
@@ -97,8 +97,8 @@ class FirebaseManager:
     
 
     # Users:
-    def create_user(self, user: User) -> str:
-        return self.createDoc(USER_COLLECTION, user.to_dict())
+    def create_user(self, user_id: str, user: User) -> str:
+        return self.createDoc(USER_COLLECTION, user.to_dict(), user_id)
 
     def delete_user(self, user_id: str):
         self.deleteDoc(USER_COLLECTION, user_id)
@@ -107,7 +107,14 @@ class FirebaseManager:
         self.updateDoc(USER_COLLECTION, user_id, user.to_dict())
 
     def get_user_info(self, user_id: str) -> User:
-        return User.from_dict(self.getDocInfo(USER_COLLECTION, user_id))
+        result = self.getDocInfo(USER_COLLECTION, user_id)
+        if "error" in result:
+            raise ValueError("User does not exist in Firebase!")
+        
+        return User.from_dict(result)
+    
+    def get_firebase_user_info(self, user_id: str):
+        pass
     
     # Groups:
     def create_group(self, group: Group) -> str:
@@ -120,7 +127,11 @@ class FirebaseManager:
         self.updateDoc(GROUP_COLLECTION, group_id, group.to_dict())
 
     def get_group_info(self, group_id: str) -> Group:
-        return Group.from_dict(self.getDocInfo(GROUP_COLLECTION, group_id))
+        result = self.getDocInfo(GROUP_COLLECTION, group_id)
+        if "error" in result:
+            raise ValueError("Group does not exist in Firebase!")
+        
+        return Group.from_dict(result)
     
     # Songs:
     def create_song(self, song: Song) -> str:
@@ -133,7 +144,11 @@ class FirebaseManager:
         self.updateDoc(SONG_COLLECTION, song_id, song.to_dict())
 
     def get_song_info(self, song_id: str) -> Song:
-        return Song.from_dict(self.getDocInfo(SONG_COLLECTION, song_id))
+        result = self.getDocInfo(SONG_COLLECTION, song_id)
+        if "error" in result:
+            raise ValueError("Song does not exist in Firebase!")
+        
+        return Song.from_dict(result)
 
     # Playlists:
     def create_playlist(self, playlist: Playlist) -> str:
@@ -146,7 +161,11 @@ class FirebaseManager:
         self.updateDoc(PLAYLIST_COLLECTION, playlist_id, playlist.to_dict())
 
     def get_playlist_info(self, playlist_id: str) -> Playlist:
-        return Playlist.from_dict(self.getDocInfo(PLAYLIST_COLLECTION, playlist_id))
+        result = self.getDocInfo(PLAYLIST_COLLECTION, playlist_id)
+        if "error" in result:
+            raise ValueError("Playlist does not exist in Firebase!")
+        
+        return Playlist.from_dict(result)
 
     # Authorization:
     def require_firebase_auth(f):
