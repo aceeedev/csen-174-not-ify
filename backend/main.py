@@ -77,7 +77,6 @@ def get_groups():
     #return the list of all groups that user userID is a member of
     raise NotImplementedError
 
-#TODO: Create Group -- endpoint
 @app.route('/create/group')
 @FirebaseManager.require_firebase_auth
 def create_group():
@@ -152,9 +151,7 @@ def edit_group():
     params: str = request.args.get("params")
 
     fGroup = fb.get_group_info(groupID)
-    #error handling needed if the group does not exist
     fUser = fb.get_user_info(userID)
-    #error handling needed if the user does not exist
 
     #Check if the userID == group owner ID
     if userID != fGroup.owner_id:
@@ -178,7 +175,7 @@ def edit_group():
         fGroup.member_ids.remove(params)
         fb.update_group(groupID, fGroup)
         
-        print("User with userID {params} successfully removed from group with groupID {groupID}")
+        print(f"User with userID {params} successfully removed from group with groupID {groupID}")
         return 200
     
     #If actions == del_group: deleting the group functionality
@@ -193,7 +190,7 @@ def edit_group():
 
         #Delete the group from the firebase
         fb.delete_group(groupID)
-        print("Group with groupID: {groupID} successfully deleted")
+        print(f"Group with groupID: {groupID} successfully deleted")
         return 200
     else:
         return jsonify({"error": "Selected action is not provided"}), 400
@@ -322,6 +319,47 @@ def take_playlist_from_group():
     groupID: str = request.ags.get("groupID")
     playlistID: str = request.args.get("playlistID")
 
+    fUser = fb.get_user_info(userID)
+    fGroup = fb.get_group_info(groupID)
+    fPlaylist = fb.get_playlist_info(playlistID)
+
+    #Make sure person is in the group
+    if userID not in fGroup.member_ids:
+        return jsonify({"error": "User is not a member of this group"}), 400
+    if groupID not in fUser.my_groups:
+        return jsonify({"error": "Data is not consistent, group claims user, but user does not claim group"}), 400
+
+    #Make sure that the user is not the owner of the playlist
+    if userID == fPlaylist.owner_id:
+        return jsonify({"error":"User cannot swap for a playlist they created"})
+        #TODO: Possibly change this implementation to be "take down a playlist without spending a coin" if we want that functionality
+
+    #Make sure that the person has not taken the playlist before
+    if playlistID in fGroup.group_member_data[userID].taken_playlists:
+        return jsonify({"error": "User has already taken this playlist."}), 400
+    if playlistID not in fUser.library:
+        return jsonify({"error": "Data is not consistent, playlist claims user has taken it, while user does not have it."}), 400
+    
+    #Make sure that they have the coins to do it.
+    if fGroup.group_member_data[userID].coins <= 0:
+        return jsonify({"error": "User does not have enough coins to take this playlist"}), 400
+    
+    fUser.library.append(playlistID) #add the playlist to the user's library.
+    fGroup.group_member_data[userID].taken_playlists.append(playlistID) #reflect that change in the group
+    
+    #Incrememnt the number of times that playlist has been downloaded.
+    for member in fGroup.member_ids:
+        if playlistID not in fGroup.group_member_data[member].posted_playlist.playlistID:
+            pass
+        else:
+            fGroup.group_member_data[member].posted_playlist.number_downloaded += 1
+            #TODO: Make a function call for when this playlist has been downloaded by everyone to remove the playlist from the group
+
+    #'Charge' the user a coin for taking the playlist. 
+    fGroup.group_member_data[userID].coins -= 1
+
+    return 200
+    
 
 if __name__ == "__main__":
     app.run(debug=True, host='0.0.0.0', port=5000)
