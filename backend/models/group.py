@@ -62,7 +62,7 @@ class GroupMemberData:
     def default(cls):
         return cls(
             coins=0, 
-            last_posting_timestamp=datetime.datetime(2023, 11, 3), 
+            last_posting_timestamp=datetime(2023, 11, 3), 
             taken_playlists=[],
             posted_playlists=[]
         )
