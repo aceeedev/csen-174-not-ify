@@ -13,6 +13,7 @@ class Playlist:
         self.description = description
         self.songs = songs
 
+
     def to_dict(self) -> dict[str, Any]:
         return {
             "spotify_id": self.spotify_id, 

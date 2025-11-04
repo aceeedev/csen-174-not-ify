@@ -14,6 +14,7 @@ class PostedPlaylist:
         self.playlist_id = playlist_id
         self.number_downloaded = number_downloaded
 
+
     def to_dict(self) -> dict[str, Any]:
         return {
             "playlist_id": self.playlist_id,
@@ -35,6 +36,7 @@ class GroupMemberData:
         self.taken_playlists = taken_playlists
         self.posted_playlists = posted_playlists
         
+
     def to_dict(self) -> dict[str, Any]:
         return {
             "coins": self.coins,
@@ -56,11 +58,29 @@ class GroupMemberData:
             ]
         )
 
+
 class Group:
-    def __init__(self, owner_id: str, member_ids: list[str], shelf: list[str], description: str, group_name: str, group_member_data: dict[str, GroupMemberData]):
+    def __init__(self, owner_id: str, member_ids: list[str], description: str, group_name: str, group_member_data: dict[str, GroupMemberData]) -> None:
+        """
+        Represents a group document stored in Firestore.
+
+        Args:
+            owner_id (str): The UID of the group's owner.
+            member_ids (list[str]): List of Firebase user IDs of members.
+            shelf (list[str]): Playlist IDs currently displayed on the group's shelf.
+            description (str): Text description of the group.
+            group_name (str): The display name of the group.
+            group_member_data (dict[str, GroupMemberData]): 
+                A mapping from Firebase user IDs to their associated `GroupMemberData` objects.
+                Example:
+                    {
+                        "uid_123": GroupMemberData(...),
+                        "uid_456": GroupMemberData(...)
+                    }
+        """
+
         self.owner_id = owner_id
         self.member_ids = member_ids
-        self.shelf = shelf
         self.description = description
         self.group_name = group_name
         self.group_member_data = group_member_data
@@ -69,11 +89,11 @@ class Group:
         self.maxPLists = 20
         self.maxMembers = 20
 
+
     def to_dict(self) -> dict[str, Any]:
         return {
             "owner_id": self.owner_id, 
             "member_ids": self.member_ids,
-            "shelf": self.shelf,
             "description": self.description,
             "group_name": self.group_name,
             "group_member_data": {
@@ -87,7 +107,6 @@ class Group:
         return cls(
             owner_id=data['owner_id'],
             member_ids=data['member_ids'],
-            shelf=data['shelf'],
             description=data['description'],
             group_name=data['group_name'],
             group_member_data={
@@ -95,3 +114,18 @@ class Group:
                 for member_id, data in data['group_member_data'].items()
             }
         )
+    
+    def get_remaining_playlists_on_shelf(self, user_id: str):
+        """
+        Returns a list of playlist ids that are not the user's and that are left for the user to unlock
+        """
+
+        playlist_ids: list[str] = []
+
+        for member_id, member_data in self.group_member_data.items():
+            if member_id != user_id:
+                member_playlist_ids = [posted_playlist.playlist_id for posted_playlist in member_data.posted_playlists]
+
+                playlist_ids.extend(member_playlist_ids)
+
+        return playlist_ids
