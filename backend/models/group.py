@@ -1,6 +1,6 @@
 from typing import Any
-import random
-import string
+from datetime import datetime, timezone
+
 
 #Changelog
 #Update Code: Editor, date
@@ -9,66 +9,123 @@ import string
 #UC2: Katie 10/31/2025
 
 
-class Group:
-    #TODO: Change shelf to be of datatype playlist
-    def __init__(self, ownerID: str, memberIDs: list[str], shelf: list[str], desc: str, groupName: str):
-        self.ownerID = ownerID
-        self.memberIDs = memberIDs
-        self.shelf = shelf
-        self.description = desc
-        self.groupName = groupName
-        self.maxPLists = 20
-        self.maxMembers = 20
-        self.groupID = ''.join (random.choices(string.digits, k=10)) #Make a random 10 digit groupID
+class PostedPlaylist:
+    def __init__(self, playlist_id: str, number_downloaded: int) -> None:
+        self.playlist_id = playlist_id
+        self.number_downloaded = number_downloaded
 
-    def to_dict(self) -> dict[str, Any]: #UC2
+
+    def to_dict(self) -> dict[str, Any]:
         return {
-            #firebase = object variable
-            "description": self.description, 
-            "maxMembers": self.maxMembers,
-            "maxPlaylists": self.maxPLists,
-            "memberIDs": self.memberIDs,
-            "shelf": self.shelf
+            "playlist_id": self.playlist_id,
+            "number_downloaded": self.number_downloaded,
         }
 
     @classmethod
-    def from_dict(cls, data): #UC2
+    def from_dict(cls, data: dict[str, Any]):
         return cls(
-            #object var = from firebase
-            description=data['description'],
-            maxMembers=data['maxMembers'],
-            maxPlaylists=data['maxPlaylists'],
-            memberIDs=data['memberIDs'],
-            shelf=data['shelf']   
+            playlist_id=data["playlist_id"],
+            number_downloaded=data["number_downloaded"],
         )
     
 
-    def inviteMember(self, callerID: str, inviteeID: str):
-        #Error Handling
-        errorCaught: bool = False
-        if callerID not in self.memberIDs:
-            raise Exception("User {callerID} is not a member of group {self.groupName}")
-            errorCaught = True
-        if inviteeID in self.memberIDs: 
-            raise Exception("User {inviteeID} is already a member of group {self.groupName}")
-            errorCaught = True
-        if len(self.memberIDs) == self.maxMembers:
-            raise Exception("Group is already at maximum capacity, cannot add more members.")
-            errorCaught = True
-        if errorCaught: #Allows for multiple failure to be displayed. 
-            return
+class GroupMemberData:
+    def __init__(self, coins: int, last_posting_timestamp: datetime, taken_playlists: list[str], posted_playlists: list[PostedPlaylist]) -> None:
+        self.coins = coins
+        self.last_posting_timestamp = last_posting_timestamp
+        self.taken_playlists = taken_playlists
+        self.posted_playlists = posted_playlists
         
-        self.memberIDs.append(inviteeID) #add user
 
-    def add_to_shelf(self, playlist): #UC1
-        if playlist not in self.shelf:
-            self.shelf.append(playlist)
-    
-    def take_down_plist(self, playlist): #UC1
-        if playlist not in self.shelf:
-            raise Exception("Cannot remove playlist that is not on the shelf.")
-            errorCaught = True
-        else:
-            self.shelf.remove(playlist)
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "coins": self.coins,
+            "last_posting_timestamp": self.last_posting_timestamp.astimezone(timezone.utc),
+            "taken_playlists": self.taken_playlists,
+            "posted_playlists": [
+                playlist.to_dict() for playlist in self.posted_playlists
+            ],
+        }
 
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]):
+        return cls(
+            coins=data["coins"],
+            last_posting_timestamp=datetime.fromisoformat(data["last_posting_timestamp"]),
+            taken_playlists=data["taken_playlists"],
+            posted_playlists=[
+                PostedPlaylist.from_dict(p) for p in data["posted_playlists"]
+            ]
+        )
+
+
+class Group:
+    def __init__(self, owner_id: str, member_ids: list[str], description: str, group_name: str, group_member_data: dict[str, GroupMemberData]) -> None:
+        """
+        Represents a group document stored in Firestore.
+
+        Args:
+            owner_id (str): The UID of the group's owner.
+            member_ids (list[str]): List of Firebase user IDs of members.
+            shelf (list[str]): Playlist IDs currently displayed on the group's shelf.
+            description (str): Text description of the group.
+            group_name (str): The display name of the group.
+            group_member_data (dict[str, GroupMemberData]): 
+                A mapping from Firebase user IDs to their associated `GroupMemberData` objects.
+                Example:
+                    {
+                        "uid_123": GroupMemberData(...),
+                        "uid_456": GroupMemberData(...)
+                    }
+        """
+
+        self.owner_id = owner_id
+        self.member_ids = member_ids
+        self.description = description
+        self.group_name = group_name
+        self.group_member_data = group_member_data
+
+        # Constants
+        self.maxPLists = 20
+        self.maxMembers = 20
+
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "owner_id": self.owner_id, 
+            "member_ids": self.member_ids,
+            "description": self.description,
+            "group_name": self.group_name,
+            "group_member_data": {
+                member_id: data.to_dict()
+                for member_id, data in self.group_member_data.items()
+            }
+        }
+
+    @classmethod
+    def from_dict(cls, data):
+        return cls(
+            owner_id=data['owner_id'],
+            member_ids=data['member_ids'],
+            description=data['description'],
+            group_name=data['group_name'],
+            group_member_data={
+                member_id: GroupMemberData.from_dict(data)
+                for member_id, data in data['group_member_data'].items()
+            }
+        )
     
+    def get_remaining_playlists_on_shelf(self, user_id: str):
+        """
+        Returns a list of playlist ids that are not the user's and that are left for the user to unlock
+        """
+
+        playlist_ids: list[str] = []
+
+        for member_id, member_data in self.group_member_data.items():
+            if member_id != user_id:
+                member_playlist_ids = [posted_playlist.playlist_id for posted_playlist in member_data.posted_playlists]
+
+                playlist_ids.extend(member_playlist_ids)
+
+        return playlist_ids

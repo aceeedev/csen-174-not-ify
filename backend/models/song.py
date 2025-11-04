@@ -1,29 +1,30 @@
 from typing import Any
 
+
 class Song:
-    def __init__(self, spotifyID: str, albumCover: str, albumName: str, artistName: str, title: str) -> None:
-        self.spotifyID = spotifyID
-        self.albumCover = albumCover
-        self.albumName = albumName
+    def __init__(self, spotify_id: str, album_cover: str, album_name: str, artist_name: str, title: str) -> None:
+        self.spotify_id = spotify_id
+        self.album_cover = album_cover
+        self.album_name = album_name
+        self.artist_name = artist_name
         self.title = title
-        self.artistName = artistName
 
 
     def to_dict(self) -> dict[str, Any]:
         return {
-            "spotifyID": self.spotifyID, 
-            "albumCover": self.albumCover,
-            "albumName": self.albumName,
-            "title": self.title,
-            "artistName": self.artistName
+            "spotify_id": self.spotify_id, 
+            "album_cover": self.album_cover,
+            "album_name": self.album_name,
+            "artist_name": self.artist_name,
+            "title": self.title
         }
 
     @classmethod
-    def from_dict(cls, data):
+    def from_dict(cls, data: dict[str, Any]):
         return cls(
-            spotifyId=data['spotifyID'],
-            albumCover=data['albumCover'],
-            albumName=data['albumName'],
-            title=data['title'],
-            artistName=data['artistName']   
+            spotify_id=data['spotify_id'],
+            album_cover=data['album_cover'],
+            album_name=data['album_name'],
+            artist_name=data['artist_name'],
+            title=data['title']   
         )
