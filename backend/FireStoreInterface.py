@@ -119,7 +119,7 @@ class FirebaseManager:
     def update_group(self, group_id: str, group: Group):
         self.updateDoc(GROUP_COLLECTION, group_id, group.to_dict())
 
-    def get_group_info(self, group_id: str) -> User:
+    def get_group_info(self, group_id: str) -> Group:
         return Group.from_dict(self.getDocInfo(GROUP_COLLECTION, group_id))
     
     # Songs:
@@ -132,7 +132,7 @@ class FirebaseManager:
     def update_song(self, song_id: str, song: Song):
         self.updateDoc(SONG_COLLECTION, song_id, song.to_dict())
 
-    def get_song_info(self, song_id: str) -> User:
+    def get_song_info(self, song_id: str) -> Song:
         return Song.from_dict(self.getDocInfo(SONG_COLLECTION, song_id))
 
     # Playlists:
@@ -145,7 +145,7 @@ class FirebaseManager:
     def update_playlist(self, playlist_id: str, playlist: Playlist):
         self.updateDoc(PLAYLIST_COLLECTION, playlist_id, playlist.to_dict())
 
-    def get_playlist_info(self, playlist_id: str) -> User:
+    def get_playlist_info(self, playlist_id: str) -> Playlist:
         return Playlist.from_dict(self.getDocInfo(PLAYLIST_COLLECTION, playlist_id))
 
     # Authorization:
