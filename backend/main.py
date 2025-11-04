@@ -68,14 +68,21 @@ def auth_callback():
 
     return jsonify({"message": "Success!"}), 200
     
-#TODO: Get current groups -- endpoint
 @app.route('/get/groups')
 @FirebaseManager.require_firebase_auth
 def get_groups():
-    user_id = request.user_id
-    
     #return the list of all groups that user userID is a member of
-    raise NotImplementedError
+    userID = request.user_id
+    fb = FirebaseManager()
+
+    fUser = fb.get_user_info(userID)
+    outLists: [] #empty list to store the output
+
+    for gID in fUser.my_groups:
+        outLists.append(fb.get_group_info(gID))
+    
+    return outLists
+
 
 @app.route('/create/group')
 @FirebaseManager.require_firebase_auth
