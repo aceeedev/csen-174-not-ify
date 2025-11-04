@@ -1,6 +1,6 @@
 from typing import Any
+from datetime import datetime, timezone
 
-from models.group_member_data import GroupMemberData
 
 #Changelog
 #Update Code: Editor, date
@@ -9,8 +9,54 @@ from models.group_member_data import GroupMemberData
 #UC2: Katie 10/31/2025
 
 
+class PostedPlaylist:
+    def __init__(self, playlist_id: str, number_downloaded: int) -> None:
+        self.playlist_id = playlist_id
+        self.number_downloaded = number_downloaded
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "playlist_id": self.playlist_id,
+            "number_downloaded": self.number_downloaded,
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]):
+        return cls(
+            playlist_id=data["playlist_id"],
+            number_downloaded=data["number_downloaded"],
+        )
+    
+
+class GroupMemberData:
+    def __init__(self, coins: int, last_posting_timestamp: datetime, taken_playlists: list[str], posted_playlists: list[PostedPlaylist]) -> None:
+        self.coins = coins
+        self.last_posting_timestamp = last_posting_timestamp
+        self.taken_playlists = taken_playlists
+        self.posted_playlists = posted_playlists
+        
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "coins": self.coins,
+            "last_posting_timestamp": self.last_posting_timestamp.astimezone(timezone.utc),
+            "taken_playlists": self.taken_playlists,
+            "posted_playlists": [
+                playlist.to_dict() for playlist in self.posted_playlists
+            ],
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]):
+        return cls(
+            coins=data["coins"],
+            last_posting_timestamp=datetime.fromisoformat(data["last_posting_timestamp"]),
+            taken_playlists=data["taken_playlists"],
+            posted_playlists=[
+                PostedPlaylist.from_dict(p) for p in data["posted_playlists"]
+            ]
+        )
+
 class Group:
-    #TODO: Change shelf to be of datatype playlist
     def __init__(self, owner_id: str, member_ids: list[str], shelf: list[str], description: str, group_name: str, group_member_data: dict[str, GroupMemberData]):
         self.owner_id = owner_id
         self.member_ids = member_ids
@@ -49,4 +95,3 @@ class Group:
                 for member_id, data in data['group_member_data'].items()
             }
         )
-    
