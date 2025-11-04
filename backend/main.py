@@ -142,25 +142,21 @@ def join_group():
     firebase.update_group(group_id, group)
     firebase.update_user(user_id, user)
 
-#TODO: edit group
-@app.route('/remove/group')
+@app.route('/edit/group')
+@FirebaseManager.require_firebase_auth
 def edit_group():
     fb = FirebaseManager()
 
-    userID: str = request.args.get("userID")
+    # userID: str = request.args.get("userID")
+    error = validate_params(["groupID", "action", "params"])
+    if error:
+        return error
+    
+    userID: str = request.user_id
     groupID: str = request.args.get("groupID")
     action: str = request.args.get("action")
     params: str = request.args.get("params")
 
-    if not userID:
-        return jsonify({"error": "Missing userID parameter"}), 400
-    if not groupID:
-        return jsonify({"error": "Missing groupID parameter"}), 400
-    if not action:
-        return jsonify({"error": "Missing action parameter"}), 400   
-    if not params and action != "remove_user":
-        return jsonify({"error": "Missing params parameter"}), 400
-    
     fGroup = fb.get_group_info(groupID)
     #error handling needed if the group does not exist
     fUser = fb.get_user_info(userID)
@@ -178,6 +174,13 @@ def edit_group():
             return jsonify({"error": "Implementation error, cannot remove yourself"}), 400
         if params not in fGroup.member_ids:
             return jsonify({"error": "Implementation error, cannot remove a member that is not in the group"}), 400
+        
+        fParams = fb.get_user_info(params)
+        if groupID not in fParams.my_groups:
+            return jsonify({"error": "Data continuity error: member does not claim to be in group, though group claims that user."}), 400
+        fParams.my_groups.remove(groupID)
+        fb.update_user(params, fParams)
+
         fGroup.member_ids.remove(params)
         fb.update_group(groupID, fGroup)
         
@@ -284,6 +287,18 @@ def add_playlist_to_group():
     ))
 
     firebase.update_group(group_id, group)
+@app.route('/take/playlist/group')
+@FirebaseManager.require_firebase_auth
+def take_playlist_from_group():
+    fb = FirebaseManager()
+    error = validate_params(["groupID", "action", "params"])
+    if error:
+        return error
+
+    userID: str = request.user_id
+    groupID: str = request.ags.get("groupID")
+    playlistID: str = request.args.get("playlistID")
+    
 
 
 ### Class Functions ###
