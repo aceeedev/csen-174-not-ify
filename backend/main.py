@@ -53,12 +53,15 @@ def auth_callback(): #definition
     if error: #error handling
         return error
     
+    user_id = request.user_id
     code: str = request.args.get("code") #parameters
 
     spotify = SpotifyManager() #Logic
 
     access_token: str = spotify.get_access_token(code)
     print(access_token)
+    
+    print(user_id)
     
     # add access token under user in firebase
 
