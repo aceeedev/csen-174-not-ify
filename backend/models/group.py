@@ -133,13 +133,14 @@ class Group:
 
         playlist_ids: list[str] = []
 
-        # get all playlists
+        # get all posted playlists that are not this user's
         for member_id, member_data in self.group_member_data.items():
             if member_id != user_id:
                 member_playlist_ids = [posted_playlist.playlist_id for posted_playlist in member_data.posted_playlists]
 
                 playlist_ids.extend(member_playlist_ids)
 
-        
+        # remove playlist ids already taken
+        playlist_ids = [id for id in playlist_ids if id not in self.group_member_data[user_id].taken_playlists]
 
         return playlist_ids
