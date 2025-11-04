@@ -5,9 +5,11 @@ from FireStoreInterface import FirebaseManager
 from spotifyInterface import SpotifyManager
 
 from models.group import Group
+from models.group import GroupMemberData
 from models.playlist import Playlist
 from models.song import Song
 from models.user import User
+from datetime import datetime
 
 app = Flask(__name__)
 CORS(app)
@@ -92,8 +94,10 @@ def create_group():
     if not description:
         return jsonify({"error": "Missing description parameter"}), 400
     
-    raise NotImplementedError
-    #Make group using firebase call
+    #Make group object from group.py in models
+    ownersMemberData = GroupMemberData(0, datetime.(2023, 11, 03)) #default 
+    newGroup = Group()
+    #Make group using firebase call, passing the object group
 
 
 #TODO: Join Group -- endpoint
