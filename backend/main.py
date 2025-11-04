@@ -231,6 +231,12 @@ def add_playlist_to_group():
     group = firebase.get_group_info(group_id)
 
 
+    # check if user has already posted their max number of playlists
+    MAX_PLAYLIST_POSTINGS: int = 7
+
+    if len(group.group_member_data[user_id].posted_playlists) >= MAX_PLAYLIST_POSTINGS:
+        return jsonify({"error": f"User has already posted the max number of {MAX_PLAYLIST_POSTINGS} playlists"}), 400
+
     # check if last post was at least 24 hours ago
     now = datetime.now(timezone.utc)
 
@@ -279,6 +285,8 @@ def add_playlist_to_group():
         playlist_id=playlist_id,
         number_downloaded=0
     ))
+
+    group.group_member_data[user_id].coins += 1
 
     firebase.update_group(group_id, group)
 
