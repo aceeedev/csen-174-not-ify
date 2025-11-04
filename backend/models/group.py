@@ -57,6 +57,15 @@ class GroupMemberData:
                 PostedPlaylist.from_dict(p) for p in data["posted_playlists"]
             ]
         )
+    
+    @classmethod
+    def default(cls):
+        return cls(
+            coins=0, 
+            last_posting_timestamp=datetime.datetime(2023, 11, 3), 
+            taken_playlists=[],
+            posted_playlists=[]
+        )
 
 
 class Group:
