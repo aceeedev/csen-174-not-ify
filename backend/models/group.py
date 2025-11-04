@@ -4,10 +4,23 @@ from datetime import datetime, timezone
 
 #Changelog
 #Update Code: Editor, date
-#UC1: Katie, 10/29/2025 
+#UC1: Katie, 10/29/2025 v
 #   General: Changed plistBoard to shelf
 #UC2: Katie 10/31/2025
 
+
+def ensure_datetime(value: Any) -> datetime:
+    """Safely convert Firestore timestamps or strings to Python datetime."""
+    if isinstance(value, datetime):
+        return value
+    if hasattr(value, "to_pydatetime"):  # Firestore Timestamp
+        return value.to_pydatetime()
+    if isinstance(value, str):
+        try:
+            return datetime.fromisoformat(value)
+        except ValueError:
+            return datetime.fromisoformat(value.replace("Z", "+00:00"))
+    raise TypeError(f"Unsupported datetime format: {type(value)}")
 
 class PostedPlaylist:
     def __init__(self, playlist_id: str, number_downloaded: int) -> None:
@@ -51,7 +64,7 @@ class GroupMemberData:
     def from_dict(cls, data: dict[str, Any]):
         return cls(
             coins=data["coins"],
-            last_posting_timestamp=datetime.fromisoformat(data["last_posting_timestamp"]),
+            last_posting_timestamp=ensure_datetime(data["last_posting_timestamp"]),
             taken_playlists=data["taken_playlists"],
             posted_playlists=[
                 PostedPlaylist.from_dict(p) for p in data["posted_playlists"]

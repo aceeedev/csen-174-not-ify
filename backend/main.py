@@ -76,13 +76,12 @@ def get_groups():
     fb = FirebaseManager()
 
     fUser = fb.get_user_info(userID)
-    outLists: [] #empty list to store the output
+    outLists = [] #empty list to store the output
 
     for gID in fUser.my_groups:
-        outLists.append(fb.get_group_info(gID))
+        outLists.append(fb.get_group_info(gID).to_dict())
     
-    return outLists
-
+    return jsonify(outLists), 200
 
 @app.route('/create/group')
 @FirebaseManager.require_firebase_auth
@@ -286,20 +285,22 @@ def add_playlist_to_group():
     # get spotify playlist info
     spotify = SpotifyManager()
 
-    playlist = spotify.get_playlist_info(user.access_token, spotify_playlist_id)
+    raw_playlist = spotify.get_playlist_info(user.access_token, spotify_playlist_id)
 
     # add playlist info to firebase
     playlist = Playlist(
         spotify_id=spotify_playlist_id,
         owner_id=user_id,
-        title=playlist["name"],
-        cover=playlist["images"][-1]["url"],
-        description=playlist["description"],
+        title=raw_playlist["name"],
+        cover=raw_playlist["images"][-1]["url"],
+        description=raw_playlist["description"],
         songs=[]
     )
 
     # add all the songs into the playlist
-    for spotify_song in playlist["tracks"]["items"]:
+    for added_info in raw_playlist["tracks"]["items"]:
+        spotify_song = added_info["track"]
+        print(spotify_song)
         # check if this song has already been added to the firebase
         spotify_song_id = spotify_song["id"]
         try:
@@ -315,13 +316,13 @@ def add_playlist_to_group():
 
             firebase.create_song(spotify_song_id, song)
 
-        playlist.songs.extend(spotify_song_id)
+        playlist.songs.append(spotify_song_id)
 
 
     # update group with playlist info
     playlist_id = firebase.create_playlist(playlist)
     
-    group.group_member_data[user_id].posted_playlists.extend(PostedPlaylist(
+    group.group_member_data[user_id].posted_playlists.append(PostedPlaylist(
         playlist_id=playlist_id,
         number_downloaded=0
     ))
@@ -329,6 +330,8 @@ def add_playlist_to_group():
     group.group_member_data[user_id].coins += 1
 
     firebase.update_group(group_id, group)
+
+    return jsonify({"message": "Success!"}), 200
 
 @app.route('/take/playlist/group')
 @FirebaseManager.require_firebase_auth

@@ -52,10 +52,11 @@ class FirebaseManager:
     def getDocInfo(self, collectionName: str, docID: str):
         doc_ref = self.db.collection(collectionName).document(docID)
         doc = doc_ref.get()
+
         if doc.exists:
             return doc.to_dict()
         else:
-            return {"error:": f"Not Found"}
+            return None
 
     def getCollection(self, collectionName: str):
         docs_ref = self.db.collection(collectionName)
@@ -108,7 +109,7 @@ class FirebaseManager:
 
     def get_user_info(self, user_id: str) -> User:
         result = self.getDocInfo(USER_COLLECTION, user_id)
-        if "error" in result:
+        if result is None:
             raise ValueError("User does not exist in Firebase!")
         
         return User.from_dict(result)
@@ -128,7 +129,7 @@ class FirebaseManager:
 
     def get_group_info(self, group_id: str) -> Group:
         result = self.getDocInfo(GROUP_COLLECTION, group_id)
-        if "error" in result:
+        if result is None:
             raise ValueError("Group does not exist in Firebase!")
         
         return Group.from_dict(result)
@@ -145,7 +146,7 @@ class FirebaseManager:
 
     def get_song_info(self, song_id: str) -> Song:
         result = self.getDocInfo(SONG_COLLECTION, song_id)
-        if "error" in result:
+        if result is None:
             raise ValueError("Song does not exist in Firebase!")
         
         return Song.from_dict(result)
@@ -162,7 +163,7 @@ class FirebaseManager:
 
     def get_playlist_info(self, playlist_id: str) -> Playlist:
         result = self.getDocInfo(PLAYLIST_COLLECTION, playlist_id)
-        if "error" in result:
+        if result is None:
             raise ValueError("Playlist does not exist in Firebase!")
         
         return Playlist.from_dict(result)

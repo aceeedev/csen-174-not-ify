@@ -8,8 +8,8 @@ headers = {
 }
 
 response = requests.get(
-    f"{base_url}/create/group",
-    params={"groupName": "Best Group", "description": "A really cool group"},
+    f"{base_url}/add/playlist/group", #f"{base_url}/get/groups",
+    params={"group_id": "JNsirIocYeCcEbsdYfFa", "spotify_playlist_id": "24F5Bwy97TJR2Gauhzovbq"},
     headers=headers
 )
 
