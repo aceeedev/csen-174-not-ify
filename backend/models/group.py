@@ -1,6 +1,6 @@
 from typing import Any
-import random
-import string
+
+from models.group_member_data import GroupMemberData
 
 #Changelog
 #Update Code: Editor, date
@@ -11,41 +11,42 @@ import string
 
 class Group:
     #TODO: Change shelf to be of datatype playlist
-    def __init__(self, ownerID: str, memberIDs: list[str], shelf: list[str], desc: str, groupName: str):
-        self.ownerID = ownerID
-        self.memberIDs = memberIDs
+    def __init__(self, owner_id: str, member_ids: list[str], shelf: list[str], description: str, group_name: str, group_member_data: dict[str, GroupMemberData]):
+        self.owner_id = owner_id
+        self.member_ids = member_ids
         self.shelf = shelf
-        self.description = desc
-        self.groupName = groupName
+        self.description = description
+        self.group_name = group_name
+        self.group_member_data = group_member_data
+
+        # Constants
         self.maxPLists = 20
         self.maxMembers = 20
-        self.groupID = ''.join (random.choices(string.digits, k=10)) #Make a random 10 digit groupID
 
-    def to_dict(self) -> dict[str, Any]: #UC2
+    def to_dict(self) -> dict[str, Any]:
         return {
-            #firebase = object variable
-            "description": self.description, 
-            "maxMembers": self.maxMembers,
-            "maxPlaylists": self.maxPLists,
-            "memberIDs": self.memberIDs,
-            "shelf": self.shelf
+            "owner_id": self.owner_id, 
+            "member_ids": self.member_ids,
+            "shelf": self.shelf,
+            "description": self.description,
+            "group_name": self.group_name,
+            "group_member_data": {
+                member_id: data.to_dict()
+                for member_id, data in self.group_member_data.items()
+            }
         }
 
     @classmethod
-    def from_dict(cls, data): #UC2
+    def from_dict(cls, data):
         return cls(
-            #object var = from firebase
+            owner_id=data['owner_id'],
+            member_ids=data['member_ids'],
+            shelf=data['shelf'],
             description=data['description'],
-            maxMembers=data['maxMembers'],
-            maxPlaylists=data['maxPlaylists'],
-            memberIDs=data['memberIDs'],
-            shelf=data['shelf']   
+            group_name=data['group_name'],
+            group_member_data={
+                member_id: GroupMemberData.from_dict(data)
+                for member_id, data in data['group_member_data'].items()
+            }
         )
-    
-    #Invite Member moved to Main.py
-
-    #Add to Shelf Member moved to Main.py
-    
-    #Take Down Playlist moved to Main.py
-
     

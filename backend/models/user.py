@@ -2,7 +2,7 @@ from typing import Any
 
 
 class User:
-    def __init__(self, name: str, spotify_id: str, access_token: str, profile_pic: str, library: list[str], my_groups: list[str], my_complaints: list[str], is_admin: bool = False):
+    def __init__(self, name: str, spotify_id: str, access_token: str, profile_pic: str, library: list[str], my_groups: list[str], my_complaints: list[str], is_admin: bool = False) -> None:
         self.name = name
         self.spotify_id = spotify_id
         self.access_token = access_token
@@ -26,7 +26,7 @@ class User:
         }
 
     @classmethod
-    def from_dict(cls, data): #UC2
+    def from_dict(cls, data: dict[str, Any]): #UC2
         return cls(
             name=data['name'],
             spotify_id=data['spotify_id'],

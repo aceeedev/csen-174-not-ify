@@ -5,9 +5,9 @@ from typing import Any
 #UC1: Katie, 10/29/2025
 
 class Playlist:
-    def __init__(self, spotifyID: str, ownerID: str, title: str, cover: str, description: str, publisher: str, songs: list[str] = []):
-        self.spotifyID = spotifyID
-        self.ownerID = ownerID
+    def __init__(self, spotify_id: str, owner_id: str, title: str, cover: str, description: str, songs: list[str]) -> None:
+        self.spotify_id = spotify_id
+        self.owner_id = owner_id
         self.title = title
         self.cover = cover
         self.description = description
@@ -15,8 +15,8 @@ class Playlist:
 
     def to_dict(self) -> dict[str, Any]:
         return {
-            "spotifyID": self.spotifyID, 
-            "ownerID": self.ownerID,
+            "spotify_id": self.spotify_id, 
+            "owner_id": self.owner_id,
             "title": self.title,
             "cover": self.cover,
             "description": self.description,
@@ -26,16 +26,10 @@ class Playlist:
     @classmethod
     def from_dict(cls, data: dict[str, Any]):
         return cls(
-            spotifyId=data['spotifyID'],
-            ownerID=data['ownerID'],
+            spotify_id=data['spotify_id'],
+            owner_id=data['owner_id'],
             title=data['title'],
             cover=data['cover'],
             description=data['description'],
             songs=data['songs']  
         )
-
-
-    ###The following functions have been moved to main.py:##
-    ## Add to library, export to spotify, 
-    ## get playlist, add song, remove song, 
-    ## change cover, change title
