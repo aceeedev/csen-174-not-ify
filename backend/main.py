@@ -173,7 +173,7 @@ def add_playlist_to_group():
 ### Class Functions ###
 
 ##Transfered From Group.py##
-def inviteMember(self: group, callerID: str, inviteeID: str):
+def inviteMember(self: Group, callerID: str, inviteeID: str):
     #Error Handling
     errorCaught: bool = False
     if callerID not in self.memberIDs:
@@ -190,12 +190,12 @@ def inviteMember(self: group, callerID: str, inviteeID: str):
     
     self.memberIDs.append(inviteeID) #add user
 
-def add_to_shelf(self: group, playlist): #UC1
+def add_to_shelf(self: Group, playlist): #UC1
     if playlist not in self.shelf:
         self.shelf.append(playlist)
 
 
-def take_down_plist(self: group, playlist): #UC1
+def take_down_plist(self: Group, playlist): #UC1
     if playlist not in self.shelf:
         raise Exception("Cannot remove playlist that is not on the shelf.")
         errorCaught = True
@@ -203,7 +203,7 @@ def take_down_plist(self: group, playlist): #UC1
         self.shelf.remove(playlist)
 
 ##Transferred from Playlist.py##
-def add_to_library(self: playlist, user): #UC1
+def add_to_library(self: Playlist, user): #UC1
     if self not in user.library:
         user.save_playlist(self)
     else:
@@ -211,33 +211,33 @@ def add_to_library(self: playlist, user): #UC1
         errorCaught = True
 
 
-def export_to_spotify(self: playlist, spotify_client):
+def export_to_spotify(self: Playlist, spotify_client):
     """Export the playlist to Spotify using the provided Spotify client."""
     pass
 
-def get_playlist(self: playlist):
+def get_playlist(self: Playlist):
     return self
 
-def add_song(self: playlist, song: Song):
+def add_song(self: Playlist, song: Song):
     if song not in self.songs:
         self.songs.append(song)
 
-def remove_song(self: playlist, song: Song):
+def remove_song(self: Playlist, song: Song):
     self.songs = [obj for obj in self.songs if obj != song]
 
 
-def change_cover(self: playlist, new_cover: str):
+def change_cover(self: Playlist, new_cover: str):
     self.cover = new_cover
 
-def change_title(self: playlist, new_title: str):
+def change_title(self: Playlist, new_title: str):
     self.title = new_title
 
 ## From user.py ##
 
-def spotify_login(self: user, spotify_user):
+def spotify_login(self: User, spotify_user):
     pass
 
-def respond_to_complaint(self: user, complaint_id: str, response: str, action: str) -> bool:
+def respond_to_complaint(self: User, complaint_id: str, response: str, action: str) -> bool:
     return self.isAdmin
 
 '''
@@ -245,9 +245,9 @@ def create_complaint(self, complaint: AdminComplaint):
     self.myComplaints.append(complaint)
 '''
 
-def remove_complaint(self: user, id: str):
+def remove_complaint(self: User, id: str):
     # create a new array with all complaints except the one with the given id
     self.myComplaints = [obj for obj in self.myComplaints if obj.id != id]
 
-def save_playlist(self: user, playlist):
+def save_playlist(self: User, playlist):
     self.library.append(playlist) #UC1. User has playlist relationship checked in playlist
