@@ -175,6 +175,13 @@ class FirebaseManager:
             id_token = auth_header.split("Bearer ")[1]
 
             try:
+                # make sure firebase auth is initialized
+                try:
+                    firebase_admin.get_app()
+                except ValueError:
+                    cred = credentials.Certificate("serviceAccount.json")
+                    firebase_admin.initialize_app(cred)
+
                 # Verify the Firebase token
                 decoded_token = auth.verify_id_token(id_token)
                 request.user_id = decoded_token['uid']  # Attach the user info to the request for later use
