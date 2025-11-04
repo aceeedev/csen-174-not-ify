@@ -134,8 +134,8 @@ class FirebaseManager:
         return Group.from_dict(result)
     
     # Songs:
-    def create_song(self, song: Song) -> str:
-        return self.createDoc(SONG_COLLECTION, song.to_dict())
+    def create_song(self, song_id: str, song: Song) -> str:
+        return self.createDoc(SONG_COLLECTION, song.to_dict(), song_id)
 
     def delete_song(self, song_id: str):
         self.deleteDoc(SONG_COLLECTION, song_id)

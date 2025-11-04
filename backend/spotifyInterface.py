@@ -42,3 +42,8 @@ class SpotifyManager:
         results = sp.current_user_playlists()
         
         return results["items"]
+    
+    def get_playlist(self, access_token: str, playlist_id: str):
+        sp = spotipy.Spotify(auth=access_token)
+        
+        return sp.playlist(playlist_id)

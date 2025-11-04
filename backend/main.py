@@ -4,12 +4,12 @@ from flask_cors import CORS
 from FireStoreInterface import FirebaseManager
 from spotifyInterface import SpotifyManager
 
-from models.group import Group
-from models.group import GroupMemberData
+from models.group import Group, GroupMemberData, PostedPlaylist
 from models.playlist import Playlist
 from models.song import Song
 from models.user import User
-from datetime import datetime
+
+from datetime import datetime, timedelta, timezone
 
 app = Flask(__name__)
 CORS(app)
@@ -216,12 +216,75 @@ def get_users_playlists():
     raise NotImplementedError
 
 @app.route('/add/playlist/group')
+@FirebaseManager.require_firebase_auth
 def add_playlist_to_group():
-    userID: str = request.args.get("userID")
-    groupID: str = request.args.get("groupID")
-    playlistID: str = request.args.get("playlistID")
-
+    error = validate_params(['code'])
+    if error:
+        return error
     
+    user_id = request.user_id
+
+    group_id: str = request.args.get("group_id")
+    spotify_playlist_id: str = request.args.get("spotify_playlist_id")
+
+    # get user and group from firebase
+    firebase = FirebaseManager()
+
+    user = firebase.get_user_info(user_id)
+    group = firebase.get_group_info(group_id)
+
+
+    # check if last post was at least 24 hours ago
+    now = datetime.now(timezone.utc)
+
+    if now - group.group_member_data[user_id].last_posting_timestamp <= timedelta(hours=24):
+        return jsonify({"error": "User has already posted within the last 24 hours"}), 400
+
+    # get spotify playlist info
+    spotify = SpotifyManager()
+
+    playlist = spotify.get_playlist_info(user.access_token, spotify_playlist_id)
+
+    # add playlist info to firebase
+    playlist = Playlist(
+        spotify_id=spotify_playlist_id,
+        owner_id=user_id,
+        title=playlist["name"],
+        cover=playlist["images"][-1]["url"],
+        description=playlist["description"],
+        songs=[]
+    )
+
+    # add all the songs into the playlist
+    for spotify_song in playlist["tracks"]["items"]:
+        # check if this song has already been added to the firebase
+        spotify_song_id = spotify_song["id"]
+        try:
+            firebase.get_song_info(spotify_song_id)
+        except ValueError:
+            song = Song(
+                spotify_id=spotify_song_id,
+                album_cover=spotify_song["album"]["images"][-1]["url"],
+                album_name=spotify_song["album"]["name"],
+                artist_name=", ".join([artist_data["name"] for artist_data in spotify_song["artists"]]),
+                title=spotify_song["name"]
+            )
+
+            firebase.create_song(spotify_song_id, song)
+
+        playlist.songs.extend(spotify_song_id)
+
+
+    # update group with playlist info
+    playlist_id = firebase.create_playlist(playlist)
+    
+    group.group_member_data[user_id].posted_playlists.extend(PostedPlaylist(
+        playlist_id=playlist_id,
+        number_downloaded=0
+    ))
+
+    firebase.update_group(group_id, group)
+
 
 ### Class Functions ###
 
