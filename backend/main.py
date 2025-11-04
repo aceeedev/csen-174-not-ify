@@ -73,6 +73,7 @@ def get_groups():
 #TODO: Create Group -- endpoint
 @app.route('/create/group')
 def create_group():
+    fb = FirebaseManager()
     userID: str = request.args.get("userID") #also owner ID
     groupName: str = request.args.get("groupName")
     description: str = request.args.get("description")
@@ -89,10 +90,8 @@ def create_group():
     newGroup = Group(userID, [], description, groupName, {userID:ownersMemberData}) #default
 
     #Make group using firebase call, passing the object group
-    create_group(newGroup)
+    fb.create_group(newGroup)
     print("Group {groupName} successfully created by user {userID}")
-    
-
 
 
 @app.route('/join/group')
@@ -133,6 +132,8 @@ def join_group():
 #TODO: edit group
 @app.route('/remove/group')
 def edit_group():
+    fb = FirebaseManager()
+
     userID: str = request.args.get("userID")
     groupID: str = request.args.get("groupID")
     action: str = request.args.get("action")
@@ -147,20 +148,45 @@ def edit_group():
     if not params and action != "remove_user":
         return jsonify({"error": "Missing params parameter"}), 400
     
+    fGroup = fb.get_group_info(groupID)
+    #error handling needed if the group does not exist
+    fUser = fb.get_user_info(userID)
+    #error handling needed if the user does not exist
+
     #Check if the userID == group owner ID
-    #Parse the action parameter and determine if it is 'remove_user' or 'del_group'
-    #If actions == remove_user: remove user from group functionality:
-        #Params = the userID of the user we want to remove
-        #params != ownerID (Can't remove the owner)
-        #Find userID=params in the group provided by groupID's members array
-        #Remove that user from the array.
-    #If actions == del_group: deleting the group functionality
-        #Go to the group referenced by groupID
-        #for each user in group's members array:
-            #remove groupID from the member's myGroup's array
-        #Delete the group from the firebase
+    if userID != fGroup.owner_id:
+        return jsonify({"error": "Access denied, user is not the owner"}), 400
     
-    raise NotImplementedError
+    #If actions == remove_user: remove user from group functionality:
+    if action == 'remove_user':
+        if groupID not in fUser.my_groups:
+            return jsonify({"error": "Implementation error, cannot access a group you are not in"}), 400
+        if params == userID: 
+            return jsonify({"error": "Implementation error, cannot remove yourself"}), 400
+        if params not in fGroup.member_ids:
+            return jsonify({"error": "Implementation error, cannot remove a member that is not in the group"}), 400
+        fGroup.member_ids.remove(params)
+        fb.update_group(groupID, fGroup)
+        
+        print("User with userID {params} successfully removed from group with groupID {groupID}")
+        return 200
+    
+    #If actions == del_group: deleting the group functionality
+    elif action == 'del_group':
+        #remove groupID from the member's myGroup's array
+        for member in fGroup.member_ids:
+            fMember = fb.get_user_info(member)
+            if groupID not in fMember.my_groups:
+                return jsonify({"error": "Data continuity error: member does not claim to be in group, though group claims that user."}), 400
+            fMember.my_groups.remove(groupID)
+            fb.update_user(member, fMember)
+
+        #Delete the group from the firebase
+        fb.delete_group(groupID)
+        print("Group with groupID: {groupID} successfully deleted")
+        return 200
+    else:
+        return jsonify({"error": "Selected action is not provided"}), 400
 
 @app.route('/get/users/playlists') #Getting spotify playlists, as opposed to get library 
 def get_users_playlists():
