@@ -23,7 +23,7 @@ class SpotifyManager:
         self.auth_manager = SpotifyOAuth(
             client_id=os.getenv("SPOTIFY_CLIENT_ID"),
             client_secret=os.getenv("SPOTIFY_CLIENT_SECRET"),
-            redirect_uri="http://localhost:5173/callback",
+            redirect_uri="http://127.0.0.1:5173/callback",
             scope="user-library-read"
         )
 
