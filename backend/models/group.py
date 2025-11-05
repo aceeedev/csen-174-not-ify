@@ -4,10 +4,23 @@ from datetime import datetime, timezone
 
 #Changelog
 #Update Code: Editor, date
-#UC1: Katie, 10/29/2025 
+#UC1: Katie, 10/29/2025 v
 #   General: Changed plistBoard to shelf
 #UC2: Katie 10/31/2025
 
+
+def ensure_datetime(value: Any) -> datetime:
+    """Safely convert Firestore timestamps or strings to Python datetime."""
+    if isinstance(value, datetime):
+        return value
+    if hasattr(value, "to_pydatetime"):  # Firestore Timestamp
+        return value.to_pydatetime()
+    if isinstance(value, str):
+        try:
+            return datetime.fromisoformat(value)
+        except ValueError:
+            return datetime.fromisoformat(value.replace("Z", "+00:00"))
+    raise TypeError(f"Unsupported datetime format: {type(value)}")
 
 class PostedPlaylist:
     def __init__(self, playlist_id: str, number_downloaded: int) -> None:
@@ -51,11 +64,20 @@ class GroupMemberData:
     def from_dict(cls, data: dict[str, Any]):
         return cls(
             coins=data["coins"],
-            last_posting_timestamp=datetime.fromisoformat(data["last_posting_timestamp"]),
+            last_posting_timestamp=ensure_datetime(data["last_posting_timestamp"]),
             taken_playlists=data["taken_playlists"],
             posted_playlists=[
                 PostedPlaylist.from_dict(p) for p in data["posted_playlists"]
             ]
+        )
+    
+    @classmethod
+    def default(cls):
+        return cls(
+            coins=0, 
+            last_posting_timestamp=datetime(2023, 11, 3), 
+            taken_playlists=[],
+            posted_playlists=[]
         )
 
 
@@ -124,13 +146,14 @@ class Group:
 
         playlist_ids: list[str] = []
 
-        # get all playlists
+        # get all posted playlists that are not this user's
         for member_id, member_data in self.group_member_data.items():
             if member_id != user_id:
                 member_playlist_ids = [posted_playlist.playlist_id for posted_playlist in member_data.posted_playlists]
 
                 playlist_ids.extend(member_playlist_ids)
 
-        
+        # remove playlist ids already taken
+        playlist_ids = [id for id in playlist_ids if id not in self.group_member_data[user_id].taken_playlists]
 
         return playlist_ids

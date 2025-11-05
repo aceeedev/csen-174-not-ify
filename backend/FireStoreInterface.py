@@ -52,10 +52,11 @@ class FirebaseManager:
     def getDocInfo(self, collectionName: str, docID: str):
         doc_ref = self.db.collection(collectionName).document(docID)
         doc = doc_ref.get()
+
         if doc.exists:
             return doc.to_dict()
         else:
-            return {"error:": f"Not Found"}
+            return None
 
     def getCollection(self, collectionName: str):
         docs_ref = self.db.collection(collectionName)
@@ -63,7 +64,7 @@ class FirebaseManager:
 
         return self.streamToDict(docs)
 
-    def createDoc(self, collectionName: str, data: dict[str, Any]) -> str:
+    def createDoc(self, collectionName: str, data: dict[str, Any], documentID: str | None = None) -> str:
         """
         Creates a new document in the specified Firestore collection.
 
@@ -80,7 +81,7 @@ class FirebaseManager:
             '2JvP9mXb73UsaYf2S3hW'
         """
 
-        doc_ref = self.db.collection(collectionName).document()
+        doc_ref = self.db.collection(collectionName).document(documentID)
         doc_ref.set(data)
 
         return doc_ref.id
@@ -97,8 +98,8 @@ class FirebaseManager:
     
 
     # Users:
-    def create_user(self, user: User) -> str:
-        return self.createDoc(USER_COLLECTION, user.to_dict())
+    def create_user(self, user_id: str, user: User) -> str:
+        return self.createDoc(USER_COLLECTION, user.to_dict(), user_id)
 
     def delete_user(self, user_id: str):
         self.deleteDoc(USER_COLLECTION, user_id)
@@ -107,7 +108,14 @@ class FirebaseManager:
         self.updateDoc(USER_COLLECTION, user_id, user.to_dict())
 
     def get_user_info(self, user_id: str) -> User:
-        return User.from_dict(self.getDocInfo(USER_COLLECTION, user_id))
+        result = self.getDocInfo(USER_COLLECTION, user_id)
+        if result is None:
+            raise ValueError("User does not exist in Firebase!")
+        
+        return User.from_dict(result)
+    
+    def get_firebase_user_info(self, user_id: str) -> auth.UserRecord:
+        return auth.get_user(user_id)
     
     # Groups:
     def create_group(self, group: Group) -> str:
@@ -119,12 +127,16 @@ class FirebaseManager:
     def update_group(self, group_id: str, group: Group):
         self.updateDoc(GROUP_COLLECTION, group_id, group.to_dict())
 
-    def get_group_info(self, group_id: str) -> User:
-        return Group.from_dict(self.getDocInfo(GROUP_COLLECTION, group_id))
+    def get_group_info(self, group_id: str) -> Group:
+        result = self.getDocInfo(GROUP_COLLECTION, group_id)
+        if result is None:
+            raise ValueError("Group does not exist in Firebase!")
+        
+        return Group.from_dict(result)
     
     # Songs:
-    def create_song(self, song: Song) -> str:
-        return self.createDoc(SONG_COLLECTION, song.to_dict())
+    def create_song(self, song_id: str, song: Song) -> str:
+        return self.createDoc(SONG_COLLECTION, song.to_dict(), song_id)
 
     def delete_song(self, song_id: str):
         self.deleteDoc(SONG_COLLECTION, song_id)
@@ -132,8 +144,12 @@ class FirebaseManager:
     def update_song(self, song_id: str, song: Song):
         self.updateDoc(SONG_COLLECTION, song_id, song.to_dict())
 
-    def get_song_info(self, song_id: str) -> User:
-        return Song.from_dict(self.getDocInfo(SONG_COLLECTION, song_id))
+    def get_song_info(self, song_id: str) -> Song:
+        result = self.getDocInfo(SONG_COLLECTION, song_id)
+        if result is None:
+            raise ValueError("Song does not exist in Firebase!")
+        
+        return Song.from_dict(result)
 
     # Playlists:
     def create_playlist(self, playlist: Playlist) -> str:
@@ -145,8 +161,12 @@ class FirebaseManager:
     def update_playlist(self, playlist_id: str, playlist: Playlist):
         self.updateDoc(PLAYLIST_COLLECTION, playlist_id, playlist.to_dict())
 
-    def get_playlist_info(self, playlist_id: str) -> User:
-        return Playlist.from_dict(self.getDocInfo(PLAYLIST_COLLECTION, playlist_id))
+    def get_playlist_info(self, playlist_id: str) -> Playlist:
+        result = self.getDocInfo(PLAYLIST_COLLECTION, playlist_id)
+        if result is None:
+            raise ValueError("Playlist does not exist in Firebase!")
+        
+        return Playlist.from_dict(result)
 
     # Authorization:
     def require_firebase_auth(f):
@@ -186,7 +206,7 @@ class FirebaseManager:
                 decoded_token = auth.verify_id_token(id_token)
                 request.user_id = decoded_token['uid']  # Attach the user info to the request for later use
             except Exception as e:
-                return jsonify({"error": "Invalid or expired token", "details": str(e)}), 401
+                return jsonify({"error": "Invalid or expired firebase user ID token", "details": str(e)}), 401
 
             return f(*args, **kwargs)
 

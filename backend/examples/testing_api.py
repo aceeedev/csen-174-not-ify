@@ -1,0 +1,18 @@
+import requests
+
+base_url = "http://localhost:5000"
+token = "eyJhbGciOiJSUzI1NiIsImtpZCI6IjU0NTEzMjA5OWFkNmJmNjEzODJiNmI0Y2RlOWEyZGZlZDhjYjMwZjAiLCJ0eXAiOiJKV1QifQ.eyJuYW1lIjoiQW5kcmV3IENvbGxpbnMiLCJwaWN0dXJlIjoiaHR0cHM6Ly9saDMuZ29vZ2xldXNlcmNvbnRlbnQuY29tL2EvQUNnOG9jTEZvN1JramMtSWtFSjJwQWZpdl80YXoyUEJlVlgtazlVMnF4UndvNmZpZE9MUlZRPXM5Ni1jIiwiaXNzIjoiaHR0cHM6Ly9zZWN1cmV0b2tlbi5nb29nbGUuY29tL2NzZW4tMTc0LW5vdC1pZnkiLCJhdWQiOiJjc2VuLTE3NC1ub3QtaWZ5IiwiYXV0aF90aW1lIjoxNzYyMzczOTU2LCJ1c2VyX2lkIjoicEdHdUlpc3hxY1BmWE80RFB6UEFPN2NRZGhGMiIsInN1YiI6InBHR3VJaXN4cWNQZlhPNERQelBBTzdjUWRoRjIiLCJpYXQiOjE3NjIzNzM5NTYsImV4cCI6MTc2MjM3NzU1NiwiZW1haWwiOiJhY29sbGluczJAc2N1LmVkdSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJmaXJlYmFzZSI6eyJpZGVudGl0aWVzIjp7Imdvb2dsZS5jb20iOlsiMTEyNTAzNjc1ODY3MDgyNDY4NzQ2Il0sImVtYWlsIjpbImFjb2xsaW5zMkBzY3UuZWR1Il19LCJzaWduX2luX3Byb3ZpZGVyIjoiZ29vZ2xlLmNvbSJ9fQ.l6Jr39-oSVCzbY_jqgocO0gR6zGIPfqujAV9_5OIl5l5J9hmR_p-EX1wwH1Ln-ZxUFlvApCEvzlEHwxYHVCPbQlDoPlICkt17DVhkfBoCmz34RZvANPubUGfkrqd0ianVkh4JdgPSeJNIqAH005YFHEm3o3biWJAz6Opp__ATU1E9xe9F65X1qPhovnNMH-sFd5OwOtZ0xBMT7G0SV29EOt3riRf8lESarGTWK8jGRc-3pUwBCmpB9etmeZ_XYhnoth3GInNyCDBnQO_wooG4a1zglUkb-ZwiKlekj-trjCsJZAohI3CQ9Ze7o1vZoIG5sEgmgWROQfN0L3H5TQxQw"
+
+headers = {
+    "Authorization": f"Bearer {token}"
+}
+
+response = requests.get(
+    f"{base_url}/add/playlist/group", #f"{base_url}/get/groups",
+    params={"group_id": "JNsirIocYeCcEbsdYfFa", "spotify_playlist_id": "24F5Bwy97TJR2Gauhzovbq"},
+    headers=headers
+)
+
+print("Endpoint:", response.url)
+print("Status Code:", response.status_code)
+print("Json Returned:", response.json())

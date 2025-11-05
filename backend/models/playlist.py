@@ -4,6 +4,8 @@ from typing import Any
 #Update Code: Editor, date
 #UC1: Katie, 10/29/2025
 
+#TODO: Change owner_id to creator_id, because theoretically anybody can 'own' a copy of the playlist
+
 class Playlist:
     def __init__(self, spotify_id: str, owner_id: str, title: str, cover: str, description: str, songs: list[str]) -> None:
         self.spotify_id = spotify_id
