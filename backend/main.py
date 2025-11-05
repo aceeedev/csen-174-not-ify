@@ -333,6 +333,8 @@ def add_playlist_to_group():
 
     group.group_member_data[user_id].coins += 1
 
+    group.group_member_data[user_id].last_posting_timestamp = now
+
     firebase.update_group(group_id, group)
 
     return jsonify({"message": "Success!"}), 200

@@ -206,7 +206,7 @@ class FirebaseManager:
                 decoded_token = auth.verify_id_token(id_token)
                 request.user_id = decoded_token['uid']  # Attach the user info to the request for later use
             except Exception as e:
-                return jsonify({"error": "Invalid or expired token", "details": str(e)}), 401
+                return jsonify({"error": "Invalid or expired firebase user ID token", "details": str(e)}), 401
 
             return f(*args, **kwargs)
 
