@@ -2,7 +2,7 @@ from dotenv import load_dotenv
 import os
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
-from typing import Optional
+from typing import Optional, Any
 
 load_dotenv()
 
@@ -31,7 +31,7 @@ class SpotifyManager:
     def get_auth_url(self) -> str:
         return self.auth_manager.get_authorize_url()
     
-    def get_access_token(self, code: str) -> str:
+    def get_access_token(self, code: str) -> dict[str, Any]:
         return self.auth_manager.get_access_token(code, check_cache=False)
 
 

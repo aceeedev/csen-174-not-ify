@@ -46,7 +46,7 @@ def auth_callback():
 
     spotify = SpotifyManager()
 
-    access_token: str = spotify.get_access_token(code)
+    access_token: str = spotify.get_access_token(code)["access_token"]
     
     # Add user to firebase
     firebase = FirebaseManager()
@@ -157,6 +157,8 @@ def join_group():
     firebase.update_group(group_id, group)
     firebase.update_user(user_id, user)
 
+    return jsonify({"message": "Success!"}), 200
+
 @app.route('/edit/group')
 @FirebaseManager.require_firebase_auth
 def edit_group():
@@ -198,7 +200,7 @@ def edit_group():
         fb.update_group(groupID, fGroup)
         
         print(f"User with userID {params} successfully removed from group with groupID {groupID}")
-        return 200
+        return jsonify({"message": "Success!"}), 200
     
     #If actions == del_group: deleting the group functionality
     elif action == 'del_group':
@@ -212,8 +214,10 @@ def edit_group():
 
         #Delete the group from the firebase
         fb.delete_group(groupID)
+        
         print(f"Group with groupID: {groupID} successfully deleted")
-        return 200
+        return jsonify({"message": "Success!"}), 200
+    
     else:
         return jsonify({"error": "Selected action is not provided"}), 400
 
@@ -384,7 +388,7 @@ def take_playlist_from_group():
     #'Charge' the user a coin for taking the playlist. 
     fGroup.group_member_data[userID].coins -= 1
 
-    return 200
+    return jsonify({"message": "Success!"}), 200
     
 
 if __name__ == "__main__":
