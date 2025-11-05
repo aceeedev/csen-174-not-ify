@@ -10,10 +10,6 @@ Once you have Node, clone the repo to your computer. Then run the following comm
 
 ## Usage
 
-Cool, now you can run the website in "developer mode" using the command: `npm run dev`.
+Cool, now you can run the website in "developer mode" using the command: `npm run dev -- --host`. This will also expose the website to the local network.
 
-Now you can visit the website by following the URL in the terminal!
-
-If you want to expose the website to the local network, use the command: `npm run dev -- --host`.
-
-
+Now you can visit the website by going to [http://127.0.0.1:5173](http://127.0.0.1:5173) or the URL in the terminal!
