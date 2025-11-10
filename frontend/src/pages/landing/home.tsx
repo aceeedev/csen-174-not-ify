@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
 import { auth, authProvider } from '../../firebase';
 import './home.css';
+import Navbar from '../../components/Navbar';
 
 function Home() {
   const [user, setUser] = useState<any>(null);
@@ -41,25 +42,7 @@ function Home() {
   return (
     <div className="home-container">
       {/* Navigation Bar */}
-      <nav className="navbar">
-        <div className="nav-content">
-          <h1 className="logo">Not-ify</h1>
-          <div className="nav-links">
-            {user ? (
-              <>
-                <span className="user-name">{user.displayName}</span>
-                <button onClick={handleSignOut} className="btn-secondary">
-                  Sign Out
-                </button>
-              </>
-            ) : (
-              <button onClick={handleSignIn} className="btn-primary">
-                Sign In
-              </button>
-            )}
-          </div>
-        </div>
-      </nav>
+      <Navbar></Navbar>
 
       {/* Hero Section */}
       <section className="hero">

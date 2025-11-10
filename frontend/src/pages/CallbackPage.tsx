@@ -29,7 +29,7 @@ const Callback: React.FC = () => {
         return;
       }
 
-      const res = await fetch(`http://localhost:5000/spotify/auth-callback?code=${code}`, {
+      const res = await fetch(`http://localhost:5001/spotify/auth-callback?code=${code}`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,

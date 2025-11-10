@@ -3,33 +3,41 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import './userProfileView.css';
+import { getIdToken } from '../../firebase';
+
+//Katie Carter 11/9/2025 Notes:
+// Commented out the coins information, as coins are a per-group item and are not global
+// removed 'buying coins' functionality, buying coins is not a function that can be done in this app. 
 
 function UserProfileView() {
   // TODO: Fetch user profile data from backend
+  //?
   const [profile, setProfile] = useState<any>(null);
+
+  const userID = getIdToken()
+  console.log(userID)
   
   // TODO: Fetch user stats from backend
+  //?
   const [stats, setStats] = useState<any>({
-    coins: 0,
-    groupsCount: 0,
-    playlistsCount: 0,
-    songsCount: 0,
+    groupsCount: 'null',
+    playlistsCount: 'null',
+    songsCount: 'null',
   });
 
   const handleEditProfile = () => {
     // TODO: Navigate to edit profile page
   };
 
-  const handleBuyCoins = () => {
-    // TODO: Implement buy coins functionality
-  };
-
-  const handleEarnCoins = () => {
-    // TODO: Show ways to earn coins
-  };
+  // const handleEarnCoins = () => {
+  //   // TODO: Show ways to earn coins
+  // };
 
   const handleSettings = () => {
-    // TODO: Navigate to account settings
+    const section = document.getElementById('user-settings');
+    if (section) {
+      section.scrollIntoView({ behavior: 'smooth' });
+    }
   };
 
   // Dummy data for demonstration
@@ -42,15 +50,18 @@ function UserProfileView() {
     spotifyConnected: true,
   };
 
-  const dummyStats = {
-    coins: 150,
-    groupsCount: 5,
-    playlistsCount: 12,
-    songsCount: 245,
-  };
 
   const displayProfile = profile || dummyProfile;
-  const displayStats = stats.coins !== undefined ? stats : dummyStats;
+  // const displayStats = stats.coins !== undefined ? stats : dummyStats; //we shouldn't need coins
+  // setStats(dummyStats);
+  const displayStats = stats;
+
+
+    
+  // const displayStats = stats && Object.keys(stats).length > 0 ? stats : dummyStats;
+
+
+
 
   // Format join date
   const joinDate = new Date(displayProfile.joinDate || Date.now());
@@ -119,6 +130,7 @@ function UserProfileView() {
         </section>
 
         {/* Coins Section */}
+        {/*
         <section className="coins-section">
           <div className="coins-header">
             <div className="coins-info">
@@ -134,6 +146,7 @@ function UserProfileView() {
               </div>
             </div>
           </div>
+          
           <div className="coins-actions">
             <button className="btn-primary btn-buy-coins" onClick={handleBuyCoins}>
               💰 Buy Coins
@@ -142,6 +155,7 @@ function UserProfileView() {
               ⭐ Earn Coins
             </button>
           </div>
+          
           <div className="coins-info-box">
             <h3 className="info-box-title">How Coins Work</h3>
             <ul className="coins-info-list">
@@ -152,6 +166,7 @@ function UserProfileView() {
             </ul>
           </div>
         </section>
+        */}
 
         {/* Statistics Section */}
         <section className="stats-section">
@@ -219,8 +234,17 @@ function UserProfileView() {
           </div>
         </section>
 
-        {/* Quick Actions Section */}
-        <section className="quick-actions-section">
+        <section id="user-settings" className="user-settings-section">
+          <h2 className="section-title">Settings</h2>
+          <div className='user-settings-grid'>
+            
+          </div>
+        </section>
+
+        {/* Quick Actions Section */} 
+        {/* I don't understand this, these functions shouldn't link to another page*/}
+        
+        {/* <section className="quick-actions-section">
           <h2 className="section-title">Quick Actions</h2>
           <div className="quick-actions-grid">
             <Link to="/home" className="action-card">
@@ -233,18 +257,20 @@ function UserProfileView() {
               <h3 className="action-title">View Library</h3>
               <p className="action-description">Browse your playlists</p>
             </Link>
+            {/* Comment the coins out separately if keeping quick actions 
             <button className="action-card" onClick={handleBuyCoins}>
               <div className="action-icon">💰</div>
               <h3 className="action-title">Buy Coins</h3>
               <p className="action-description">Get more coins</p>
             </button>
+           
             <button className="action-card" onClick={handleSettings}>
               <div className="action-icon">⚙️</div>
               <h3 className="action-title">Settings</h3>
               <p className="action-description">Manage your account</p>
             </button>
           </div>
-        </section>
+        </section> */}
       </div>
     </div>
   );
