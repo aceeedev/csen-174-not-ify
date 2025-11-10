@@ -2,6 +2,7 @@
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
+import { getFirestore } from "firebase/firestore";
 
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
@@ -24,6 +25,7 @@ const analytics = getAnalytics(app);
 
 export const auth = getAuth(app);
 export const authProvider = new GoogleAuthProvider();
+export const db = getFirestore(app);
 
 /**
  * Gets the current user's Firebase ID token.
