@@ -43,7 +43,9 @@ function Home() {
       {/* Navigation Bar */}
       <nav className="navbar">
         <div className="nav-content">
-          <h1 className="logo">Not-ify</h1>
+          <Link to="/home" className="logo-link">
+            <h1 className="logo">Not-ify</h1>
+          </Link>          
           <div className="nav-links">
             {user ? (
               <>
@@ -82,6 +84,7 @@ function Home() {
             <Link to="/auth" className="btn-secondary btn-large">
               Try Auth
             </Link>
+
           </div>
         </div>
       </section>
@@ -135,6 +138,7 @@ function Home() {
           <div className="footer-links">
             <Link to="/test">Test</Link>
             <Link to="/auth">Auth</Link>
+            <Link to="/profile">User Profile</Link>
           </div>
         </div>
       </footer>
