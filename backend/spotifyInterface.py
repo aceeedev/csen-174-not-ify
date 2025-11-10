@@ -59,3 +59,24 @@ class SpotifyManager:
         sp = spotipy.Spotify(auth=access_token)
         
         return sp.playlist(playlist_id)
+        
+
+    def export_playlist(self, access_token, playlist_name, description, track_ids):
+        sp = spotipy.Spotify(auth=access_token)
+
+        user_id = sp.me()["id"]
+        try:
+            playlist = sp.user_playlist_create(
+                user=user_id,
+                name=playlist_name,
+                public=False,  # set True for public playlist
+                description=description
+            )
+            if track_ids:
+                sp.playlist_add_items(playlist["id"], track_ids)
+        
+        except spotipy.exceptions.SpotifyException as e:
+            print(f"Spotify API error: {e}")
+        except Exception as e:
+            print(f"Unexpected error: {e}")
+
