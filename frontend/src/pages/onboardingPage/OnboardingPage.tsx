@@ -1,7 +1,7 @@
 
 function OnboardingPage() {
   const signInToSpotify = async () => {
-      const res = await fetch("http://localhost:5000/spotify/auth-url");
+      const res = await fetch("http://localhost:5001/spotify/auth-url");
       const data = await res.json();
       
       window.location.href = data.auth_url;

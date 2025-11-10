@@ -10,10 +10,40 @@ const Navbar: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
 
+
+  const checkSpotifyAccessToken = async (user: User) => {
+    // check if the document with the id user.uid in the Firestore collection named Users has the attribute access_token
+    
+    const userId = user.uid;
+    const userDocRef = doc(db, "Users", userId);
+    
+    try {
+      const userDocSnap = await getDoc(userDocRef);
+      
+      if (userDocSnap.exists()) {
+        const userData = userDocSnap.data();
+        
+        if (!userData.access_token) {
+          // the user document does not have Spotify access_token info -> need to onboard
+          navigate("/onboarding");
+        }
+      } else {
+        // the user document does not exist in Firestore -> need to onboard
+        navigate("/onboarding");
+      }
+    } catch (error) {
+      console.error("Error checking Firestore document:", error);
+    }
+  };
+
   // listen for auth state changes
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
+      
+      if (currentUser) {
+        checkSpotifyAccessToken(currentUser);
+      }
     });
     
     // cleanup subscription on unmount
@@ -24,27 +54,7 @@ const Navbar: React.FC = () => {
     setLoading(true);
 
     signInWithPopup(auth, authProvider).then(async (result) => {
-        // check if the document with the id user.uid in the Firestore collection named Users has the attribute access_token
-        const userId = result.user.uid;
-        const userDocRef = doc(db, "Users", userId);
-        
-        try {
-          const userDocSnap = await getDoc(userDocRef);
-          
-          if (userDocSnap.exists()) {
-            const userData = userDocSnap.data();
-            
-            if (!userData.access_token) {
-              // the user document does not have Spotify access_token info -> need to onboard
-              navigate("/onboarding");
-            }
-          } else {
-            // the user document does not exist in Firestore -> need to onboard
-            navigate("/onboarding");
-          }
-        } catch (error) {
-          console.error("Error checking Firestore document:", error);
-        }
+      checkSpotifyAccessToken(result.user);
     }).catch((error) => {
       console.log("Google sign in error", error);
     });
