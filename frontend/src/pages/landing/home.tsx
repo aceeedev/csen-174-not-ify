@@ -65,7 +65,6 @@ function Home() {
             <Link to="/auth" className="btn-secondary btn-large">
               Try Auth
             </Link>
-
           </div>
         </div>
       </section>
@@ -119,7 +118,6 @@ function Home() {
           <div className="footer-links">
             <Link to="/test">Test</Link>
             <Link to="/auth">Auth</Link>
-            <Link to="/profile">User Profile</Link>
           </div>
         </div>
       </footer>
