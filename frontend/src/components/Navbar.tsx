@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { auth, authProvider, db } from '../firebase';
-import { signInWithPopup, onAuthStateChanged, signOut, type User } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
+import { auth, authProvider, getCurrentUserFromFirebase } from '../firebase';
+import { signInWithPopup, onAuthStateChanged, signOut } from "firebase/auth";
 import { Link, useNavigate } from 'react-router-dom';
+import type { User } from "../models"
 
 const Navbar: React.FC = () => {
   const navigate = useNavigate();
@@ -11,38 +11,25 @@ const Navbar: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
 
 
-  const checkSpotifyAccessToken = async (user: User) => {
+  const checkSpotifyAccessToken = async () => {
     // check if the document with the id user.uid in the Firestore collection named Users has the attribute access_token
-    
-    const userId = user.uid;
-    const userDocRef = doc(db, "Users", userId);
-    
-    try {
-      const userDocSnap = await getDoc(userDocRef);
-      
-      if (userDocSnap.exists()) {
-        const userData = userDocSnap.data();
-        
-        if (!userData.access_token) {
-          // the user document does not have Spotify access_token info -> need to onboard
-          navigate("/onboarding");
-        }
-      } else {
-        // the user document does not exist in Firestore -> need to onboard
-        navigate("/onboarding");
-      }
-    } catch (error) {
-      console.error("Error checking Firestore document:", error);
+    const user = await getCurrentUserFromFirebase();
+
+    if (user !== null && !user.access_token) {
+      navigate("/onboarding");
+    } else if (user === null) {
+      navigate("/onboarding");
     }
+
   };
 
   // listen for auth state changes
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-      
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
-        checkSpotifyAccessToken(currentUser);
+        setUser(await getCurrentUserFromFirebase());
+
+        checkSpotifyAccessToken();
       }
     });
     
@@ -54,7 +41,7 @@ const Navbar: React.FC = () => {
     setLoading(true);
 
     signInWithPopup(auth, authProvider).then(async (result) => {
-      checkSpotifyAccessToken(result.user);
+      checkSpotifyAccessToken();
     }).catch((error) => {
       console.log("Google sign in error", error);
     });
@@ -65,6 +52,8 @@ const Navbar: React.FC = () => {
   const handleSignOut = async () => {
     try {
       await signOut(auth);
+
+      setUser(null);
     } catch (error) {
       console.error("Sign out error:", error);
     }
@@ -90,7 +79,7 @@ const Navbar: React.FC = () => {
           {user ? (
             <>
               <span style={{color: 'white', fontSize: 14}}>
-                Hello, {user.displayName || user.email}
+                Hello, {user.name}
               </span>
               <button onClick={handleSignOut} style={{padding: '8px 12px'}}>
                 Sign out
