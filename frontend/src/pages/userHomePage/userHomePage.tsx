@@ -24,9 +24,9 @@ function UserHomePage() {
 
       <h1>Groups</h1>
       <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'nowrap', overflowX: 'auto', gap: '1rem' }}>
-            {groups.map((group, index) => (
-                <GroupCard key={index} group={group} />
-            ))}
+        {groups.map((group, index) => (
+            <GroupCard key={index} group={group} />
+        ))}
       </div>
       <h1>Library</h1>
 
