@@ -118,6 +118,7 @@ function Home() {
           <div className="footer-links">
             <Link to="/test">Test</Link>
             <Link to="/auth">Auth</Link>
+            <Link to="/profile">Profile</Link>
           </div>
         </div>
       </footer>

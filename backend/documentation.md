@@ -11,7 +11,7 @@ Checks `request.args.get(p)` against `required_params`, checks that all necessar
 ---
 
 ### `@app.route('/get/groups')`
-`http:<...>:5000/create/group?groupName=<str>&description=<str>`
+`http:<...>:5000/get/groups?user_id=<str>`
 
 **Parameters:** groupName, description.
 
