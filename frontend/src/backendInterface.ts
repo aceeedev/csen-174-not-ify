@@ -2,7 +2,7 @@ import { sendRequestWithIdToken } from "./firebase"
 import type { Group, Playlist } from "./models";
 
 
-const baseURL: string = "http://127.0.0.1:5001";
+const baseURL: string = "http://localhost:5001";
 
 interface BackendSuccess<T> {
     success: true;

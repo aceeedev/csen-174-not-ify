@@ -119,8 +119,8 @@ class Group:
             "description": self.description,
             "group_name": self.group_name,
             "group_member_data": {
-                member_id: data.to_dict()
-                for member_id, data in self.group_member_data.items()
+                member_id: member_data.to_dict()
+                for member_id, member_data in self.group_member_data.items()
             }
         }
 
@@ -132,8 +132,8 @@ class Group:
             description=data['description'],
             group_name=data['group_name'],
             group_member_data={
-                member_id: GroupMemberData.from_dict(data)
-                for member_id, data in data['group_member_data'].items()
+                member_id: GroupMemberData.from_dict(member_data)
+                for member_id, member_data in data['group_member_data'].items()
             }
         )
     
