@@ -4,7 +4,7 @@ import { getAnalytics } from "firebase/analytics";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
 import { getFirestore, doc, getDoc } from "firebase/firestore";
 
-import { type User, type Group, type Playlist, type Song  } from "./models";
+import type { User, Group, Playlist, Song } from "./models";
 
 
 // TODO: Add SDKs for Firebase products that you want to use
