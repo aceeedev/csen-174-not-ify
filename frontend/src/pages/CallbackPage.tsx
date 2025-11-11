@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { auth, getIdToken } from "../firebase";
 import { useNavigate } from "react-router";
 
+import { sendSpotifyAuthCallback } from "../backendInterface"
+
 const Callback: React.FC = () => {
   const navigate = useNavigate();
   const [firebaseReady, setFirebaseReady] = useState(false);
@@ -29,17 +31,13 @@ const Callback: React.FC = () => {
         return;
       }
 
-      const res = await fetch(`http://localhost:5001/spotify/auth-callback?code=${code}`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
+      const res = await sendSpotifyAuthCallback(code);
 
-      const data = await res.json();
-      console.log("Spotify auth response:", data);
-      navigate("/");
+      if (res.success) {
+        navigate("/")
+      } else {
+        console.log("Error", res.message);
+      }
     })();
   }, [firebaseReady, navigate]);
 

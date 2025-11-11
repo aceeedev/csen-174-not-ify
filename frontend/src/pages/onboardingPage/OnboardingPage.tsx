@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { auth, db } from '../../firebase';
+import { getSpotifyAuthURL } from '../../backendInterface';
 
 
 function OnboardingPage() {
@@ -37,10 +38,9 @@ function OnboardingPage() {
   }, []);
 
   const signInToSpotify = async () => {
-    const res = await fetch("http://localhost:5001/spotify/auth-url");
-    const data = await res.json();
+    const authURL = await getSpotifyAuthURL();
     
-    window.location.href = data.auth_url;
+    window.location.href = authURL;
   };
   
   return (
