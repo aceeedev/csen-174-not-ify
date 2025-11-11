@@ -104,6 +104,17 @@ async function _getDocFromFirebase<T>(collection: string, docID: string): Promis
   return null;
 }
 
+export async function getCurrentUserFromFirebase(): Promise<User | null> {
+  const user = auth.currentUser;
+
+  if (!user) {
+    console.warn("No user is currently signed in.");
+    return null;
+  }
+  
+  return _getDocFromFirebase<User>("Users", user.uid);
+}
+
 export async function getUserFromFirebase(userID: string): Promise<User | null> {
   return _getDocFromFirebase<User>("Users", userID);
 }
