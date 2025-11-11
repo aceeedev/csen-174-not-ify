@@ -81,7 +81,7 @@ def get_groups():
     for gID in fUser.my_groups:
         outLists.append(fb.get_group_info(gID).to_dict())
     
-    return jsonify(outLists), 200
+    return jsonify({"data": outLists}), 200
 
 @app.route('/create/group')
 @FirebaseManager.require_firebase_auth
@@ -232,7 +232,7 @@ def get_users_playlists():
     # get the user's firebase object so we can get the spotify access token
     user = firebase.get_user_info(user_id)
 
-    return jsonify(spotify.get_users_playlists(user.access_token)), 200
+    return jsonify({"data": spotify.get_users_playlists(user.access_token)}), 200
 
 @app.route('/get/playlist/group')
 @FirebaseManager.require_firebase_auth
@@ -253,7 +253,7 @@ def get_group_playlists():
 
     playlists = [ firebase.get_playlist_info(id).to_dict() for id in playlist_ids ]
 
-    return jsonify({"playlists": playlists}), 200
+    return jsonify({"data": playlists}), 200
 
 @app.route('/add/playlist/group')
 @FirebaseManager.require_firebase_auth
