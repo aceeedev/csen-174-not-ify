@@ -1,22 +1,39 @@
 import { useEffect, useState } from 'react';
 import './userHomePage.css';
+import { auth } from '../../firebase';
+import { onAuthStateChanged } from 'firebase/auth';
 import { getGroupsOnBackend } from '../../backendInterface';
 import type { Group } from '../../models';
 import Navbar from '../../components/Navbar';
 import GroupCard from '../../components/GroupCard';
 
 function UserHomePage() {
+  const [userReady, setUserReady] = useState(false);
+
   const [groups, setGroups] = useState<Group[]>([]);
   // TODO: library
   const [library, setLibrary] = useState<any[]>([]);
 
   useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setUserReady(true);
+      }
+    });
+    
+    return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    // fetch data once user has logged in
+    if (!userReady) return;
+
     const fetchData = async () => {
       setGroups(await getGroupsOnBackend() ?? []);
     };
     
     fetchData();
-  }, []);
+  }, [userReady]);
 
   return (
     <div>
