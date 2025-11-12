@@ -79,7 +79,9 @@ def get_groups():
     outLists = [] #empty list to store the output
 
     for gID in fUser.my_groups:
-        outLists.append(fb.get_group_info(gID).to_dict())
+        group_dict = fb.get_group_info(gID).to_dict()
+        group_dict["id"] = gID
+        outLists.append(group_dict)
     
     return jsonify(outLists), 200
 

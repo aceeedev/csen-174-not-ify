@@ -1,32 +1,114 @@
 /*THIS IS THE USERS HOME PAGE WHEN LOGGED IN*/
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './userHomePage.css';
+import { getIdToken } from '../../firebase';
+
+const API_BASE_URL =
+  import.meta.env.VITE_BACKEND_URL ?? 'http://127.0.0.1:5001';
 
 function UserHomePage() {
   const navigate = useNavigate();
   // TODO: Fetch user's groups from backend
   const [groups, setGroups] = useState<any[]>([]);
+  const [isLoadingGroups, setIsLoadingGroups] = useState<boolean>(true);
+  const [groupsError, setGroupsError] = useState<string | null>(null);
   
   // TODO: Fetch user's library from backend
   const [library, setLibrary] = useState<any[]>([]);
 
   const handleCreateGroup = () => {
-    // TODO: Implement create group functionality
+    navigate('/groups/new');
   };
 
   const handleViewLibrary = () => {
     // TODO: Navigate to library view
   };
 
-  const handleViewGroup = (groupId: string) => {
-    if (!groupId) {
+  const handleViewGroup = (groupData: any) => {
+    if (!groupData?.id) {
       return;
     }
 
-    navigate(`/groups/${groupId}`);
+    navigate(`/groups/${groupData.id}`, { state: { group: groupData } });
   };
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchGroups = async () => {
+      setIsLoadingGroups(true);
+      setGroupsError(null);
+
+      try {
+        const token = await getIdToken();
+
+        if (!token) {
+          if (isMounted) {
+            setGroupsError('Please sign in to view your groups.');
+            setGroups([]);
+          }
+          return;
+        }
+
+        const baseUrl = API_BASE_URL.endsWith('/')
+          ? API_BASE_URL.slice(0, -1)
+          : API_BASE_URL;
+
+        const response = await fetch(`${baseUrl}/get/groups`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) {
+          let message = 'Unable to load groups.';
+          try {
+            const data = await response.json();
+            if (data?.error) {
+              message = data.error;
+            }
+          } catch (parseError) {
+            console.error('Failed to parse groups response:', parseError);
+          }
+
+          throw new Error(message);
+        }
+
+        const data = await response.json();
+
+        if (isMounted) {
+          const mappedGroups = Array.isArray(data)
+            ? data.map((groupItem: any) => ({
+                ...groupItem,
+                id: groupItem.id,
+              }))
+            : [];
+          setGroups(mappedGroups);
+        }
+      } catch (error) {
+        console.error('Error fetching groups:', error);
+        if (isMounted) {
+          setGroupsError(
+            error instanceof Error
+              ? error.message
+              : 'Something went wrong while loading groups.',
+          );
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoadingGroups(false);
+        }
+      }
+    };
+
+    fetchGroups();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   return (
     <div className="user-home-container">
@@ -61,7 +143,11 @@ function UserHomePage() {
           </div>
 
           <div className="groups-grid">
-            {groups.length === 0 ? (
+            {isLoadingGroups ? (
+              <div className="status-message">Loading groups…</div>
+            ) : groupsError ? (
+              <div className="status-message error">{groupsError}</div>
+            ) : groups.length === 0 ? (
               <div className="empty-state">
                 <div className="empty-icon">👥</div>
                 <p className="empty-text">You're not in any groups yet</p>
@@ -74,13 +160,13 @@ function UserHomePage() {
                 <div
                   key={group.id}
                   className="group-card"
-                  onClick={() => handleViewGroup(group.id)}
+                  onClick={() => handleViewGroup(group)}
                   role="button"
                   tabIndex={0}
                   onKeyDown={(event) => {
                     if (event.key === 'Enter' || event.key === ' ') {
                       event.preventDefault();
-                      handleViewGroup(group.id);
+                      handleViewGroup(group);
                     }
                   }}
                 >
@@ -89,7 +175,11 @@ function UserHomePage() {
                   <p className="group-members">{group.memberCount || 0} members</p>
                   <p className="group-description">{group.description || 'No description'}</p>
                   <div className="group-actions">
-                    <Link to={`/groups/${group.id}`} className="group-link">
+                    <Link
+                      to={`/groups/${group.id}`}
+                      className="group-link"
+                      state={{ group }}
+                    >
                       View Group →
                     </Link>
                   </div>

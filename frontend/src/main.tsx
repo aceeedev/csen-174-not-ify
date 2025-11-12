@@ -9,6 +9,7 @@ import GroupView from './pages/groupView/groupView.tsx'
 import GroupSettingView from './pages/groupSettingView/groupSettingView.tsx'
 import LibraryView from './pages/libraryView/libraryView.tsx'
 import PlaylistView from './pages/playlistView/playlistView.tsx'
+import AddGroupView from './pages/addGroupView/addGroupView.tsx'
 import App from './App.tsx'
 import TestPage from './pages/TestPage.tsx'
 import Callback from './pages/CallbackPage.tsx';
@@ -26,6 +27,7 @@ createRoot(document.getElementById('root')!).render(
       <Route path="/playlist/:playlistId" element={<PlaylistView />} />
       <Route path="/groups/:groupId" element={<GroupView />} />
       <Route path="/groups/:groupId/settings" element={<GroupSettingView />} />
+      <Route path="/groups/new" element={<AddGroupView />} />
       <Route path="/app" element={<App />} />
       <Route path="/test" element={<TestPage />} />
       <Route path="/callback" element={<Callback />} />
