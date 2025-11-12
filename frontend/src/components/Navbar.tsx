@@ -65,6 +65,7 @@ const Navbar: React.FC = () => {
   const handleSignOut = async () => {
     try {
       await signOut(auth);
+      navigate('/');
     } catch (error) {
       console.error("Sign out error:", error);
     }
@@ -75,14 +76,21 @@ const Navbar: React.FC = () => {
      <div>
       <header style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 20px', background: 'black'}}>
         <div style={{display: 'flex', alignItems: 'center', gap: 16}}>
-          <div style={{fontWeight: 700, fontSize: 20}}>Not-ify</div>
+          <Link to="/" style={{fontWeight: 700, fontSize: 20, textDecoration: 'none', color: 'white'}}>
+            Not-ify
+          </Link>
           <nav style={{display: 'flex', gap: 12}}>
-            <Link to={"/TODO"} style={{cursor: 'pointer'}}>
+            <Link to={user ? "/userHomePage" : "/"} style={{cursor: 'pointer'}}>
                 Groups
             </Link>
-            <Link to={"/TODO"} style={{cursor: 'pointer'}}>
+            <Link to={user ? "/library" : "/"} style={{cursor: 'pointer'}}>
                 Library
             </Link>
+            {user && (
+              <Link to="/profile" style={{cursor: 'pointer'}}>
+                  Profile
+              </Link>
+            )}
           </nav>
         </div>
 

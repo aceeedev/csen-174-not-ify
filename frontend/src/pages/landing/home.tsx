@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
+import { Link, useNavigate } from 'react-router-dom';
+import { signInWithPopup, onAuthStateChanged } from 'firebase/auth';
 import { auth, authProvider } from '../../firebase';
 import './home.css';
 import Navbar from '../../components/Navbar';
 
 function Home() {
+  const navigate = useNavigate();
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
@@ -21,19 +22,22 @@ function Home() {
   const handleSignIn = async () => {
     try {
       await signInWithPopup(auth, authProvider);
-      // User will stay on home page after login
+      navigate('/userHomePage');
     } catch (error) {
       console.error('Sign in error:', error);
     }
   };
 
+  // Not used for now, but could be used to sign out
   const handleSignOut = async () => {
     try {
-      await signOut(auth);
+      //TODO: Implement sign out functionality
+      //await signOut(auth);
     } catch (error) {
       console.error('Sign out error:', error);
     }
   };
+  
 
   if (loading) {
     return <div className="loading">Loading...</div>;
@@ -54,8 +58,8 @@ function Home() {
           </p>
           <div className="hero-buttons">
             {user ? (
-              <Link to="/test" className="btn-primary btn-large">
-                Go to Test Page
+              <Link to="/userHomePage" className="btn-primary btn-large">
+                Back to Dashboard
               </Link>
             ) : (
               <button onClick={handleSignIn} className="btn-primary btn-large">

@@ -1,10 +1,11 @@
 /*THIS IS THE USERS HOME PAGE WHEN LOGGED IN*/
 
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import './userHomePage.css';
 
 function UserHomePage() {
+  const navigate = useNavigate();
   // TODO: Fetch user's groups from backend
   const [groups, setGroups] = useState<any[]>([]);
   
@@ -20,7 +21,11 @@ function UserHomePage() {
   };
 
   const handleViewGroup = (groupId: string) => {
-    // TODO: Navigate to group view
+    if (!groupId) {
+      return;
+    }
+
+    navigate(`/groups/${groupId}`);
   };
 
   return (
@@ -66,7 +71,19 @@ function UserHomePage() {
               </div>
             ) : (
               groups.map((group) => (
-                <div key={group.id} className="group-card" onClick={() => handleViewGroup(group.id)}>
+                <div
+                  key={group.id}
+                  className="group-card"
+                  onClick={() => handleViewGroup(group.id)}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                      event.preventDefault();
+                      handleViewGroup(group.id);
+                    }
+                  }}
+                >
                   <div className="group-icon">🎵</div>
                   <h3 className="group-name">{group.name || 'Untitled Group'}</h3>
                   <p className="group-members">{group.memberCount || 0} members</p>
