@@ -4,6 +4,7 @@ import type { Group, Playlist } from '../../models'
 import Navbar from "../../components/Navbar";
 import { onAuthStateChanged, type User } from "firebase/auth";
 import { auth, getCurrentUserFromFirebase } from "../../firebase";
+import { takePlaylistFromGroupOnBackend } from "../../backendInterface"
 
 
 // basically an enum
@@ -12,14 +13,13 @@ const PageOrigin = {
     FromGroup: 'FromGroup',
 } as const;
 
-type PageOriginType = typeof PageOrigin[keyof typeof PageOrigin];
-
-
 const PlaylistPage: React.FC = () => {
     const location = useLocation();
     const navigate = useNavigate();
 
+    
     const playlist = location.state?.playlist as Playlist | undefined;
+    const playlistID = location.state?.playlist as string | undefined;
     const group = location.state?.group as Group | undefined;
     const groupID = location.state?.groupID as string | undefined;
 
@@ -40,7 +40,7 @@ const PlaylistPage: React.FC = () => {
     }, []);
 
 
-    if (!playlist) {
+    if (!playlist || !playlistID) {
         return (
         <div>
             <h1>Unknown playlist</h1>
@@ -49,6 +49,20 @@ const PlaylistPage: React.FC = () => {
         </div>
         );
     }
+
+    const handleTakePlaylist = async () => {
+        await takePlaylistFromGroupOnBackend(groupID!, playlistID)
+    }
+
+    const handleExportPlaylist = async () => {
+        
+    }
+
+
+    useEffect(() => {
+        // get playlist items?
+
+    }, [playlist, playlistID]);
     
 
     return (
@@ -72,13 +86,17 @@ const PlaylistPage: React.FC = () => {
                 <div>
                     <p>You have {userCoins} coins.</p>
                    
-                    <button>Take Playlist (costs 1 coin)</button>
+                    <button onClick={handleTakePlaylist}>
+                        Take Playlist (costs 1 coin)
+                    </button>
                 </div>
             )}
 
             {pageOrigin === PageOrigin.FromLibrary && (
                 <div>
-                    <button>Export Playlist to your Spotify Library</button>
+                    <button onClick={handleExportPlaylist}>
+                        Export Playlist to your Spotify Library
+                    </button>
                 </div>
             )}
 
