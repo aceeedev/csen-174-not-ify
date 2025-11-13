@@ -412,7 +412,7 @@ def get_library_playlists():
 
     user = firebase.get_user_info(user_id)
 
-    playlists = [ firebase.get_playlist_info(id).to_dict() for id in user.library ]
+    playlists = [ firebase.get_playlist_info(id).to_dict_with_id(id) for id in user.library ]
 
     return jsonify({"data": playlists}), 200
 

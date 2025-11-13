@@ -4,17 +4,15 @@ import type { Playlist } from '../models';
 
 interface PlaylistCardProps {
     playlist: Playlist;
-    playlistID: string;
 }
 
-const PlaylistCard: React.FC<PlaylistCardProps> = ({ playlist, playlistID }) => {
+const PlaylistCard: React.FC<PlaylistCardProps> = ({ playlist }) => {
     const navigate = useNavigate();
 
     const handleClick = () => {
         navigate('/playlist', { 
             state: { 
                 playlist: playlist, 
-                playlistID: playlistID 
             } 
         });
     };

@@ -50,7 +50,7 @@ function UserHomePage() {
       <h1>Library</h1>
       <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'nowrap', overflowX: 'auto', gap: '1rem' }}>
         {library.map((playlist, index) => (
-            <PlaylistCard key={index} playlist={playlist} playlistID="fCTuK1b6SynKmDa1VSvN" />
+            <PlaylistCard key={index} playlist={playlist}/>
         ))}
       </div>
 

@@ -36,7 +36,6 @@ const PlaylistPage: React.FC = () => {
 
     
     const playlist = location.state?.playlist as Playlist | undefined;
-    const playlistID = location.state?.playlistID as string | undefined;
     const group = location.state?.group as Group | undefined;
     const groupID = location.state?.groupID as string | undefined;
 
@@ -48,7 +47,7 @@ const PlaylistPage: React.FC = () => {
     const [playlistItemsBlurIndex, setPlaylistItemsBlurIndex] = useState<number>(0);
     
 
-    if (!playlist || !playlistID) {
+    if (!playlist || !playlist.id) {
         return (
         <div>
             <h1>Unknown playlist</h1>
@@ -60,7 +59,7 @@ const PlaylistPage: React.FC = () => {
 
 
     const fetchData = async () => {
-        const songs: Song[] = await getPlaylistItemsOnBackend(playlistID!) ?? []
+        const songs: Song[] = await getPlaylistItemsOnBackend(playlist.id!) ?? []
 
         setPlaylistItems(songs);
 
@@ -76,6 +75,8 @@ const PlaylistPage: React.FC = () => {
         } else {
             setPlaylistItemsBlurIndex(3);
         }
+
+        setLoading(false);
     }
 
     useEffect(() => {
@@ -84,8 +85,6 @@ const PlaylistPage: React.FC = () => {
                 setCoins(group?.group_member_data[currentUser.uid].coins ?? null)
 
                 fetchData()
-
-                setLoading(false);
             } else {
                 setLoading(true);
             }
@@ -97,7 +96,7 @@ const PlaylistPage: React.FC = () => {
 
 
     const handleTakePlaylist = async () => {
-        await takePlaylistFromGroupOnBackend(groupID!, playlistID)
+        await takePlaylistFromGroupOnBackend(groupID!, playlist.id!)
     }
 
     const handleExportPlaylist = async () => {

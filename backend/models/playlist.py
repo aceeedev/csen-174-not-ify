@@ -36,3 +36,10 @@ class Playlist:
             description=data['description'],
             songs=data['songs']  
         )
+    
+    def to_dict_with_id(self, firebase_id: str) -> dict[str, Any]:
+        as_dict: dict[str, Any] = self.to_dict()
+
+        as_dict["id"] = firebase_id
+
+        return as_dict
