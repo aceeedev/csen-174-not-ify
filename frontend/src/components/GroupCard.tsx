@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import type { Group } from '../models';
 
 interface GroupCardProps {
@@ -22,6 +23,10 @@ const GroupCard: React.FC<GroupCardProps> = ({ group }) => {
         >
             <h3 style={{ margin: '0 0 8px 0', color: '#333' }}>{group.group_name}</h3>
             <p style={{ margin: '0', color: '#666' }}>{group.description}</p>
+
+            <Link to="/add-playlist" state={{ group }}>
+                Add Playlist (TEMP)
+            </Link>
         </div>
     );
 };
