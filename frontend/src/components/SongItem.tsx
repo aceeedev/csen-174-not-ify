@@ -21,7 +21,8 @@ const SongItem: React.FC<SongItemProps> = ({ song, isBlurred }) => {
             marginLeft: 'auto',
             marginRight: 'auto',
             filter: isBlurred ? 'blur(5px)' : 'none',
-            pointerEvents: isBlurred ? 'none' : 'auto'
+            pointerEvents: isBlurred ? 'none' : 'auto',
+            userSelect: isBlurred ? 'none' : 'auto'
         }}>
             <img
                 src={song.album_cover} 

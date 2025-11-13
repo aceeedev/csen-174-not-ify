@@ -14,13 +14,29 @@ const PageOrigin = {
     FromGroup: 'FromGroup',
 } as const;
 
+
+/**
+ * Use like so:
+ * 
+ * If from library:
+ *  <Link to="/playlist" state={{ playlist, playlistID: "playlist_id" }}>
+        Add Playlist
+    </Link>
+ *
+ * If from group:
+ *  <Link to="/playlist" state={{ playlist, playlistID: "playlist_id", group, groupID: "group_id" }}>
+        Add Playlist
+    </Link>
+ * 
+ */
+
 const PlaylistPage: React.FC = () => {
     const location = useLocation();
     const navigate = useNavigate();
 
     
     const playlist = location.state?.playlist as Playlist | undefined;
-    const playlistID = location.state?.playlist as string | undefined;
+    const playlistID = location.state?.playlistID as string | undefined;
     const group = location.state?.group as Group | undefined;
     const groupID = location.state?.groupID as string | undefined;
 
@@ -48,6 +64,9 @@ const PlaylistPage: React.FC = () => {
 
         setPlaylistItems(songs);
 
+        // 1 song -> blur 1st
+        // 2-3 songs -> blur starting 2nd
+        // 3+ songs -> blur starting 4th
         if (songs.length <= 3) {
             if (songs.length > 1) {
                 setPlaylistItemsBlurIndex(1);
@@ -55,7 +74,7 @@ const PlaylistPage: React.FC = () => {
                 setPlaylistItemsBlurIndex(0);
             }
         } else {
-            setPlaylistItemsBlurIndex(2);
+            setPlaylistItemsBlurIndex(3);
         }
     }
 
