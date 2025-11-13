@@ -7,6 +7,7 @@ import type { Group, Playlist } from '../../models';
 import Navbar from '../../components/Navbar';
 import GroupCard from '../../components/GroupCard';
 import PlaylistCard from '../../components/PlaylistCard';
+import { Link } from 'react-router-dom';
 
 function UserHomePage() {
   const [userReady, setUserReady] = useState(false);
@@ -43,7 +44,13 @@ function UserHomePage() {
       <h1>Groups</h1>
       <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'nowrap', overflowX: 'auto', gap: '1rem' }}>
         {groups.map((group, index) => (
+          <div>
             <GroupCard key={index} group={group} />
+
+            <Link to="/playlist" state={{ playlist: library[0], group, groupID: "NE20rYPTEZWWywd6V2Xi" }}>
+                Playlist from group test
+            </Link>
+          </div>
         ))}
       </div>
       

@@ -19,12 +19,12 @@ const PageOrigin = {
  * Use like so:
  * 
  * If from library:
- *  <Link to="/playlist" state={{ playlist, playlistID: "playlist_id" }}>
+ *  <Link to="/playlist" state={{ playlist }}>
         Add Playlist
     </Link>
  *
  * If from group:
- *  <Link to="/playlist" state={{ playlist, playlistID: "playlist_id", group, groupID: "group_id" }}>
+ *  <Link to="/playlist" state={{ playlist, group, groupID: "group_id" }}>
         Add Playlist
     </Link>
  * 
@@ -145,7 +145,7 @@ const PlaylistPage: React.FC = () => {
             <h2>Playlist Items</h2>
 
             {playlistItems.map((song, index) => 
-                <SongItem key={index} song={song} isBlurred={index >= playlistItemsBlurIndex}/>
+                <SongItem key={index} song={song} isBlurred={index >= playlistItemsBlurIndex && pageOrigin === PageOrigin.FromGroup}/>
             )}
 
         </div>

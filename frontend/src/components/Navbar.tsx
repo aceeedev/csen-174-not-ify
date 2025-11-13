@@ -54,6 +54,8 @@ const Navbar: React.FC = () => {
       await signOut(auth);
 
       setUser(null);
+
+      navigate("/");
     } catch (error) {
       console.error("Sign out error:", error);
     }
