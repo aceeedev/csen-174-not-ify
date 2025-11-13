@@ -13,6 +13,7 @@ import TestPage from './pages/TestPage.tsx'
 import Callback from './pages/CallbackPage.tsx';
 import OnboardingPage from './pages/onboardingPage/OnboardingPage.tsx';
 import AddPlaylistPage from './pages/addPlaylistPage/AddPlaylistPage.tsx';
+import PlaylistPage from './pages/playlistPage/PlaylistPage.tsx';
 
 createRoot(document.getElementById('root')!).render(
   <BrowserRouter>
@@ -22,6 +23,7 @@ createRoot(document.getElementById('root')!).render(
       <Route path="/callback" element={<Callback />} />
 
       <Route path="/add-playlist" element={<AddPlaylistPage />} />
+      <Route path="/playlist" element={<PlaylistPage />} />
       
       <Route path="/profile" element={<UserProfileView />} />
       <Route path="/library" element={<LibraryView />} />
