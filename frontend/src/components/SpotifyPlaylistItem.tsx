@@ -1,12 +1,39 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import type { SpotifyPlaylist } from '../models';
+import { addPlaylistToGroupOnBackend } from '../backendInterface';
 
 
 export interface SpotifyPlaylistItemProps {
     spotifyPlaylist: SpotifyPlaylist;
+    groupID: string;
+    setUploading: (loading: boolean) => void;
 }
 
-const SpotifyPlaylistItem: React.FC<SpotifyPlaylistItemProps> = ({ spotifyPlaylist }) => {
+const SpotifyPlaylistItem: React.FC<SpotifyPlaylistItemProps> = ({ spotifyPlaylist, groupID, setUploading }) => {
+    const navigate = useNavigate();
+
+    const handleAddPlaylist = async () => {
+        setUploading(true);
+        
+        try {
+            const result = await addPlaylistToGroupOnBackend(groupID, spotifyPlaylist.spotify_id);
+            
+            if (result.success) {
+                // navigate back a page
+                navigate(-1);
+            } else {
+                console.error('Failed to add playlist:', result.message);
+                alert(`Error: ${result.message}`);
+
+                setUploading(false);
+            }
+        } catch (error) {
+            console.error('Error adding playlist:', error);
+            alert('Failed to add playlist');
+        }
+    };
+    
     return (
         <div style={{
             display: 'flex',
@@ -34,7 +61,7 @@ const SpotifyPlaylistItem: React.FC<SpotifyPlaylistItemProps> = ({ spotifyPlayli
                 {spotifyPlaylist.title}
             </div>
 
-            <button style={{ padding: '8px 16px' }}>
+            <button style={{ padding: '8px 16px' }} onClick={handleAddPlaylist}>
                 Add to group
             </button>
         </div>
