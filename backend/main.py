@@ -401,6 +401,36 @@ def take_playlist_from_group():
     fGroup.group_member_data[userID].coins -= 1
 
     return jsonify({"message": "Success!"}), 200
+
+
+@app.route('/get/playlist/library')
+@FirebaseManager.require_firebase_auth
+def get_library_playlists():
+    user_id = request.user_id
+
+    firebase = FirebaseManager()
+
+    user = firebase.get_user_info(user_id)
+
+    playlists = [ firebase.get_playlist_info(id).to_dict() for id in user.library ]
+
+    return jsonify({"data": playlists}), 200
+
+@app.route('/get/playlist/items')
+@FirebaseManager.require_firebase_auth
+def get_playlist_items():
+    error = validate_params(["playlistID"])
+    if error:
+        return error
+
+    playlist_id: str = request.args.get("playlistID")
+
+    firebase = FirebaseManager()
+    playlist = firebase.get_playlist_info(playlist_id)
+
+    songs = [ firebase.get_song_info(id).to_dict() for id in playlist.songs ]
+
+    return jsonify({"data": songs}), 200
     
 
 if __name__ == "__main__":
