@@ -2,7 +2,7 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 
 from FireStoreInterface import FirebaseManager
-from spotifyInterface import SpotifyManager
+from spotifyInterface import SpotifyManager, SpotifyAccessTokenInfo
 
 from models.group import Group, GroupMemberData, PostedPlaylist
 from models.playlist import Playlist
@@ -46,7 +46,10 @@ def auth_callback():
 
     spotify = SpotifyManager()
 
-    access_token: str = spotify.get_access_token(code)["access_token"]
+    access_token_info: SpotifyAccessTokenInfo = spotify.get_access_token(code)
+
+    # sub 60 seconds to be safe
+    safe_access_token_expire_time: datetime = datetime.now() + timedelta(seconds=access_token_info.expires_in - 60)
     
     # Add user to firebase
     firebase = FirebaseManager()
@@ -56,7 +59,9 @@ def auth_callback():
     user = User(
         name=firebase_user.display_name,
         spotify_id="", # TODO: get from spotify_manager
-        access_token=access_token,
+        access_token=access_token_info.access_token,
+        refresh_token=access_token_info.refresh_token,
+        access_token_expires=safe_access_token_expire_time,
         profile_pic=firebase_user.photo_url,
         library=[],
         my_groups=[],
@@ -228,6 +233,9 @@ def get_users_playlists():
 
     spotify = SpotifyManager()
     firebase = FirebaseManager()
+
+    # refresh the access_token if needed
+    spotify.refresh_access_token_and_update_firebase_if_needed(user_id)
     
     # get the user's firebase object so we can get the spotify access token
     user = firebase.get_user_info(user_id)
@@ -269,6 +277,10 @@ def add_playlist_to_group():
 
     # get user and group from firebase
     firebase = FirebaseManager()
+    spotify = SpotifyManager()
+
+    # refresh the access_token if needed
+    spotify.refresh_access_token_and_update_firebase_if_needed(user_id)
 
     user = firebase.get_user_info(user_id)
     group = firebase.get_group_info(group_id)
@@ -287,8 +299,6 @@ def add_playlist_to_group():
         return jsonify({"error": "User has already posted within the last 24 hours"}), 400
 
     # get spotify playlist info
-    spotify = SpotifyManager()
-
     raw_playlist = spotify.get_playlist_info(user.access_token, spotify_playlist_id)
 
     # add playlist info to firebase
@@ -348,7 +358,7 @@ def take_playlist_from_group():
         return error
 
     userID: str = request.user_id
-    groupID: str = request.ags.get("groupID")
+    groupID: str = request.args.get("groupID")
     playlistID: str = request.args.get("playlistID")
 
     fUser = fb.get_user_info(userID)

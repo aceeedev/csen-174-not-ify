@@ -1,5 +1,5 @@
 import { sendRequestWithIdToken } from "./firebase"
-import type { Group, Playlist } from "./models";
+import type { Group, Playlist, SpotifyPlaylist } from "./models";
 
 
 const baseURL: string = "http://localhost:5001";
@@ -106,9 +106,10 @@ export async function editGroupOnBackend(groupID: string, action: "remove_user" 
         });
 }
 
-export async function getUsersPlaylistsOnBackend(): Promise<Playlist[] | null> {
-    const result = await fetchBackend<Playlist[]>("/get/users/playlists");
-    
+// This is the User's spotify playlists, NOT firebase playlists
+export async function getUsersPlaylistsOnBackend(): Promise<SpotifyPlaylist[] | null> {
+    const result = await fetchBackend<SpotifyPlaylist[]>("/get/users/playlists");
+
     return result.success ? result.data : null;
 }
 

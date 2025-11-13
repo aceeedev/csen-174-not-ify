@@ -49,3 +49,9 @@ export interface User {
     my_complaints: string[];
     is_admin: boolean;
 }
+
+export interface SpotifyPlaylist {
+    cover: string;
+    spotify_id: string;
+    title: string
+}
