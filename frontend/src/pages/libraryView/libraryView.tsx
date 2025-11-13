@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import './libraryView.css';
+import Navbar from '../../components/Navbar';
 
 function LibraryView() {
   // TODO: Fetch user's library from backend
@@ -63,122 +64,10 @@ function LibraryView() {
   const displayLibrary = library.length > 0 ? sortedLibrary : dummyLibrary;
 
   return (
-    <div className="library-view-container">
-      {/* Navigation Bar */}
-      <nav className="library-navbar">
-        <div className="nav-content">
-          <Link to="/home" className="logo-link">
-            <h1 className="logo">Not-ify</h1>
-          </Link>
-          <div className="nav-links">
-            <Link to="/home" className="btn-secondary">Back to Home</Link>
-          </div>
-        </div>
-      </nav>
-
-      {/* Main Content */}
-      <div className="library-content">
-        {/* Header Section */}
-        <section className="library-header">
-          <div className="header-content">
-            <h1 className="library-title">Your Library</h1>
-            <p className="library-subtitle">
-              {displayLibrary.length} {displayLibrary.length === 1 ? 'playlist' : 'playlists'}
-            </p>
-          </div>
-          <button className="btn-primary btn-large" onClick={handleAddPlaylist}>
-            + Add Playlist
-          </button>
-        </section>
-
-        {/* Search and Filter Section */}
-        <section className="library-controls">
-          <div className="search-container">
-            <input
-              type="text"
-              placeholder="Search playlists..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="search-input"
-            />
-            <span className="search-icon">🔍</span>
-          </div>
-          <div className="sort-container">
-            <label htmlFor="sort-select">Sort by:</label>
-            <select
-              id="sort-select"
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as 'name' | 'date' | 'artist')}
-              className="sort-select"
-            >
-              <option value="name">Name</option>
-              <option value="date">Date Added</option>
-              <option value="artist">Artist</option>
-            </select>
-          </div>
-        </section>
-
-        {/* Playlists Grid */}
-        <section className="playlists-section">
-          {displayLibrary.length === 0 ? (
-            <div className="empty-state">
-              <div className="empty-icon">📚</div>
-              <h2 className="empty-title">No playlists found</h2>
-              <p className="empty-text">
-                {searchQuery
-                  ? 'Try adjusting your search terms'
-                  : 'Your library is empty. Add playlists from Spotify to get started!'}
-              </p>
-              {!searchQuery && (
-                <button className="btn-primary" onClick={handleAddPlaylist}>
-                  Add Your First Playlist
-                </button>
-              )}
-            </div>
-          ) : (
-            <div className="playlists-grid">
-              {displayLibrary.map((playlist) => (
-                <div key={playlist.id} className="playlist-card">
-                  <Link
-                    to={`/playlist/${playlist.id}`}
-                    className="playlist-link"
-                    onClick={() => handleViewPlaylist(playlist.id)}
-                  >
-                    <div className="playlist-cover-container">
-                      {playlist.cover ? (
-                        <img src={playlist.cover} alt={playlist.title} className="playlist-cover" />
-                      ) : (
-                        <div className="playlist-placeholder">🎵</div>
-                      )}
-                      <div className="playlist-overlay">
-                        <span className="play-button">▶</span>
-                      </div>
-                    </div>
-                    <div className="playlist-info">
-                      <h3 className="playlist-title">{playlist.title || 'Untitled Playlist'}</h3>
-                      <p className="playlist-artist">{playlist.artist || 'Various Artists'}</p>
-                      <p className="playlist-meta">
-                        {playlist.songCount || 0} {playlist.songCount === 1 ? 'song' : 'songs'}
-                      </p>
-                    </div>
-                  </Link>
-                  <div className="playlist-actions">
-                    <button
-                      className="btn-action btn-delete"
-                      onClick={() => handleDeletePlaylist(playlist.id)}
-                      title="Delete playlist"
-                    >
-                      🗑️
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </section>
-      </div>
-    </div>
-  );
+    <>
+      <Navbar></Navbar>
+    </>
+  )
 }
-
+ 
 export default LibraryView;
