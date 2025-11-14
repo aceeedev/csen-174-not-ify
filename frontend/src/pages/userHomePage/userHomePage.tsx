@@ -44,13 +44,7 @@ function UserHomePage() {
       <h1>Groups</h1>
       <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'nowrap', overflowX: 'auto', gap: '1rem' }}>
         {groups.map((group, index) => (
-          <div>
-            <GroupCard key={index} group={group} />
-
-            <Link to="/playlist" state={{ playlist: library[0], group, groupID: "NE20rYPTEZWWywd6V2Xi" }}>
-                Playlist from group test
-            </Link>
-          </div>
+          <GroupCard key={index} group={group} />
         ))}
       </div>
       
