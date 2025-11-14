@@ -174,7 +174,7 @@ body{
   grid-column: 1 / -1; /* spans the full width of the grid */
   font-size: .1.25rem;
   font-weight: 550;
-  color: rgba(253, 164, 242, 0.9);
+  color: rgba(100, 108, 255, 1);
   margin-top: 1rem;
   margin-bottom: 1rem;
 }
