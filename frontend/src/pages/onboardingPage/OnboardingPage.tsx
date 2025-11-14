@@ -31,7 +31,7 @@ function OnboardingPage() {
   
   return (
     <div>
-      <h1>Welcome to Not-ify!</h1>
+      <h1>Welcome to Bop Swap!</h1>
       <p>You need to first sign into Spotify so you can share your music.</p>
 
       <button onClick={signInToSpotify}>Sign in to Spotify</button>

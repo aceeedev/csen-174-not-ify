@@ -84,7 +84,7 @@ def get_groups():
     outLists = [] #empty list to store the output
 
     for gID in fUser.my_groups:
-        outLists.append(fb.get_group_info(gID).to_dict())
+        outLists.append(fb.get_group_info(gID).to_dict_with_id(gID))
     
     return jsonify({"data": outLists}), 200
 
@@ -181,17 +181,16 @@ def edit_group():
 
     fGroup = fb.get_group_info(groupID)
     fUser = fb.get_user_info(userID)
-
-    #Check if the userID == group owner ID
-    if userID != fGroup.owner_id:
-        return jsonify({"error": "Access denied, user is not the owner"}), 400
     
     #If actions == remove_user: remove user from group functionality:
     if action == 'remove_user':
+        #If a general user wants to remove themselves, allow them to
+        if params == fGroup.owner_id: 
+            return jsonify({"error": "Implementation error, cannot remove the group owner"}), 400
+        if params != userID and userID != fGroup.owner_id:
+            return jsonify({"error": "Cannot remove another user if you are not the owner"}), 400   
         if groupID not in fUser.my_groups:
             return jsonify({"error": "Implementation error, cannot access a group you are not in"}), 400
-        if params == userID: 
-            return jsonify({"error": "Implementation error, cannot remove yourself"}), 400
         if params not in fGroup.member_ids:
             return jsonify({"error": "Implementation error, cannot remove a member that is not in the group"}), 400
         
@@ -202,6 +201,7 @@ def edit_group():
         fb.update_user(params, fParams)
 
         fGroup.member_ids.remove(params)
+        del fGroup.group_member_data[userID] #delete this
         fb.update_group(groupID, fGroup)
         
         print(f"User with userID {params} successfully removed from group with groupID {groupID}")
@@ -210,6 +210,8 @@ def edit_group():
     #If actions == del_group: deleting the group functionality
     elif action == 'del_group':
         #remove groupID from the member's myGroup's array
+        if userID != fGroup.owner_id:
+            return jsonify({"error": "Access denied, user is not the owner"}), 400        
         for member in fGroup.member_ids:
             fMember = fb.get_user_info(member)
             if groupID not in fMember.my_groups:

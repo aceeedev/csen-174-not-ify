@@ -4,7 +4,7 @@ import { getAnalytics } from "firebase/analytics";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
 import { getFirestore, doc, getDoc } from "firebase/firestore";
 
-import type { User, Group, Playlist, Song } from "./models";
+import type { firebaseUser, Group, Playlist, Song } from "./models";
 
 
 // TODO: Add SDKs for Firebase products that you want to use
@@ -104,7 +104,7 @@ async function _getDocFromFirebase<T>(collection: string, docID: string): Promis
   return null;
 }
 
-export async function getCurrentUserFromFirebase(): Promise<User | null> {
+export async function getCurrentUserFromFirebase(): Promise<firebaseUser | null> {
   const user = auth.currentUser;
 
   if (!user) {
@@ -112,11 +112,11 @@ export async function getCurrentUserFromFirebase(): Promise<User | null> {
     return null;
   }
   
-  return _getDocFromFirebase<User>("Users", user.uid);
+  return _getDocFromFirebase<firebaseUser>("Users", user.uid);
 }
 
-export async function getUserFromFirebase(userID: string): Promise<User | null> {
-  return _getDocFromFirebase<User>("Users", userID);
+export async function getUserFromFirebase(userID: string): Promise<firebaseUser | null> {
+  return _getDocFromFirebase<firebaseUser>("Users", userID);
 }
 
 export async function getGroupFromFirebase(groupID: string): Promise<Group | null> {

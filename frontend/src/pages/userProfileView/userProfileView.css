@@ -68,349 +68,124 @@ body{
   width: 100%;
 }
 
-/* Profile Header */
-.profile-header {
+/* User Profile Stuff */
+
+/* Container for the profile card */
+.profile-avatar-container {
   display: flex;
-  gap: 3rem;
-  align-items: flex-start;
-  margin-bottom: 3rem;
-  padding: 2rem;
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 16px;
+  align-items: center;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+  margin: 24px auto;
+  margin-bottom: 24px;
+  border-radius: 8px;
+  color: white;
+  max-width: 400px; /* optional */
 }
 
-.profile-avatar-section {
+/* Profile picture */
+.profile-avatar-img {
+  width: 10rem;
+  height: 10rem;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #fff;
+}
+
+/* Container for the user info (name, etc.) */
+.profile-info {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 1rem;
+  gap: 4px;
 }
 
-.profile-avatar {
-  width: 150px;
-  height: 150px;
-  border-radius: 50%;
-  overflow: hidden;
-  border: 4px solid rgba(102, 126, 234, 0.3);
-  background: rgba(255, 255, 255, 0.05);
-  box-shadow: 0 10px 30px rgba(102, 126, 234, 0.2);
-}
-
-.profile-avatar img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.profile-placeholder {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 4rem;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.7);
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
-
-.btn-edit-avatar {
-  padding: 0.5rem 1rem;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 8px;
-  color: rgba(255, 255, 255, 0.8);
-  font-size: 0.85rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.btn-edit-avatar:hover {
-  background: rgba(255, 255, 255, 0.2);
-  transform: translateY(-2px);
-}
-
-.profile-info-section {
-  flex: 1;
-}
-
+/* User name */
 .profile-name {
   font-size: 2.5rem;
-  font-weight: 700;
-  color: rgba(255, 255, 255, 0.95);
-  margin: 0 0 0.5rem 0;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  font-weight: 600;
+  padding: 0.5rem 0.25rem 0 0.25rem;
+}
+
+.stats-line {
+  display: flex;
+  justify-content: center;   /* centers the whole line */
+  align-items: center;       /* vertically centers items */
+  gap: 8px;                  /* optional: space between items */
   text-align: center;
-
 }
 
-.profile-email {
-  font-size: 1.1rem;
-  color: rgba(255, 255, 255, 0.7);
-  margin: 0 0 0.5rem 0;
-}
-
-.profile-join-date {
-  font-size: 0.95rem;
-  color: rgba(255, 255, 255, 0.6);
-  margin: 0 0 1rem 0;
-}
-
-.profile-status {
-  margin-bottom: 1.5rem;
-}
-
-.status-badge {
-  display: inline-block;
-  padding: 0.5rem 1rem;
-  border-radius: 20px;
-  font-size: 0.9rem;
-  font-weight: 500;
-}
-
-.status-connected {
-  background: rgba(34, 197, 94, 0.2);
-  color: #22c55e;
-  border: 1px solid rgba(34, 197, 94, 0.3);
-}
-
-.status-disconnected {
-  background: rgba(239, 68, 68, 0.2);
-  color: #ef4444;
-  border: 1px solid rgba(239, 68, 68, 0.3);
-}
-
-.profile-actions {
-  display: flex;
-  justify-content: center;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-
-/* Coins Section */
-.coins-section {
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
-  backdrop-filter: blur(10px);
-  border: 2px solid rgba(102, 126, 234, 0.3);
-  border-radius: 16px;
-  padding: 2rem;
-  margin-bottom: 3rem;
-}
-
-.coins-header {
-  display: flex;
-  justify-content: space-between;
+.stats-segment {
   align-items: center;
-  margin-bottom: 2rem;
-  flex-wrap: wrap;
-  gap: 1.5rem;
+  flex-direction: column;
 }
 
-.coins-info {
-  flex: 1;
-}
-
-.coins-title {
-  font-size: 2rem;
-  font-weight: 700;
-  color: rgba(255, 255, 255, 0.95);
-  margin: 0 0 0.5rem 0;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.coins-description {
-  font-size: 1rem;
-  color: rgba(255, 255, 255, 0.7);
-  margin: 0;
-}
-
-.coins-display {
-  display: flex;
-  align-items: center;
-}
-
-.coins-amount {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 1.5rem 2rem;
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  border: 2px solid rgba(255, 255, 255, 0.2);
-  border-radius: 16px;
-}
-
-.coins-icon {
-  font-size: 3rem;
-}
-
-.coins-value {
-  font-size: 3rem;
-  font-weight: 700;
-  color: rgba(255, 255, 255, 0.95);
-  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.coins-actions {
-  display: flex;
-  gap: 1rem;
-  margin-bottom: 2rem;
-  flex-wrap: wrap;
-}
-
-.btn-buy-coins,
-.btn-earn-coins {
-  flex: 1;
-  min-width: 150px;
-}
-
-.coins-info-box {
+.stats-container {
+  /* Coloring */
   background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
-  padding: 1.5rem;
+
+  /* Padding and spacing */
+  padding: 2rem;       /* all sides same */
+  box-sizing: border-box;
+
+  /* Layout */
+  display: flex;
+  align-items: center;
+  position: relative;
+  width: 100%;
 }
 
-.info-box-title {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.9);
-  margin: 0 0 1rem 0;
-}
-
-.coins-info-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
+/* Left grows left, right grows right */
+.stats-left {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  text-align: center;
 }
 
-.coins-info-list li {
-  font-size: 0.95rem;
-  color: rgba(255, 255, 255, 0.7);
-  padding-left: 0.5rem;
+.stats-center {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 1.5rem; /* adjust */
 }
 
-/* Statistics Section */
-.stats-section {
-  margin-bottom: 3rem;
+
+.stats-right {
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+  margin-left: auto;
 }
 
-.section-title {
+/* Settings stuff */
+
+.settings-section-title {
   font-size: 1.75rem;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.9);
   margin-bottom: 1.5rem;
+  margin-top: 1.5rem;
 }
 
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1.5rem;
+.settings-subsection-title {
+  grid-column: 1 / -1; /* spans the full width of the grid */
+  font-size: .1.25rem;
+  font-weight: 550;
+  color: rgba(253, 164, 242, 0.9);
+  margin-top: 1rem;
+  margin-bottom: 1rem;
 }
 
-.stat-card {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  padding: 1.5rem;
+.group-row-style {
+  grid-column: 1 / -1;
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 1rem;
-  transition: all 0.3s ease;
-}
-
-.stat-card:hover {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.2);
-  transform: translateY(-4px);
-  box-shadow: 0 10px 30px rgba(102, 126, 234, 0.2);
-}
-
-.stat-icon {
-  font-size: 2.5rem;
-  flex-shrink: 0;
-}
-
-.stat-content {
-  flex: 1;
-}
-
-.stat-value {
-  font-size: 2rem;
-  font-weight: 700;
-  color: rgba(255, 255, 255, 0.95);
-  margin-bottom: 0.25rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.stat-label {
-  font-size: 0.9rem;
-  color: rgba(255, 255, 255, 0.6);
-}
-
-.stat-link {
-  font-size: 0.9rem;
-  color: #667eea;
-  text-decoration: none;
-  transition: color 0.3s ease;
-  white-space: nowrap;
-}
-
-.stat-link:hover {
-  color: #764ba2;
-}
-
-/* Account Section */
-.account-section {
-  margin-bottom: 3rem;
-}
-
-.account-info-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1.5rem;
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  padding: 2rem;
-}
-
-.info-item {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.info-label {
-  font-size: 0.85rem;
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.6);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.info-value {
-  font-size: 1rem;
-  color: rgba(255, 255, 255, 0.9);
+  padding: 1px 3.5rem; /* more horizontal padding */
+  margin: 0.5rem;
 }
 
 /* user settings section */
@@ -428,58 +203,6 @@ body{
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   padding: 2rem;
-}
-
-/* Quick Actions Section */
-.quick-actions-section {
-  margin-bottom: 3rem;
-}
-
-.quick-actions-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1.5rem;
-}
-
-.action-card {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  padding: 1.5rem;
-  text-align: center;
-  text-decoration: none;
-  color: inherit;
-  transition: all 0.3s ease;
-  cursor: pointer;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1rem;
-}
-
-.action-card:hover {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.2);
-  transform: translateY(-4px);
-  box-shadow: 0 10px 30px rgba(102, 126, 234, 0.2);
-}
-
-.action-icon {
-  font-size: 2.5rem;
-}
-
-.action-title {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.9);
-  margin: 0;
-}
-
-.action-description {
-  font-size: 0.9rem;
-  color: rgba(255, 255, 255, 0.6);
-  margin: 0;
 }
 
 /* Buttons */
@@ -516,64 +239,4 @@ body{
   background: rgba(255, 255, 255, 0.2);
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-  .profile-content {
-    padding: 1rem;
-  }
-
-  .profile-header {
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    gap: 2rem;
-  }
-
-  .profile-info-section {
-    text-align: center;
-  }
-
-  .profile-actions {
-    justify-content: center;
-  }
-
-  .coins-header {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .coins-display {
-    justify-content: center;
-  }
-
-  .coins-amount {
-    justify-content: center;
-    width: 100%;
-  }
-
-  .coins-actions {
-    flex-direction: column;
-  }
-
-  .coins-actions button {
-    width: 100%;
-  }
-
-  .stats-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .account-info-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .quick-actions-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .nav-content {
-    flex-direction: column;
-    gap: 1rem;
-  }
-}
 
