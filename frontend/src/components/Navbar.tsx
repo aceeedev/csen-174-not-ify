@@ -67,15 +67,20 @@ const Navbar: React.FC = () => {
       <header style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 20px', background: 'black'}}>
         <div style={{display: 'flex', alignItems: 'center', gap: 16}}>
           <Link to="/" style={{fontWeight: 700, fontSize: 20, textDecoration: 'none', color: 'inherit', userSelect: 'none', cursor: 'pointer'}}>Bop Swap</Link>
-          
-          <nav style={{display: 'flex', gap: 12}}>
-            <Link to={"/TODO"} style={{cursor: 'pointer'}}>
-                Groups
-            </Link>
-            <Link to={"/TODO"} style={{cursor: 'pointer'}}>
-                Library
-            </Link>
-          </nav>
+          {user ? (
+            <>            
+            <nav style={{display: 'flex', gap: 12}}>
+              <Link to={"/TODO"} style={{cursor: 'pointer'}}>
+                  Groups
+              </Link>
+              <Link to={"/TODO"} style={{cursor: 'pointer'}}>
+                  Library
+              </Link>
+            </nav>
+          </>
+          ) : (
+            <></>
+          )}
         </div>
 
         <div style={{display: 'flex', alignItems: 'center', gap: 12}}>

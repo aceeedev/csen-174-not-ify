@@ -1,0 +1,106 @@
+body{
+  margin: 0;
+  padding: 0;
+}
+
+.main-heading{
+    padding: 3rem;
+    font-size: 5rem;
+    font-weight: bold;
+    background: linear-gradient(45deg, #db3ea9, #96099e, #7300ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;    
+}
+
+.split-container{
+    display: flex; /* Enables flexbox */
+    width: 100%;   /* Full width of the parent */
+    height: 75vh; /* Full viewport height (optional) */
+    gap: 5rem;
+}
+
+/* Settings shared by both splits */
+.left-split,
+.right-split {
+  flex: 1;         /* Equal width by default */
+  padding: 1rem;   /* Optional padding */
+  display: flex;
+  flex-direction: column; /*stack children vertically */
+}
+
+.left-split {
+    backdrop-filter: blur(10px);
+    border: rgba(213, 179, 255, 0.05);
+    border-radius: 12px;   
+    gap: 1rem; /* spacing between elements */  
+ 
+}
+
+
+.left-header {
+    font-size: 3rem;
+    font-weight: bold;
+    color: #7300ff;
+    text-align: middle;
+    display: block;
+    padding-left: 1rem;
+    width: 89%;
+}
+
+.left-body{
+    flex: 1;                    /* take remaining vertical space */
+    display: flex;
+    flex-direction: column;
+    justify-content: top;     /* center vertically */
+    text-align: left;
+    color: white;
+    font-size: 1.9rem;
+    line-height: 1.6; 
+    padding: 1rem;
+    
+    /* padding-top: 100rem; */
+}
+
+.right-split {
+  background: rgba(213, 179, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+}
+
+.right-header {
+  font-size: 2rem;
+  font-weight: bold;
+  color: white;
+  text-align: center;
+  margin-bottom: 1rem; /* ➡ spacing below header */
+
+}
+
+.right-content {
+  flex: 1;                  /* ➡ take remaining vertical space */
+  display: flex;
+  flex-direction: column;
+  align-items: center;  /* centers children horizontally */
+  justify-content: center;
+  gap: 1rem;            /* space between header, body, button */
+}
+
+.right-body{
+    flex: 1;                    /* take remaining vertical space */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;     /* center vertically */
+    text-align: center;
+    color: white;
+    font-size: 1.9rem;
+    line-height: 1.6; 
+    padding: 1rem;
+    margin-bottom: 1rem; 
+
+    
+    /* padding-top: 100rem; */
+}
+
+.right-button{
+    padding: '3rem 5rem'
+}
