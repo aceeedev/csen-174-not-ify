@@ -14,7 +14,6 @@ import Callback from './pages/CallbackPage.tsx';
 import OnboardingPage from './pages/onboardingPage/OnboardingPage.tsx';
 import AddPlaylistPage from './pages/addPlaylistPage/AddPlaylistPage.tsx';
 import PlaylistPage from './pages/playlistPage/PlaylistPage.tsx';
-import LandingPage from './pages/landingPage/LandingPage.tsx';
 
 createRoot(document.getElementById('root')!).render(
   <BrowserRouter>
@@ -31,7 +30,6 @@ createRoot(document.getElementById('root')!).render(
       <Route path="/playlist/:playlistId" element={<PlaylistView />} />
       <Route path="/groups/:groupId" element={<GroupView />} />
       <Route path="/groups/:groupId/settings" element={<GroupSettingView />} />
-      <Route path="/landing" element={<LandingPage/>} />
       
       {/** test endpoints */}
       <Route path="/app" element={<App />} />
