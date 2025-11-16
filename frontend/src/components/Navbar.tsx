@@ -2,12 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { auth, authProvider, getCurrentUserFromFirebase } from '../firebase';
 import { signInWithPopup, onAuthStateChanged, signOut } from "firebase/auth";
 import { Link, useNavigate } from 'react-router-dom';
-import type { User } from "../models"
+import type { firebaseUser } from "../models"
 
 const Navbar: React.FC = () => {
   const navigate = useNavigate();
 
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<firebaseUser | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
 
 
@@ -66,27 +66,36 @@ const Navbar: React.FC = () => {
      <div>
       <header style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 20px', background: 'black'}}>
         <div style={{display: 'flex', alignItems: 'center', gap: 16}}>
-          <Link to="/" style={{fontWeight: 700, fontSize: 20, textDecoration: 'none', color: 'inherit', userSelect: 'none', cursor: 'pointer'}}>Not-ify</Link>
-          
-          <nav style={{display: 'flex', gap: 12}}>
-            <Link to={"/TODO"} style={{cursor: 'pointer'}}>
-                Groups
-            </Link>
-            <Link to={"/TODO"} style={{cursor: 'pointer'}}>
-                Library
-            </Link>
-          </nav>
+          <Link to="/" style={{fontWeight: 700, fontSize: 20, textDecoration: 'none', color: 'inherit', userSelect: 'none', cursor: 'pointer'}}>Bop Swap</Link>
+          {user ? (
+            <>            
+            <nav style={{display: 'flex', gap: 12}}>
+              <Link to={"/TODO"} style={{cursor: 'pointer'}}>
+                  Groups
+              </Link>
+              <Link to={"/TODO"} style={{cursor: 'pointer'}}>
+                  Library
+              </Link>
+            </nav>
+          </>
+          ) : (
+            <></>
+          )}
         </div>
 
         <div style={{display: 'flex', alignItems: 'center', gap: 12}}>
           {user ? (
             <>
               <span style={{color: 'white', fontSize: 14}}>
-                Hello, {user.name}
+                Hello, <span style={{fontStyle: 'italic'}}>{user.name}</span>
               </span>
-              <button onClick={handleSignOut} style={{padding: '8px 12px'}}>
+
+              <Link to={"/profile"} style={{cursor: 'pointer', padding: '1rem 1rem', fontSize: 18}}>
+                  Profile
+              </Link>
+              {/* <button onClick={handleSignOut} style={{padding: '8px 12px'}}>
                 Sign out
-              </button>
+              </button> */}
             </>
           ) : (
             <button onClick={signInToGoogle} disabled={loading} style={{padding: '8px 12px'}}>
