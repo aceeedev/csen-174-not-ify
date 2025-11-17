@@ -126,6 +126,13 @@ class Group:
             }
         )
     
+    def to_dict_with_id(self, firebase_id: str) -> dict[str, Any]:
+        as_dict: dict[str, Any] = self.to_dict()
+
+        as_dict["id"] = firebase_id
+
+        return as_dict
+    
     def get_remaining_playlists_on_shelf(self, user_id: str):
         """
         Returns a list of playlist ids that are not the user's and that are left for the user to unlock

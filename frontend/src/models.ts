@@ -11,6 +11,7 @@ export interface GroupMemberData {
 }
 
 export interface Group {
+    id?: string;
     owner_id: string;
     member_ids: string[];
     description: string;
@@ -22,6 +23,7 @@ export interface Group {
 
 
 export interface Playlist {
+    id?: string;
     spotify_id: string;
     owner_id: string;
     title: string;
@@ -39,7 +41,7 @@ export interface Song {
     title: string;
 }
 
-export interface User {
+export interface firebaseUser {
     name: string;
     spotify_id: string;
     access_token: string;

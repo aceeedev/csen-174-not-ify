@@ -13,6 +13,8 @@ import TestPage from './pages/TestPage.tsx'
 import Callback from './pages/CallbackPage.tsx';
 import OnboardingPage from './pages/onboardingPage/OnboardingPage.tsx';
 import AddPlaylistPage from './pages/addPlaylistPage/AddPlaylistPage.tsx';
+import PlaylistPage from './pages/playlistPage/PlaylistPage.tsx';
+import LandingPage from './pages/landingPage/LandingPage.tsx';
 
 createRoot(document.getElementById('root')!).render(
   <BrowserRouter>
@@ -22,13 +24,15 @@ createRoot(document.getElementById('root')!).render(
       <Route path="/callback" element={<Callback />} />
 
       <Route path="/add-playlist" element={<AddPlaylistPage />} />
+      <Route path="/playlist" element={<PlaylistPage />} />
       
       <Route path="/profile" element={<UserProfileView />} />
       <Route path="/library" element={<LibraryView />} />
       <Route path="/playlist/:playlistId" element={<PlaylistView />} />
       <Route path="/groups/:groupId" element={<GroupView />} />
       <Route path="/groups/:groupId/settings" element={<GroupSettingView />} />
-      
+      <Route path="/landing" element={<LandingPage/>} />
+
       {/** test endpoints */}
       <Route path="/app" element={<App />} />
       <Route path="/test" element={<TestPage />} />

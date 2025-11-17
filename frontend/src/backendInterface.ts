@@ -1,5 +1,5 @@
 import { sendRequestWithIdToken } from "./firebase"
-import type { Group, Playlist, SpotifyPlaylist } from "./models";
+import type { Group, Playlist, SpotifyPlaylist, Song } from "./models";
 
 
 const baseURL: string = "http://localhost:5001";
@@ -140,4 +140,18 @@ export async function takePlaylistFromGroupOnBackend(groupID: string, playlistID
             groupID: groupID,
             playlistID: playlistID
         });
+}
+
+export async function getLibraryPlaylistsOnBackend(): Promise<Playlist[] | null> {
+    const result = await fetchBackend<Playlist[]>("/get/playlist/library");
+    
+    return result.success ? result.data : null;
+}
+
+export async function getPlaylistItemsOnBackend(playlistID: string): Promise<Song[] | null> {
+    const result = await fetchBackend<Song[]>("/get/playlist/items", {
+      playlistID: playlistID
+    });
+    
+    return result.success ? result.data : null;
 }
