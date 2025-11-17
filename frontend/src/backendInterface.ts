@@ -113,6 +113,13 @@ export async function getUsersPlaylistsOnBackend(): Promise<SpotifyPlaylist[] | 
     return result.success ? result.data : null;
 }
 
+// this is the User's firebase playlists, NOT spotify playlists
+export async function getUsersFirebasePlaylistsOnBackend(): Promise<Playlist[] | null> {
+    const result = await fetchBackend<Playlist[]>("/get/users/playlists/firebase");
+
+    return result.success ? result.data : null;
+}
+
 export async function getGroupPlaylistsOnBackend(groupID: string): Promise<Playlist[] | null> {
     const result = await fetchBackend<Playlist[]>("/get/playlist/group", {
             group_id: groupID
