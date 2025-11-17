@@ -1,10 +1,20 @@
+import { signInWithPopup } from "firebase/auth";
 import Navbar from "../../components/Navbar"
 import './LandingPage.css';
 import { Link } from "react-router-dom";
+import { auth, authProvider } from "../../firebase";
 
 
 
 function LandingPage() {
+
+  const signInToGoogle = async () => {  
+    signInWithPopup(auth, authProvider).then(async (result) => {
+      // checkSpotifyAccessToken();
+    }).catch((error) => {
+      console.log("Google sign in error", error);
+    });
+  }
 
   return (
     <>
@@ -25,22 +35,13 @@ function LandingPage() {
             <div className="right-content">
               <div>
               <div className="right-body">Sign up or log in to get sharing!</div>
-              <Link to="/landing">
-                {/* TODO: Andrew, can we possibly get it so that this get started 
-                button does the same thing as the sign in button? 
-                If not, then the little right section can just be misc stats, like
-                "X active users, 
-                over Y songs posted and 
-                Z playlists Shared "
-                */}
                 <button style = 
                 {{
                   padding: '5rem 3rem',
                   fontSize: '1.9rem',
                   background: 'rgba(213, 179, 255, 0.05)',
                   color: '#db3ea9'
-                }}>Get Started</button>
-              </Link>
+                }} onClick={signInToGoogle}>Get Started</button>
               </div>
             </div>
           </div>

@@ -73,7 +73,7 @@ const Navbar: React.FC = () => {
               <Link to={"/TODO"} style={{cursor: 'pointer'}}>
                   Groups
               </Link>
-              <Link to={"/TODO"} style={{cursor: 'pointer'}}>
+              <Link to={"/library"} style={{cursor: 'pointer'}}>
                   Library
               </Link>
             </nav>
