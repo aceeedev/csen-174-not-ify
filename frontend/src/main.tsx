@@ -7,14 +7,12 @@ import UserProfileView from './pages/userProfileView/userProfileView.tsx'
 import GroupView from './pages/groupView/groupView.tsx'
 import GroupSettingView from './pages/groupSettingView/groupSettingView.tsx'
 import LibraryView from './pages/libraryView/libraryView.tsx'
-import PlaylistView from './pages/playlistView/playlistView.tsx'
 import App from './App.tsx'
 import TestPage from './pages/TestPage.tsx'
 import Callback from './pages/CallbackPage.tsx';
 import OnboardingPage from './pages/onboardingPage/OnboardingPage.tsx';
 import AddPlaylistPage from './pages/addPlaylistPage/AddPlaylistPage.tsx';
 import PlaylistPage from './pages/playlistPage/PlaylistPage.tsx';
-import LandingPage from './pages/landingPage/LandingPage.tsx';
 
 createRoot(document.getElementById('root')!).render(
   <BrowserRouter>
@@ -28,10 +26,10 @@ createRoot(document.getElementById('root')!).render(
       
       <Route path="/profile" element={<UserProfileView />} />
       <Route path="/library" element={<LibraryView />} />
-      <Route path="/playlist/:playlistId" element={<PlaylistView />} />
+
+      {/** remove? */}
       <Route path="/groups/:groupId" element={<GroupView />} />
       <Route path="/groups/:groupId/settings" element={<GroupSettingView />} />
-      <Route path="/landing" element={<LandingPage/>} />
 
       {/** test endpoints */}
       <Route path="/app" element={<App />} />
