@@ -244,6 +244,18 @@ def get_users_playlists():
 
     return jsonify({"data": spotify.get_users_playlists(user.access_token)}), 200
 
+# gets a users playlists from firestore
+@app.route('/get/users/playlists/firebase')
+@FirebaseManager.require_firebase_auth
+def get_users_playlists_firebase():
+    user_id = request.user_id
+    firebase = FirebaseManager()
+
+    user = firebase.get_user_info(user_id)
+    # for playlist_id
+
+    return jsonify({"data": user.library}), 200
+
 @app.route('/get/playlist/group')
 @FirebaseManager.require_firebase_auth
 def get_group_playlists():
