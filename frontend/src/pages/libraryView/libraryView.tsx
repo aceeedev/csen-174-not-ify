@@ -7,7 +7,7 @@ import { onAuthStateChanged } from 'firebase/auth';
 import type { Playlist, SpotifyPlaylist } from '../../models';
 import Navbar from '../../components/Navbar';
 import SpotifyPlaylistItem from '../../components/SpotifyPlaylistItem';
-import { getUsersFirebasePlaylistsOnBackend } from '../../backendInterface';
+import { getLibraryPlaylistsOnBackend, getUsersFirebasePlaylistsOnBackend } from '../../backendInterface';
 import PlaylistCard from '../../components/PlaylistCard';
 
 function LibraryView() {
@@ -31,7 +31,7 @@ function LibraryView() {
       if (!userReady) return;
   
       const fetchData = async () => {
-        setPlaylists(await getUsersFirebasePlaylistsOnBackend() ?? []);
+        setPlaylists(await getLibraryPlaylistsOnBackend() ?? []);
       };
       
       fetchData();

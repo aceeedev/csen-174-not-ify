@@ -4,7 +4,7 @@ import type { Group, Playlist, Song } from '../../models'
 import Navbar from "../../components/Navbar";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "../../firebase";
-import { getPlaylistItemsOnBackend, takePlaylistFromGroupOnBackend } from "../../backendInterface"
+import { getPlaylistItemsOnBackend, takePlaylistFromGroupOnBackend, exportPlaylist } from "../../backendInterface"
 import SongItem from "../../components/SongItem";
 
 
@@ -100,7 +100,7 @@ const PlaylistPage: React.FC = () => {
     }
 
     const handleExportPlaylist = async () => {
-        
+        await exportPlaylist(playlist.id!);
     }
 
     return (
