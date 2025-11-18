@@ -1,13 +1,10 @@
-/*THIS IS THE PAGE WHERE THE USER CAN VIEW THEIR LIBRARY */
 import { useEffect, useState } from 'react';
 import './libraryView.css';
-import { Link } from 'react-router-dom';
 import { auth } from '../../firebase';
 import { onAuthStateChanged } from 'firebase/auth';
-import type { Playlist, SpotifyPlaylist } from '../../models';
+import type { Playlist } from '../../models';
 import Navbar from '../../components/Navbar';
-import SpotifyPlaylistItem from '../../components/SpotifyPlaylistItem';
-import { getLibraryPlaylistsOnBackend, getUsersFirebasePlaylistsOnBackend } from '../../backendInterface';
+import { getLibraryPlaylistsOnBackend } from '../../backendInterface';
 import PlaylistCard from '../../components/PlaylistCard';
 
 function LibraryView() {

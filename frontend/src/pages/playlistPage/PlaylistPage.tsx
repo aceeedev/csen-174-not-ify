@@ -107,46 +107,47 @@ const PlaylistPage: React.FC = () => {
         <div>
             <Navbar/>
 
-            {loading && (
+            {loading ? (
                 <p>Loading...</p>
-            )}
-
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem' }}>
-                <img 
-                    src={playlist.cover} 
-                    alt={playlist.title}
-                    style={{ width: '150px', height: '150px', objectFit: 'cover', borderRadius: '8px' }}
-                />
-                <h1>{playlist.title}</h1>
-            </div>
-            
-            <p>{playlist.description}</p>
-
-            <h2>Actions</h2>
-
-            {pageOrigin === PageOrigin.FromGroup && (
-                <div>
-                    <p>You have {userCoins} coins.</p>
-                   
-                    <button onClick={handleTakePlaylist}>
-                        Take Playlist (costs 1 coin)
-                    </button>
+            ) : 
+            <>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem' }}>
+                    <img 
+                        src={playlist.cover} 
+                        alt={playlist.title}
+                        style={{ width: '150px', height: '150px', objectFit: 'cover', borderRadius: '8px' }}
+                    />
+                    <h1>{playlist.title}</h1>
                 </div>
-            )}
+                
+                <p>{playlist.description}</p>
 
-            {pageOrigin === PageOrigin.FromLibrary && (
-                <div>
-                    <button onClick={handleExportPlaylist}>
-                        Export Playlist to your Spotify Library
-                    </button>
-                </div>
-            )}
+                <h2>Actions</h2>
 
-            <h2>Playlist Items</h2>
+                {pageOrigin === PageOrigin.FromGroup && (
+                    <div>
+                        <p>You have {userCoins} coins.</p>
+                    
+                        <button onClick={handleTakePlaylist}>
+                            Take Playlist (costs 1 coin)
+                        </button>
+                    </div>
+                )}
 
-            {playlistItems.map((song, index) => 
-                <SongItem key={index} song={song} isBlurred={index >= playlistItemsBlurIndex && pageOrigin === PageOrigin.FromGroup}/>
-            )}
+                {pageOrigin === PageOrigin.FromLibrary && (
+                    <div>
+                        <button onClick={handleExportPlaylist}>
+                            Export Playlist to your Spotify Library
+                        </button>
+                    </div>
+                )}
+
+                <h2>Playlist Items</h2>
+
+                {playlistItems.map((song, index) => 
+                    <SongItem key={index} song={song} isBlurred={index >= playlistItemsBlurIndex && pageOrigin === PageOrigin.FromGroup}/>
+                )}
+            </>}
 
         </div>
         );
