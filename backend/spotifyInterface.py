@@ -55,7 +55,7 @@ class SpotifyManager:
             client_id=os.getenv("SPOTIFY_CLIENT_ID"),
             client_secret=os.getenv("SPOTIFY_CLIENT_SECRET"),
             redirect_uri="http://127.0.0.1:5173/callback",
-            scope="user-library-read"
+            scope="user-library-read playlist-modify-private playlist-modify-public"
         )
 
 

@@ -445,6 +445,36 @@ def get_playlist_items():
     songs = [ firebase.get_song_info(id).to_dict() for id in playlist.songs ]
 
     return jsonify({"data": songs}), 200
+
+@app.route('/export/playlist')
+@FirebaseManager.require_firebase_auth
+def exportPlaylist():
+    error = validate_params(["playlistID"])
+    if error:
+        return error
+    playlist_id: str = request.args.get("playlistID")
+
+    user_id = request.user_id
+
+
+    firebase = FirebaseManager()
+    spotify = SpotifyManager()
+
+    spotify.refresh_access_token_and_update_firebase_if_needed(user_id)
+
+    user = firebase.get_user_info(user_id)
+    access_token = user.access_token
+
+    # get spotify access token
+    # spotifyAuth = get_auth_url()
+
+    # get playlist info
+    playlist = firebase.get_playlist_info(playlist_id)
+
+    spotify.export_playlist(access_token, playlist.title, playlist.description, playlist.songs)
+    return 200
+
+
     
 
 if __name__ == "__main__":

@@ -149,3 +149,9 @@ export async function getPlaylistItemsOnBackend(playlistID: string): Promise<Son
     
     return result.success ? result.data : null;
 }
+
+export async function exportPlaylist(playlistID: string) {
+  const result = await fetchBackend<void>("/export/playlist", {
+    playlistID: playlistID
+  });
+}
