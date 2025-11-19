@@ -12,7 +12,8 @@ const PlaylistCard: React.FC<PlaylistCardProps> = ({ playlist }) => {
     const handleClick = () => {
         navigate('/playlist', { 
             state: { 
-                playlist: playlist, 
+                playlist: playlist,
+                // No groupID means it's from library
             } 
         });
     };

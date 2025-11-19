@@ -27,51 +27,89 @@ def validate_params(required_params: list[str]):
 
 
 @app.route('/spotify/auth-url')
-def get_auth_url():    
-    spotify = SpotifyManager()
+def get_auth_url():
+    try:
+        spotify = SpotifyManager()
 
-    auth_url: str = spotify.get_auth_url()
+        auth_url: str = spotify.get_auth_url()
+        
+        print(f"Generated Spotify auth URL (full): {auth_url}")  # Log full URL for debugging
+        print(f"URL length: {len(auth_url)}")
+        
+        if not auth_url or not auth_url.startswith('http'):
+            raise ValueError(f"Invalid auth URL generated: {auth_url}")
 
-    return jsonify({'auth_url': auth_url}) 
+        return jsonify({'auth_url': auth_url})
+    except Exception as e:
+        print(f"Error generating Spotify auth URL: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': f'Failed to generate auth URL: {str(e)}'}), 500 
 
 @app.route('/spotify/auth-callback')
 @FirebaseManager.require_firebase_auth
 def auth_callback():
-    error = validate_params(['code'])
-    if error:
-        return error
+    try:
+        error = validate_params(['code'])
+        if error:
+            print(f"Missing code parameter in callback")
+            return error
+        
+        user_id = request.user_id
+        code: str = request.args.get("code")
+        
+        print(f"Received Spotify callback for user {user_id}, code: {code[:20]}...")
+
+        spotify = SpotifyManager()
+
+        print("Exchanging code for access token...")
+        access_token_info: SpotifyAccessTokenInfo = spotify.get_access_token(code)
+        print("Successfully got access token")
+
+        # sub 60 seconds to be safe
+        safe_access_token_expire_time: datetime = datetime.now() + timedelta(seconds=access_token_info.expires_in - 60)
+        
+        # Add or update user in firebase
+        firebase = FirebaseManager()
+
+        firebase_user = firebase.get_firebase_user_info(user_id)
+
+        # Check if user already exists
+        try:
+            existing_user = firebase.get_user_info(user_id)
+            # User exists - update only Spotify tokens and preserve existing data
+            existing_user.access_token = access_token_info.access_token
+            existing_user.refresh_token = access_token_info.refresh_token
+            existing_user.access_token_expires = safe_access_token_expire_time
+            # Update name and profile pic in case they changed
+            existing_user.name = firebase_user.display_name
+            existing_user.profile_pic = firebase_user.photo_url
+            firebase.update_user(user_id, existing_user)
+            print(f"Successfully updated existing user {user_id} with Spotify tokens")
+        except ValueError:
+            # User doesn't exist - create new user
+            user = User(
+                name=firebase_user.display_name,
+                spotify_id="", # TODO: get from spotify_manager
+                access_token=access_token_info.access_token,
+                refresh_token=access_token_info.refresh_token,
+                access_token_expires=safe_access_token_expire_time,
+                profile_pic=firebase_user.photo_url,
+                library=[],
+                my_groups=[],
+                my_complaints=[],
+                is_admin=False
+            )
+            firebase.create_user(user_id, user)
+            print(f"Successfully created new user {user_id} with Spotify tokens")
+
+        return jsonify({"message": "Success!"}), 200
     
-    user_id = request.user_id
-    code: str = request.args.get("code")
-
-    spotify = SpotifyManager()
-
-    access_token_info: SpotifyAccessTokenInfo = spotify.get_access_token(code)
-
-    # sub 60 seconds to be safe
-    safe_access_token_expire_time: datetime = datetime.now() + timedelta(seconds=access_token_info.expires_in - 60)
-    
-    # Add user to firebase
-    firebase = FirebaseManager()
-
-    firebase_user = firebase.get_firebase_user_info(user_id)
-
-    user = User(
-        name=firebase_user.display_name,
-        spotify_id="", # TODO: get from spotify_manager
-        access_token=access_token_info.access_token,
-        refresh_token=access_token_info.refresh_token,
-        access_token_expires=safe_access_token_expire_time,
-        profile_pic=firebase_user.photo_url,
-        library=[],
-        my_groups=[],
-        my_complaints=[],
-        is_admin=False
-    )
-
-    firebase.create_user(user_id, user)
-
-    return jsonify({"message": "Success!"}), 200
+    except Exception as e:
+        print(f"Error in Spotify auth callback: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({"error": f"Failed to process callback: {str(e)}"}), 500
     
 @app.route('/get/groups')
 @FirebaseManager.require_firebase_auth
@@ -164,6 +202,50 @@ def join_group():
 
     return jsonify({"message": "Success!"}), 200
 
+@app.route('/invite/group')
+@FirebaseManager.require_firebase_auth
+def invite_to_group():
+    error = validate_params(['group_id', 'invitee_user_id'])
+    if error:
+        return error
+    
+    inviter_id: str = request.user_id
+    group_id: str = request.args.get("group_id")
+    invitee_user_id: str = request.args.get("invitee_user_id")
+    
+    firebase = FirebaseManager()
+    
+    # Get group and verify inviter is a member
+    group = firebase.get_group_info(group_id)
+    
+    if inviter_id not in group.member_ids:
+        return jsonify({"error": "You must be a member of the group to invite others"}), 400
+    
+    # Check if invitee is already a member
+    if invitee_user_id in group.member_ids:
+        return jsonify({"error": "User is already a member of this group"}), 400
+    
+    # Check if group is full
+    if len(group.member_ids) >= group.maxMembers:
+        return jsonify({"error": "This group has reached the maximum number of members"}), 400
+    
+    # Check if invitee user exists
+    try:
+        invitee_user = firebase.get_user_info(invitee_user_id)
+    except ValueError:
+        return jsonify({"error": "User not found"}), 404
+    
+    # Add invitee to group using helper functions
+    group.member_ids.append(invitee_user_id)
+    group.group_member_data[invitee_user_id] = GroupMemberData.default()
+    firebase.update_group(group_id, group)
+    
+    # Add group to invitee's my_groups list
+    invitee_user.my_groups.append(group_id)
+    firebase.update_user(invitee_user_id, invitee_user)
+    
+    return jsonify({"message": "Success!"}), 200
+
 @app.route('/edit/group')
 @FirebaseManager.require_firebase_auth
 def edit_group():
@@ -201,11 +283,34 @@ def edit_group():
         fb.update_user(params, fParams)
 
         fGroup.member_ids.remove(params)
-        del fGroup.group_member_data[userID] #delete this
+        del fGroup.group_member_data[params] #delete the removed user's data, not the caller's
         fb.update_group(groupID, fGroup)
         
         print(f"User with userID {params} successfully removed from group with groupID {groupID}")
         return jsonify({"message": "Success!"}), 200
+    
+    #If actions == update_settings: update group name/description
+    elif action == 'update_settings':
+        if userID != fGroup.owner_id:
+            return jsonify({"error": "Access denied, user is not the owner"}), 400
+        
+        # params should be JSON string with group_name and/or description
+        import json
+        try:
+            settings = json.loads(params)
+            if 'group_name' in settings:
+                fGroup.group_name = settings['group_name']
+            if 'description' in settings:
+                fGroup.description = settings['description']
+            if 'maxMembers' in settings:
+                fGroup.maxMembers = int(settings['maxMembers'])
+            if 'maxPLists' in settings:
+                fGroup.maxPLists = int(settings['maxPLists'])
+            
+            fb.update_group(groupID, fGroup)
+            return jsonify({"message": "Success!"}), 200
+        except json.JSONDecodeError:
+            return jsonify({"error": "Invalid JSON in params"}), 400
     
     #If actions == del_group: deleting the group functionality
     elif action == 'del_group':
@@ -233,16 +338,39 @@ def edit_group():
 def get_users_playlists():
     user_id = request.user_id
 
-    spotify = SpotifyManager()
-    firebase = FirebaseManager()
+    try:
+        spotify = SpotifyManager()
+        firebase = FirebaseManager()
 
-    # refresh the access_token if needed
-    spotify.refresh_access_token_and_update_firebase_if_needed(user_id)
-    
-    # get the user's firebase object so we can get the spotify access token
-    user = firebase.get_user_info(user_id)
+        # get the user's firebase object so we can get the spotify access token
+        user = firebase.get_user_info(user_id)
+        
+        # Check if user has Spotify access token
+        if not user.access_token:
+            return jsonify({"error": "User has not connected Spotify account. Please complete the Spotify onboarding flow."}), 400
 
-    return jsonify({"data": spotify.get_users_playlists(user.access_token)}), 200
+        # Check if user has refresh token
+        if not user.refresh_token:
+            return jsonify({"error": "Spotify refresh token is missing. Please reconnect your Spotify account through the onboarding flow."}), 400
+
+        # refresh the access_token if needed
+        try:
+            spotify.refresh_access_token_and_update_firebase_if_needed(user_id)
+        except ValueError as ve:
+            # This is a user-facing error about missing/invalid tokens
+            return jsonify({"error": str(ve)}), 400
+        except Exception as token_error:
+            # Other token refresh errors
+            return jsonify({"error": f"Failed to refresh Spotify token: {str(token_error)}. Please reconnect your Spotify account."}), 400
+        
+        # Get fresh user data after potential token refresh
+        user = firebase.get_user_info(user_id)
+
+        playlists = spotify.get_users_playlists(user.access_token)
+        return jsonify({"data": playlists}), 200
+    except Exception as e:
+        print(f"Error fetching Spotify playlists: {e}")
+        return jsonify({"error": f"Failed to fetch playlists: {str(e)}"}), 500
 
 # gets a users playlists from firestore
 @app.route('/get/users/playlists/firebase')
@@ -271,9 +399,32 @@ def get_group_playlists():
 
     group = firebase.get_group_info(group_id)
 
-    playlist_ids = group.get_remaining_playlists_on_shelf(user_id)
+    # Get ALL playlists in the group (not just remaining ones)
+    all_playlist_ids: list[str] = []
+    for member_id, member_data in group.group_member_data.items():
+        member_playlist_ids = [posted_playlist.playlist_id for posted_playlist in member_data.posted_playlists]
+        all_playlist_ids.extend(member_playlist_ids)
 
-    playlists = [ firebase.get_playlist_info(id).to_dict() for id in playlist_ids ]
+    # Fetch playlist details
+    playlists = []
+    for playlist_id in all_playlist_ids:
+        try:
+            playlist = firebase.get_playlist_info(playlist_id)
+            playlist_dict = playlist.to_dict()
+            playlist_dict['id'] = playlist_id
+            
+            # Add metadata about whether this playlist can be taken by the current user
+            # NOTE: For demo purposes, allowing users to take their own playlists
+            playlist_dict['can_take'] = (
+                playlist_id not in group.group_member_data[user_id].taken_playlists
+            )
+            playlist_dict['is_owner'] = playlist.owner_id == user_id
+            playlist_dict['is_taken'] = playlist_id in group.group_member_data[user_id].taken_playlists
+            
+            playlists.append(playlist_dict)
+        except ValueError:
+            # Playlist doesn't exist, skip it
+            continue
 
     return jsonify({"data": playlists}), 200
 
@@ -347,9 +498,15 @@ def add_playlist_to_group():
         playlist.songs.append(spotify_song_id)
 
 
-    # update group with playlist info
+    # Create playlist in firebase using helper function
     playlist_id = firebase.create_playlist(playlist)
     
+    # Add playlist to user's library
+    if playlist_id not in user.library:
+        user.library.append(playlist_id)
+        firebase.update_user(user_id, user)
+    
+    # Update group with playlist info using helper function
     group.group_member_data[user_id].posted_playlists.append(PostedPlaylist(
         playlist_id=playlist_id,
         number_downloaded=0
@@ -359,6 +516,7 @@ def add_playlist_to_group():
 
     group.group_member_data[user_id].last_posting_timestamp = now
 
+    # Update group using helper function
     firebase.update_group(group_id, group)
 
     return jsonify({"message": "Success!"}), 200
@@ -385,34 +543,45 @@ def take_playlist_from_group():
     if groupID not in fUser.my_groups:
         return jsonify({"error": "Data is not consistent, group claims user, but user does not claim group"}), 400
 
-    #Make sure that the user is not the owner of the playlist
-    if userID == fPlaylist.owner_id:
-        return jsonify({"error":"User cannot swap for a playlist they created"})
-        #TODO: Possibly change this implementation to be "take down a playlist without spending a coin" if we want that functionality
+    # NOTE: For demo purposes, allowing users to take their own playlists
+    # Original check commented out:
+    # #Make sure that the user is not the owner of the playlist
+    # if userID == fPlaylist.owner_id:
+    #     return jsonify({"error":"User cannot swap for a playlist they created"})
+    #     #TODO: Possibly change this implementation to be "take down a playlist without spending a coin" if we want that functionality
 
     #Make sure that the person has not taken the playlist before
     if playlistID in fGroup.group_member_data[userID].taken_playlists:
         return jsonify({"error": "User has already taken this playlist."}), 400
-    if playlistID not in fUser.library:
-        return jsonify({"error": "Data is not consistent, playlist claims user has taken it, while user does not have it."}), 400
+    
+    # Check if playlist is already in user's library (data consistency check)
+    if playlistID in fUser.library:
+        return jsonify({"error": "Playlist is already in your library."}), 400
     
     #Make sure that they have the coins to do it.
     if fGroup.group_member_data[userID].coins <= 0:
         return jsonify({"error": "User does not have enough coins to take this playlist"}), 400
     
-    fUser.library.append(playlistID) #add the playlist to the user's library.
-    fGroup.group_member_data[userID].taken_playlists.append(playlistID) #reflect that change in the group
+    # Add the playlist to the user's library
+    fUser.library.append(playlistID)
+    fb.update_user(userID, fUser)
     
-    #Incrememnt the number of times that playlist has been downloaded.
-    for member in fGroup.member_ids:
-        if playlistID not in fGroup.group_member_data[member].posted_playlist.playlistID:
-            pass
-        else:
-            fGroup.group_member_data[member].posted_playlist.number_downloaded += 1
-            #TODO: Make a function call for when this playlist has been downloaded by everyone to remove the playlist from the group
+    # Mark the playlist as taken in the group
+    fGroup.group_member_data[userID].taken_playlists.append(playlistID)
+    
+    # Increment the number of times that playlist has been downloaded for the owner
+    for member_id, member_data in fGroup.group_member_data.items():
+        for posted_playlist in member_data.posted_playlists:
+            if posted_playlist.playlist_id == playlistID:
+                posted_playlist.number_downloaded += 1
+                #TODO: Make a function call for when this playlist has been downloaded by everyone to remove the playlist from the group
+                break
 
     #'Charge' the user a coin for taking the playlist. 
     fGroup.group_member_data[userID].coins -= 1
+    
+    # Update the group in Firebase using helper function
+    fb.update_group(groupID, fGroup)
 
     return jsonify({"message": "Success!"}), 200
 
@@ -426,7 +595,17 @@ def get_library_playlists():
 
     user = firebase.get_user_info(user_id)
 
-    playlists = [ firebase.get_playlist_info(id).to_dict_with_id(id) for id in user.library ]
+    # Fetch playlists, skipping any that don't exist (e.g., deleted playlists)
+    playlists = []
+    for playlist_id in user.library:
+        try:
+            playlist = firebase.get_playlist_info(playlist_id)
+            playlist_dict = playlist.to_dict_with_id(playlist_id)
+            playlists.append(playlist_dict)
+        except ValueError:
+            # Playlist doesn't exist, skip it
+            print(f"Warning: Playlist {playlist_id} not found in Firestore, skipping")
+            continue
 
     return jsonify({"data": playlists}), 200
 

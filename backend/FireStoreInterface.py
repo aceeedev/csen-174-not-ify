@@ -81,7 +81,8 @@ class FirebaseManager:
             '2JvP9mXb73UsaYf2S3hW'
         """
 
-        doc_ref = self.db.collection(collectionName).document(documentID)
+        collection = self.db.collection(collectionName)
+        doc_ref = collection.document(documentID) if documentID else collection.document()
         doc_ref.set(data)
 
         return doc_ref.id

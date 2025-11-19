@@ -34,15 +34,23 @@ class User:
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]): #UC2
+        # Handle missing fields for backward compatibility
+        access_token_expires = data.get('access_token_expires')
+        if access_token_expires:
+            access_token_expires = ensure_datetime(access_token_expires)
+        else:
+            # Default to current time if missing
+            access_token_expires = datetime.now(timezone.utc)
+        
         return cls(
-            name=data['name'],
-            spotify_id=data['spotify_id'],
-            access_token=data['access_token'],
-            refresh_token=data['refresh_token'],
-            access_token_expires=ensure_datetime(data['access_token_expires']),
-            profile_pic=data['profile_pic'],
-            library=data['library'],
-            my_groups=data['my_groups'],
-            my_complaints=data['my_complaints'],
-            is_admin=data['is_admin'],
+            name=data.get('name', ''),
+            spotify_id=data.get('spotify_id', ''),
+            access_token=data.get('access_token', ''),
+            refresh_token=data.get('refresh_token', ''),
+            access_token_expires=access_token_expires,
+            profile_pic=data.get('profile_pic', ''),
+            library=data.get('library', []),
+            my_groups=data.get('my_groups', []),
+            my_complaints=data.get('my_complaints', []),
+            is_admin=data.get('is_admin', False),
         )

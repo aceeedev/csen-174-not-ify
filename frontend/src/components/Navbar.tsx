@@ -28,8 +28,9 @@ const Navbar: React.FC = () => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
         setUser(await getCurrentUserFromFirebase());
-
         checkSpotifyAccessToken();
+      } else {
+        setUser(null);
       }
     });
     
@@ -64,16 +65,16 @@ const Navbar: React.FC = () => {
   
   return (
      <div>
-      <header style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 20px', background: 'black'}}>
+      <header style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 20px', background: 'black', color: 'white'}}>
         <div style={{display: 'flex', alignItems: 'center', gap: 16}}>
-          <Link to="/" style={{fontWeight: 700, fontSize: 20, textDecoration: 'none', color: 'inherit', userSelect: 'none', cursor: 'pointer'}}>Bop Swap</Link>
+          <Link to={user ? "/userHomePage" : "/"} style={{fontWeight: 700, fontSize: 20, textDecoration: 'none', color: 'white', userSelect: 'none', cursor: 'pointer'}}>Bop Swap</Link>
           {user ? (
             <>            
             <nav style={{display: 'flex', gap: 12}}>
-              <Link to={"/TODO"} style={{cursor: 'pointer'}}>
+              <Link to={"/userHomePage"} style={{cursor: 'pointer', textDecoration: 'none', color: 'white', padding: '8px 12px', borderRadius: '4px', transition: 'background-color 0.2s'}} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
                   Groups
               </Link>
-              <Link to={"/library"} style={{cursor: 'pointer'}}>
+              <Link to={"/library"} style={{cursor: 'pointer', textDecoration: 'none', color: 'white', padding: '8px 12px', borderRadius: '4px', transition: 'background-color 0.2s'}} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
                   Library
               </Link>
             </nav>
@@ -90,12 +91,12 @@ const Navbar: React.FC = () => {
                 Hello, <span style={{fontStyle: 'italic'}}>{user.name}</span>
               </span>
 
-              <Link to={"/profile"} style={{cursor: 'pointer', padding: '1rem 1rem', fontSize: 18}}>
+              <Link to={"/profile"} style={{cursor: 'pointer', padding: '8px 12px', fontSize: 14, textDecoration: 'none', color: 'white', borderRadius: '4px', transition: 'background-color 0.2s'}} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
                   Profile
               </Link>
-              {/* <button onClick={handleSignOut} style={{padding: '8px 12px'}}>
+              <button onClick={handleSignOut} style={{padding: '8px 12px'}}>
                 Sign out
-              </button> */}
+              </button>
             </>
           ) : (
             <button onClick={signInToGoogle} disabled={loading} style={{padding: '8px 12px'}}>

@@ -169,6 +169,21 @@
   border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+.status-message {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 2rem 1.5rem;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.status-message.error {
+  border: 1px solid rgba(227, 52, 47, 0.4);
+  background: rgba(227, 52, 47, 0.12);
+  color: #ffb3ad;
+}
+
 .group-link {
   color: #667eea;
   text-decoration: none;

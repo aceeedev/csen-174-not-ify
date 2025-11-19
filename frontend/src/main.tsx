@@ -6,7 +6,10 @@ import IndexPage from './pages/IndexPage.tsx';
 import UserProfileView from './pages/userProfileView/userProfileView.tsx'
 import GroupView from './pages/groupView/groupView.tsx'
 import GroupSettingView from './pages/groupSettingView/groupSettingView.tsx'
+import AddGroupView from './pages/addGroupView/addGroupView.tsx'
 import LibraryView from './pages/libraryView/libraryView.tsx'
+import PlaylistView from './pages/playlistView/playlistView.tsx'
+import UserHomePage from './pages/userHomePage/userHomePage.tsx'
 import App from './App.tsx'
 import TestPage from './pages/TestPage.tsx'
 import Callback from './pages/CallbackPage.tsx';
@@ -18,18 +21,21 @@ createRoot(document.getElementById('root')!).render(
   <BrowserRouter>
     <Routes>
       <Route path="/" element={<IndexPage />} />
+      <Route path="/userHomePage" element={<UserHomePage />} />
+      <Route path="/home" element={<UserHomePage />} />
       <Route path="/onboarding" element={<OnboardingPage />} />
       <Route path="/callback" element={<Callback />} />
 
       <Route path="/add-playlist" element={<AddPlaylistPage />} />
       <Route path="/playlist" element={<PlaylistPage />} />
+      <Route path="/playlist/:playlistId" element={<PlaylistView />} />
       
       <Route path="/profile" element={<UserProfileView />} />
       <Route path="/library" element={<LibraryView />} />
 
-      {/** remove? */}
       <Route path="/groups/:groupId" element={<GroupView />} />
       <Route path="/groups/:groupId/settings" element={<GroupSettingView />} />
+      <Route path="/groups/new" element={<AddGroupView />} />
 
       {/** test endpoints */}
       <Route path="/app" element={<App />} />
