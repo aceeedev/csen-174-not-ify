@@ -1,6 +1,8 @@
 from typing import Any
 from datetime import datetime, timezone
 
+from utils import ensure_datetime
+
 
 #Changelog
 #Update Code: Editor, date
@@ -8,19 +10,6 @@ from datetime import datetime, timezone
 #   General: Changed plistBoard to shelf
 #UC2: Katie 10/31/2025
 
-
-def ensure_datetime(value: Any) -> datetime:
-    """Safely convert Firestore timestamps or strings to Python datetime."""
-    if isinstance(value, datetime):
-        return value
-    if hasattr(value, "to_pydatetime"):  # Firestore Timestamp
-        return value.to_pydatetime()
-    if isinstance(value, str):
-        try:
-            return datetime.fromisoformat(value)
-        except ValueError:
-            return datetime.fromisoformat(value.replace("Z", "+00:00"))
-    raise TypeError(f"Unsupported datetime format: {type(value)}")
 
 class PostedPlaylist:
     def __init__(self, playlist_id: str, number_downloaded: int) -> None:
@@ -119,8 +108,8 @@ class Group:
             "description": self.description,
             "group_name": self.group_name,
             "group_member_data": {
-                member_id: data.to_dict()
-                for member_id, data in self.group_member_data.items()
+                member_id: member_data.to_dict()
+                for member_id, member_data in self.group_member_data.items()
             }
         }
 
@@ -132,10 +121,17 @@ class Group:
             description=data['description'],
             group_name=data['group_name'],
             group_member_data={
-                member_id: GroupMemberData.from_dict(data)
-                for member_id, data in data['group_member_data'].items()
+                member_id: GroupMemberData.from_dict(member_data)
+                for member_id, member_data in data['group_member_data'].items()
             }
         )
+    
+    def to_dict_with_id(self, firebase_id: str) -> dict[str, Any]:
+        as_dict: dict[str, Any] = self.to_dict()
+
+        as_dict["id"] = firebase_id
+
+        return as_dict
     
     def get_remaining_playlists_on_shelf(self, user_id: str):
         """

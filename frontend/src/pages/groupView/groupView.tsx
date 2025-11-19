@@ -1,15 +1,17 @@
 /*This is a group view page where the user can view a group and the playlist board and its members */
 
 import { useEffect, useMemo, useState } from 'react';
-import { Link, useLocation, useParams } from 'react-router-dom';
+import { Link, useLocation, useParams, useNavigate } from 'react-router-dom';
 import './groupView.css';
 import { getIdToken, auth } from '../../firebase';
+import { takePlaylistFromGroupOnBackend } from '../../backendInterface';
 
 const API_BASE_URL =
   import.meta.env.VITE_BACKEND_URL ?? 'http://127.0.0.1:5001';
 
 function GroupView() {
   const { groupId } = useParams();
+  const navigate = useNavigate();
   const location = useLocation() as { state?: { group?: any } };
   const locationGroup = location.state?.group ?? null;
 
@@ -137,9 +139,11 @@ function GroupView() {
             const playlistData = await playlistResponse.json();
 
             if (isMounted) {
+              // Backend returns {"data": [...]} for group playlists
+              const playlistsArray = playlistData?.data || playlistData?.playlists || [];
               setPlaylists(
-                Array.isArray(playlistData?.playlists)
-                  ? playlistData.playlists
+                Array.isArray(playlistsArray)
+                  ? playlistsArray
                   : [],
               );
             }
@@ -171,15 +175,51 @@ function GroupView() {
   }, [groupId, baseUrl]);
 
   const handleAddPlaylist = () => {
-    // TODO: Implement add playlist functionality
+    if (!groupId) return;
+    navigate('/add-playlist', { 
+      state: { 
+        group: group,
+        groupID: groupId 
+      } 
+    });
   };
 
   const handleInviteMember = () => {
     // TODO: Implement invite member functionality
   };
 
-  const handleViewPlaylist = (_playlistId: string) => {
-    // TODO: Navigate to playlist view
+  const handleViewPlaylist = (playlistId: string) => {
+    const playlist = playlists.find(p => p.id === playlistId);
+    if (!playlist) return;
+    
+    navigate('/playlist', { 
+      state: { 
+        groupID: groupId,
+        group: group,
+        playlist: playlist
+      } 
+    });
+  };
+
+  const handleTakePlaylist = async (playlistId: string, event: React.MouseEvent) => {
+    event.stopPropagation(); // Prevent triggering the card click
+    
+    if (!groupId || !playlistId) return;
+
+    try {
+      const result = await takePlaylistFromGroupOnBackend(groupId, playlistId);
+      
+      if (result.success) {
+        // Refresh the playlists to update the UI
+        // You could also show a success message here
+        window.location.reload(); // Simple refresh for now
+      } else {
+        alert(`Error: ${result.message}`);
+      }
+    } catch (error) {
+      console.error('Error taking playlist:', error);
+      alert('Failed to take playlist');
+    }
   };
 
   const handleViewMember = (_memberId: string) => {
@@ -292,8 +332,15 @@ function GroupView() {
                   </div>
                   <div className="playlist-info">
                     <h3 className="playlist-title">{playlist.title || 'Untitled Playlist'}</h3>
-                    <p className="playlist-owner">by {playlist.owner || 'Unknown'}</p>
-                    <p className="playlist-songs">{playlist.songCount || 0} songs</p>
+                    <p className="playlist-owner">by {playlist.owner_id || 'Unknown'}</p>
+                    <p className="playlist-songs">{playlist.songs?.length || 0} songs</p>
+                    <button 
+                      className="btn-primary" 
+                      onClick={(e) => handleTakePlaylist(playlist.id, e)}
+                      style={{ marginTop: '0.5rem' }}
+                    >
+                      Take Playlist (1 coin)
+                    </button>
                   </div>
                 </div>
               ))}

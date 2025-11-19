@@ -4,26 +4,27 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './userHomePage.css';
 import { getIdToken } from '../../firebase';
+import Navbar from '../../components/Navbar';
+import { getLibraryPlaylistsOnBackend } from '../../backendInterface';
 
 const API_BASE_URL =
   import.meta.env.VITE_BACKEND_URL ?? 'http://127.0.0.1:5001';
 
 function UserHomePage() {
   const navigate = useNavigate();
-  // TODO: Fetch user's groups from backend
   const [groups, setGroups] = useState<any[]>([]);
   const [isLoadingGroups, setIsLoadingGroups] = useState<boolean>(true);
   const [groupsError, setGroupsError] = useState<string | null>(null);
   
-  // TODO: Fetch user's library from backend
   const [library, setLibrary] = useState<any[]>([]);
+  const [isLoadingLibrary, setIsLoadingLibrary] = useState<boolean>(true);
 
   const handleCreateGroup = () => {
     navigate('/groups/new');
   };
 
   const handleViewLibrary = () => {
-    // TODO: Navigate to library view
+    navigate('/library');
   };
 
   const handleViewGroup = (groupData: any) => {
@@ -76,13 +77,18 @@ function UserHomePage() {
           throw new Error(message);
         }
 
-        const data = await response.json();
+        const responseData = await response.json();
 
         if (isMounted) {
-          const mappedGroups = Array.isArray(data)
-            ? data.map((groupItem: any) => ({
+          // Backend returns {"data": [...]}, so extract the data array
+          const groupsArray = responseData?.data || responseData || [];
+          const mappedGroups = Array.isArray(groupsArray)
+            ? groupsArray.map((groupItem: any) => ({
                 ...groupItem,
                 id: groupItem.id,
+                name: groupItem.group_name || groupItem.name, // Backend uses group_name
+                description: groupItem.description || '',
+                memberCount: groupItem.member_ids?.length || 0, // Calculate from member_ids array
               }))
             : [];
           setGroups(mappedGroups);
@@ -110,20 +116,39 @@ function UserHomePage() {
     };
   }, []);
 
+  // Fetch library playlists
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchLibrary = async () => {
+      setIsLoadingLibrary(true);
+
+      try {
+        const libraryData = await getLibraryPlaylistsOnBackend();
+        
+        if (isMounted) {
+          setLibrary(libraryData || []);
+        }
+      } catch (error) {
+        console.error('Error fetching library:', error);
+      } finally {
+        if (isMounted) {
+          setIsLoadingLibrary(false);
+        }
+      }
+    };
+
+    fetchLibrary();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   return (
     <div className="user-home-container">
       {/* Navigation Bar */}
-      <nav className="user-navbar">
-        <div className="nav-content">
-          <Link to="/" className="logo-link">
-            <h1 className="logo">Not-ify</h1>
-          </Link>
-          <div className="nav-links">
-            <Link to="/profile" className="nav-link">Profile</Link>
-            <Link to="/login" className="btn-secondary">Sign Out</Link>
-          </div>
-        </div>
-      </nav>
+      <Navbar />
 
       {/* Main Content */}
       <div className="user-home-content">
@@ -205,7 +230,9 @@ function UserHomePage() {
           </div>
 
           <div className="library-preview">
-            {library.length === 0 ? (
+            {isLoadingLibrary ? (
+              <div className="status-message">Loading library…</div>
+            ) : library.length === 0 ? (
               <div className="empty-state">
                 <div className="empty-icon">📚</div>
                 <p className="empty-text">Your library is empty</p>
@@ -225,7 +252,7 @@ function UserHomePage() {
                       )}
                     </div>
                     <h4 className="library-item-title">{item.title || 'Untitled'}</h4>
-                    <p className="library-item-artist">{item.artist || 'Unknown Artist'}</p>
+                    <p className="library-item-artist">{item.description || 'No description'}</p>
                   </div>
                 ))}
               </div>

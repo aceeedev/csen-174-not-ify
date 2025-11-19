@@ -1,48 +1,36 @@
 import React, { useState, useEffect } from 'react';
-import { auth, authProvider, db } from '../firebase';
-import { signInWithPopup, onAuthStateChanged, signOut, type User } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
+import { auth, authProvider, getCurrentUserFromFirebase } from '../firebase';
+import { signInWithPopup, onAuthStateChanged, signOut } from "firebase/auth";
 import { Link, useNavigate } from 'react-router-dom';
+import type { firebaseUser } from "../models"
 
 const Navbar: React.FC = () => {
   const navigate = useNavigate();
 
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<firebaseUser | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
 
 
-  const checkSpotifyAccessToken = async (user: User) => {
+  const checkSpotifyAccessToken = async () => {
     // check if the document with the id user.uid in the Firestore collection named Users has the attribute access_token
-    
-    const userId = user.uid;
-    const userDocRef = doc(db, "Users", userId);
-    
-    try {
-      const userDocSnap = await getDoc(userDocRef);
-      
-      if (userDocSnap.exists()) {
-        const userData = userDocSnap.data();
-        
-        if (!userData.access_token) {
-          // the user document does not have Spotify access_token info -> need to onboard
-          navigate("/onboarding");
-        }
-      } else {
-        // the user document does not exist in Firestore -> need to onboard
-        navigate("/onboarding");
-      }
-    } catch (error) {
-      console.error("Error checking Firestore document:", error);
+    const user = await getCurrentUserFromFirebase();
+
+    if (user !== null && !user.access_token) {
+      navigate("/onboarding");
+    } else if (user === null) {
+      navigate("/onboarding");
     }
+
   };
 
   // listen for auth state changes
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-      
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
-        checkSpotifyAccessToken(currentUser);
+        setUser(await getCurrentUserFromFirebase());
+        checkSpotifyAccessToken();
+      } else {
+        setUser(null);
       }
     });
     
@@ -54,7 +42,7 @@ const Navbar: React.FC = () => {
     setLoading(true);
 
     signInWithPopup(auth, authProvider).then(async (result) => {
-      checkSpotifyAccessToken(result.user);
+      checkSpotifyAccessToken();
     }).catch((error) => {
       console.log("Google sign in error", error);
     });
@@ -65,7 +53,10 @@ const Navbar: React.FC = () => {
   const handleSignOut = async () => {
     try {
       await signOut(auth);
-      navigate('/');
+
+      setUser(null);
+
+      navigate("/");
     } catch (error) {
       console.error("Sign out error:", error);
     }
@@ -74,32 +65,35 @@ const Navbar: React.FC = () => {
   
   return (
      <div>
-      <header style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 20px', background: 'black'}}>
+      <header style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 20px', background: 'black', color: 'white'}}>
         <div style={{display: 'flex', alignItems: 'center', gap: 16}}>
-          <Link to="/" style={{fontWeight: 700, fontSize: 20, textDecoration: 'none', color: 'white'}}>
-            Not-ify
-          </Link>
-          <nav style={{display: 'flex', gap: 12}}>
-            <Link to={user ? "/userHomePage" : "/"} style={{cursor: 'pointer'}}>
-                Groups
-            </Link>
-            <Link to={user ? "/library" : "/"} style={{cursor: 'pointer'}}>
-                Library
-            </Link>
-            {user && (
-              <Link to="/profile" style={{cursor: 'pointer'}}>
-                  Profile
+          <Link to={user ? "/userHomePage" : "/"} style={{fontWeight: 700, fontSize: 20, textDecoration: 'none', color: 'white', userSelect: 'none', cursor: 'pointer'}}>Bop Swap</Link>
+          {user ? (
+            <>            
+            <nav style={{display: 'flex', gap: 12}}>
+              <Link to={"/userHomePage"} style={{cursor: 'pointer', textDecoration: 'none', color: 'white', padding: '8px 12px', borderRadius: '4px', transition: 'background-color 0.2s'}} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
+                  Groups
               </Link>
-            )}
-          </nav>
+              <Link to={"/library"} style={{cursor: 'pointer', textDecoration: 'none', color: 'white', padding: '8px 12px', borderRadius: '4px', transition: 'background-color 0.2s'}} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
+                  Library
+              </Link>
+            </nav>
+          </>
+          ) : (
+            <></>
+          )}
         </div>
 
         <div style={{display: 'flex', alignItems: 'center', gap: 12}}>
           {user ? (
             <>
               <span style={{color: 'white', fontSize: 14}}>
-                Hello, {user.displayName || user.email}
+                Hello, <span style={{fontStyle: 'italic'}}>{user.name}</span>
               </span>
+
+              <Link to={"/profile"} style={{cursor: 'pointer', padding: '8px 12px', fontSize: 14, textDecoration: 'none', color: 'white', borderRadius: '4px', transition: 'background-color 0.2s'}} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
+                  Profile
+              </Link>
               <button onClick={handleSignOut} style={{padding: '8px 12px'}}>
                 Sign out
               </button>

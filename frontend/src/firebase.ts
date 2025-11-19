@@ -2,7 +2,10 @@
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
+import { getFirestore, doc, getDoc } from "firebase/firestore";
+
+import type { firebaseUser, Group, Playlist, Song } from "./models";
+
 
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
@@ -81,5 +84,52 @@ export async function sendRequestWithIdToken(
     return null;
   }
 }
+
+// Firebase document getters
+async function _getDocFromFirebase<T>(collection: string, docID: string): Promise<T | null> {
+  const userDocRef = doc(db, collection, docID);
+
+  try {
+    const docSnap = await getDoc(userDocRef);
+    
+    if (docSnap.exists()) {
+      const data = docSnap.data();
+
+      return data as T;
+    }
+  } catch (error) {
+    console.error(`Error getting Firestore document, ${docID}, from collection, ${collection}:`, error);
+  }
+
+  return null;
+}
+
+export async function getCurrentUserFromFirebase(): Promise<firebaseUser | null> {
+  const user = auth.currentUser;
+
+  if (!user) {
+    console.warn("No user is currently signed in.");
+    return null;
+  }
+  
+  return _getDocFromFirebase<firebaseUser>("Users", user.uid);
+}
+
+export async function getUserFromFirebase(userID: string): Promise<firebaseUser | null> {
+  return _getDocFromFirebase<firebaseUser>("Users", userID);
+}
+
+export async function getGroupFromFirebase(groupID: string): Promise<Group | null> {
+  return _getDocFromFirebase<Group>("Groups", groupID);
+}
+
+export async function getPlaylistFromFirebase(playlistID: string): Promise<Playlist | null> {
+  return _getDocFromFirebase<Playlist>("Playlists", playlistID);
+}
+
+export async function getSongFromFirebase(songID: string): Promise<Song | null> {
+  return _getDocFromFirebase<Song>("Songs", songID);
+}
+
 
 export default app;

@@ -2,7 +2,7 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 
 from FireStoreInterface import FirebaseManager
-from spotifyInterface import SpotifyManager
+from spotifyInterface import SpotifyManager, SpotifyAccessTokenInfo
 
 from models.group import Group, GroupMemberData, PostedPlaylist
 from models.playlist import Playlist
@@ -46,7 +46,10 @@ def auth_callback():
 
     spotify = SpotifyManager()
 
-    access_token: str = spotify.get_access_token(code)["access_token"]
+    access_token_info: SpotifyAccessTokenInfo = spotify.get_access_token(code)
+
+    # sub 60 seconds to be safe
+    safe_access_token_expire_time: datetime = datetime.now() + timedelta(seconds=access_token_info.expires_in - 60)
     
     # Add user to firebase
     firebase = FirebaseManager()
@@ -56,7 +59,9 @@ def auth_callback():
     user = User(
         name=firebase_user.display_name,
         spotify_id="", # TODO: get from spotify_manager
-        access_token=access_token,
+        access_token=access_token_info.access_token,
+        refresh_token=access_token_info.refresh_token,
+        access_token_expires=safe_access_token_expire_time,
         profile_pic=firebase_user.photo_url,
         library=[],
         my_groups=[],
@@ -79,11 +84,9 @@ def get_groups():
     outLists = [] #empty list to store the output
 
     for gID in fUser.my_groups:
-        group_dict = fb.get_group_info(gID).to_dict()
-        group_dict["id"] = gID
-        outLists.append(group_dict)
+        outLists.append(fb.get_group_info(gID).to_dict_with_id(gID))
     
-    return jsonify(outLists), 200
+    return jsonify({"data": outLists}), 200
 
 @app.route('/create/group')
 @FirebaseManager.require_firebase_auth
@@ -178,17 +181,16 @@ def edit_group():
 
     fGroup = fb.get_group_info(groupID)
     fUser = fb.get_user_info(userID)
-
-    #Check if the userID == group owner ID
-    if userID != fGroup.owner_id:
-        return jsonify({"error": "Access denied, user is not the owner"}), 400
     
     #If actions == remove_user: remove user from group functionality:
     if action == 'remove_user':
+        #If a general user wants to remove themselves, allow them to
+        if params == fGroup.owner_id: 
+            return jsonify({"error": "Implementation error, cannot remove the group owner"}), 400
+        if params != userID and userID != fGroup.owner_id:
+            return jsonify({"error": "Cannot remove another user if you are not the owner"}), 400   
         if groupID not in fUser.my_groups:
             return jsonify({"error": "Implementation error, cannot access a group you are not in"}), 400
-        if params == userID: 
-            return jsonify({"error": "Implementation error, cannot remove yourself"}), 400
         if params not in fGroup.member_ids:
             return jsonify({"error": "Implementation error, cannot remove a member that is not in the group"}), 400
         
@@ -199,6 +201,7 @@ def edit_group():
         fb.update_user(params, fParams)
 
         fGroup.member_ids.remove(params)
+        del fGroup.group_member_data[userID] #delete this
         fb.update_group(groupID, fGroup)
         
         print(f"User with userID {params} successfully removed from group with groupID {groupID}")
@@ -207,6 +210,8 @@ def edit_group():
     #If actions == del_group: deleting the group functionality
     elif action == 'del_group':
         #remove groupID from the member's myGroup's array
+        if userID != fGroup.owner_id:
+            return jsonify({"error": "Access denied, user is not the owner"}), 400        
         for member in fGroup.member_ids:
             fMember = fb.get_user_info(member)
             if groupID not in fMember.my_groups:
@@ -230,11 +235,26 @@ def get_users_playlists():
 
     spotify = SpotifyManager()
     firebase = FirebaseManager()
+
+    # refresh the access_token if needed
+    spotify.refresh_access_token_and_update_firebase_if_needed(user_id)
     
     # get the user's firebase object so we can get the spotify access token
     user = firebase.get_user_info(user_id)
 
-    return jsonify(spotify.get_users_playlists(user.access_token)), 200
+    return jsonify({"data": spotify.get_users_playlists(user.access_token)}), 200
+
+# gets a users playlists from firestore
+@app.route('/get/users/playlists/firebase')
+@FirebaseManager.require_firebase_auth
+def get_users_playlists_firebase():
+    user_id = request.user_id
+    firebase = FirebaseManager()
+
+    user = firebase.get_user_info(user_id)
+    # for playlist_id
+
+    return jsonify({"data": user.library}), 200
 
 @app.route('/get/playlist/group')
 @FirebaseManager.require_firebase_auth
@@ -255,7 +275,7 @@ def get_group_playlists():
 
     playlists = [ firebase.get_playlist_info(id).to_dict() for id in playlist_ids ]
 
-    return jsonify({"playlists": playlists}), 200
+    return jsonify({"data": playlists}), 200
 
 @app.route('/add/playlist/group')
 @FirebaseManager.require_firebase_auth
@@ -271,6 +291,10 @@ def add_playlist_to_group():
 
     # get user and group from firebase
     firebase = FirebaseManager()
+    spotify = SpotifyManager()
+
+    # refresh the access_token if needed
+    spotify.refresh_access_token_and_update_firebase_if_needed(user_id)
 
     user = firebase.get_user_info(user_id)
     group = firebase.get_group_info(group_id)
@@ -289,8 +313,6 @@ def add_playlist_to_group():
         return jsonify({"error": "User has already posted within the last 24 hours"}), 400
 
     # get spotify playlist info
-    spotify = SpotifyManager()
-
     raw_playlist = spotify.get_playlist_info(user.access_token, spotify_playlist_id)
 
     # add playlist info to firebase
@@ -350,7 +372,7 @@ def take_playlist_from_group():
         return error
 
     userID: str = request.user_id
-    groupID: str = request.ags.get("groupID")
+    groupID: str = request.args.get("groupID")
     playlistID: str = request.args.get("playlistID")
 
     fUser = fb.get_user_info(userID)
@@ -393,6 +415,66 @@ def take_playlist_from_group():
     fGroup.group_member_data[userID].coins -= 1
 
     return jsonify({"message": "Success!"}), 200
+
+
+@app.route('/get/playlist/library')
+@FirebaseManager.require_firebase_auth
+def get_library_playlists():
+    user_id = request.user_id
+
+    firebase = FirebaseManager()
+
+    user = firebase.get_user_info(user_id)
+
+    playlists = [ firebase.get_playlist_info(id).to_dict_with_id(id) for id in user.library ]
+
+    return jsonify({"data": playlists}), 200
+
+@app.route('/get/playlist/items')
+@FirebaseManager.require_firebase_auth
+def get_playlist_items():
+    error = validate_params(["playlistID"])
+    if error:
+        return error
+
+    playlist_id: str = request.args.get("playlistID")
+
+    firebase = FirebaseManager()
+    playlist = firebase.get_playlist_info(playlist_id)
+
+    songs = [ firebase.get_song_info(id).to_dict() for id in playlist.songs ]
+
+    return jsonify({"data": songs}), 200
+
+@app.route('/export/playlist')
+@FirebaseManager.require_firebase_auth
+def exportPlaylist():
+    error = validate_params(["playlistID"])
+    if error:
+        return error
+    playlist_id: str = request.args.get("playlistID")
+
+    user_id = request.user_id
+
+
+    firebase = FirebaseManager()
+    spotify = SpotifyManager()
+
+    spotify.refresh_access_token_and_update_firebase_if_needed(user_id)
+
+    user = firebase.get_user_info(user_id)
+    access_token = user.access_token
+
+    # get spotify access token
+    # spotifyAuth = get_auth_url()
+
+    # get playlist info
+    playlist = firebase.get_playlist_info(playlist_id)
+
+    spotify.export_playlist(access_token, playlist.title, playlist.description, playlist.songs)
+    return 200
+
+
     
 
 if __name__ == "__main__":
