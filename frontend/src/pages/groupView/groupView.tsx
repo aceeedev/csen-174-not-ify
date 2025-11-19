@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, useLocation, useParams, useNavigate } from 'react-router-dom';
 import './groupView.css';
 import { getIdToken, auth } from '../../firebase';
-import { takePlaylistFromGroupOnBackend } from '../../backendInterface';
+import { takePlaylistFromGroupOnBackend, inviteToGroupOnBackend } from '../../backendInterface';
 
 const API_BASE_URL =
   import.meta.env.VITE_BACKEND_URL ?? 'http://127.0.0.1:5001';
@@ -184,8 +184,26 @@ function GroupView() {
     });
   };
 
-  const handleInviteMember = () => {
-    // TODO: Implement invite member functionality
+  const handleInviteMember = async () => {
+    if (!groupId) return;
+    
+    const userID = prompt("Enter the user ID (Firebase UID) of the person you want to invite:");
+    if (!userID || userID.trim() === '') return;
+    
+    try {
+      const result = await inviteToGroupOnBackend(groupId, userID.trim());
+      
+      if (result.success) {
+        alert("User invited successfully!");
+        // Refresh the group data
+        window.location.reload();
+      } else {
+        alert(`Error: ${result.message || 'Failed to invite user'}`);
+      }
+    } catch (error) {
+      console.error("Error inviting user:", error);
+      alert("Failed to invite user. Please try again.");
+    }
   };
 
   const handleViewPlaylist = (playlistId: string) => {
@@ -231,7 +249,8 @@ function GroupView() {
   };
 
   const handleSettings = () => {
-    // TODO: Navigate to group settings (if owner)
+    if (!groupId) return;
+    navigate(`/groups/${groupId}/settings`);
   };
 
   return (
@@ -332,15 +351,28 @@ function GroupView() {
                   </div>
                   <div className="playlist-info">
                     <h3 className="playlist-title">{playlist.title || 'Untitled Playlist'}</h3>
-                    <p className="playlist-owner">by {playlist.owner_id || 'Unknown'}</p>
+                    <p className="playlist-owner">
+                      {playlist.is_owner ? 'Your playlist' : `by ${playlist.owner_id || 'Unknown'}`}
+                    </p>
                     <p className="playlist-songs">{playlist.songs?.length || 0} songs</p>
-                    <button 
-                      className="btn-primary" 
-                      onClick={(e) => handleTakePlaylist(playlist.id, e)}
-                      style={{ marginTop: '0.5rem' }}
-                    >
-                      Take Playlist (1 coin)
-                    </button>
+                    {playlist.is_taken ? (
+                      <div style={{ marginTop: '0.5rem', padding: '0.5rem', background: 'rgba(34, 197, 94, 0.2)', borderRadius: '4px', fontSize: '0.85rem', color: 'rgba(255, 255, 255, 0.7)' }}>
+                        Already Taken
+                      </div>
+                    ) : playlist.can_take ? (
+                      <button 
+                        className="btn-primary" 
+                        onClick={(e) => handleTakePlaylist(playlist.id, e)}
+                        style={{ marginTop: '0.5rem' }}
+                      >
+                        Take Playlist (1 coin)
+                      </button>
+                    ) : null}
+                    {playlist.is_owner && !playlist.is_taken && (
+                      <div style={{ marginTop: '0.25rem', fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.5)' }}>
+                        Your playlist
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
