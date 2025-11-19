@@ -79,15 +79,24 @@ class SpotifyManager:
         user: User = firebase.get_user_info(user_id)
 
         if user.access_token_expires <= datetime.now(timezone.utc):
-            new_access_token_info: SpotifyAccessTokenInfo = self.__refresh_access_token(user.refresh_token)
+            if not user.refresh_token:
+                raise ValueError("User has no refresh token. Please reconnect your Spotify account.")
+            
+            try:
+                new_access_token_info: SpotifyAccessTokenInfo = self.__refresh_access_token(user.refresh_token)
 
-            # update user's values with the new access token info
-            user.access_token = new_access_token_info.access_token
-            user.refresh_token = new_access_token_info.refresh_token
-            user.access_token_expires = datetime.now() + timedelta(seconds=new_access_token_info.expires_in - 60)
+                # update user's values with the new access token info
+                user.access_token = new_access_token_info.access_token
+                user.refresh_token = new_access_token_info.refresh_token
+                user.access_token_expires = datetime.now() + timedelta(seconds=new_access_token_info.expires_in - 60)
 
-            # update the firebase's user 
-            firebase.update_user(user_id, user)
+                # update the firebase's user 
+                firebase.update_user(user_id, user)
+            except Exception as e:
+                error_msg = str(e)
+                if "refresh_token" in error_msg.lower() or "invalid_request" in error_msg.lower():
+                    raise ValueError("Spotify refresh token is invalid or expired. Please reconnect your Spotify account through the onboarding flow.")
+                raise
 
 
 
@@ -99,14 +108,20 @@ class SpotifyManager:
         
         results = sp.current_user_playlists()
         
-        return [
-            {
+        playlists = []
+        for playlist in results["items"]:
+            # Handle playlists that might not have images
+            cover_url = ""
+            if playlist.get("images") and len(playlist["images"]) > 0:
+                cover_url = playlist["images"][-1]["url"]
+            
+            playlists.append({
                 "spotify_id": playlist["id"],
                 "title": playlist["name"],
-                "cover": playlist["images"][-1]["url"] 
-            } 
-            for playlist in results["items"] 
-        ]
+                "cover": cover_url
+            })
+        
+        return playlists
     
     def get_playlist_info(self, access_token: str, playlist_id: str):
         """

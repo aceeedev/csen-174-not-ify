@@ -35,11 +35,21 @@ async function fetchBackend<T>(
       return {
         success: false,
         response: null as any,
-        message: "Network error: No response received",
+        message: "Network error: No response received. Please check if you're signed in and the backend is running.",
       };
     }
 
-    const data = await res.json();
+    let data: any;
+    try {
+      const text = await res.text();
+      data = text ? JSON.parse(text) : {};
+    } catch (parseError) {
+      return {
+        success: false,
+        response: res,
+        message: `Failed to parse response: ${res.status} ${res.statusText}`,
+      };
+    }
 
     if (res.status === 200) {
       return {
@@ -52,11 +62,17 @@ async function fetchBackend<T>(
         response: res,
         message: data.error || "Bad request",
       };
+    } else if (res.status === 500) {
+      return {
+        success: false,
+        response: res,
+        message: data.error || "Server error: " + (data.message || "Internal server error"),
+      };
     } else {
       return {
         success: false,
         response: res,
-        message: data.error || `Request failed with status ${res.status}`,
+        message: data.error || data.message || `Request failed with status ${res.status}`,
       };
     }
   } catch (error) {
@@ -69,10 +85,41 @@ async function fetchBackend<T>(
 }
 
 export async function getSpotifyAuthURL(): Promise<string> {
-    const res = await fetch(`${baseURL}/spotify/auth-url`);
-    const data = await res.json();
+    try {
+        console.log(`Attempting to fetch Spotify auth URL from: ${baseURL}/spotify/auth-url`);
+        const res = await fetch(`${baseURL}/spotify/auth-url`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+        
+        if (!res.ok) {
+            const errorText = await res.text();
+            console.error(`Backend error response: ${errorText}`);
+            throw new Error(`Backend returned status ${res.status}: ${res.statusText}. ${errorText}`);
+        }
+        
+        const data = await res.json();
+        
+        if (data.error) {
+            throw new Error(data.error);
+        }
+        
+        if (!data['auth_url']) {
+            throw new Error("Backend did not return an auth_url");
+        }
 
-    return data['auth_url'];
+        return data['auth_url'];
+    } catch (error) {
+        if (error instanceof TypeError) {
+            const errorMsg = error.message;
+            if (errorMsg.includes('Failed to fetch') || errorMsg.includes('NetworkError') || errorMsg.includes('fetch')) {
+                throw new Error(`Cannot connect to backend at ${baseURL}. Please make sure:\n1. The backend server is running\n2. The backend URL is correct\n3. There are no firewall issues blocking the connection`);
+            }
+        }
+        throw error;
+    }
 }
 
 export async function sendSpotifyAuthCallback(code: string): Promise<BackendResponse<void>> {
@@ -110,7 +157,12 @@ export async function editGroupOnBackend(groupID: string, action: "remove_user" 
 export async function getUsersPlaylistsOnBackend(): Promise<SpotifyPlaylist[] | null> {
     const result = await fetchBackend<SpotifyPlaylist[]>("/get/users/playlists");
 
-    return result.success ? result.data : null;
+    if (!result.success) {
+        console.error("Failed to fetch Spotify playlists:", result.message);
+        throw new Error(result.message || "Failed to fetch playlists");
+    }
+
+    return result.data;
 }
 
 // this is the User's firebase playlists, NOT spotify playlists

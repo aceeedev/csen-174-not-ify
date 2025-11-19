@@ -27,51 +27,89 @@ def validate_params(required_params: list[str]):
 
 
 @app.route('/spotify/auth-url')
-def get_auth_url():    
-    spotify = SpotifyManager()
+def get_auth_url():
+    try:
+        spotify = SpotifyManager()
 
-    auth_url: str = spotify.get_auth_url()
+        auth_url: str = spotify.get_auth_url()
+        
+        print(f"Generated Spotify auth URL (full): {auth_url}")  # Log full URL for debugging
+        print(f"URL length: {len(auth_url)}")
+        
+        if not auth_url or not auth_url.startswith('http'):
+            raise ValueError(f"Invalid auth URL generated: {auth_url}")
 
-    return jsonify({'auth_url': auth_url}) 
+        return jsonify({'auth_url': auth_url})
+    except Exception as e:
+        print(f"Error generating Spotify auth URL: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': f'Failed to generate auth URL: {str(e)}'}), 500 
 
 @app.route('/spotify/auth-callback')
 @FirebaseManager.require_firebase_auth
 def auth_callback():
-    error = validate_params(['code'])
-    if error:
-        return error
+    try:
+        error = validate_params(['code'])
+        if error:
+            print(f"Missing code parameter in callback")
+            return error
+        
+        user_id = request.user_id
+        code: str = request.args.get("code")
+        
+        print(f"Received Spotify callback for user {user_id}, code: {code[:20]}...")
+
+        spotify = SpotifyManager()
+
+        print("Exchanging code for access token...")
+        access_token_info: SpotifyAccessTokenInfo = spotify.get_access_token(code)
+        print("Successfully got access token")
+
+        # sub 60 seconds to be safe
+        safe_access_token_expire_time: datetime = datetime.now() + timedelta(seconds=access_token_info.expires_in - 60)
+        
+        # Add or update user in firebase
+        firebase = FirebaseManager()
+
+        firebase_user = firebase.get_firebase_user_info(user_id)
+
+        # Check if user already exists
+        try:
+            existing_user = firebase.get_user_info(user_id)
+            # User exists - update only Spotify tokens and preserve existing data
+            existing_user.access_token = access_token_info.access_token
+            existing_user.refresh_token = access_token_info.refresh_token
+            existing_user.access_token_expires = safe_access_token_expire_time
+            # Update name and profile pic in case they changed
+            existing_user.name = firebase_user.display_name
+            existing_user.profile_pic = firebase_user.photo_url
+            firebase.update_user(user_id, existing_user)
+            print(f"Successfully updated existing user {user_id} with Spotify tokens")
+        except ValueError:
+            # User doesn't exist - create new user
+            user = User(
+                name=firebase_user.display_name,
+                spotify_id="", # TODO: get from spotify_manager
+                access_token=access_token_info.access_token,
+                refresh_token=access_token_info.refresh_token,
+                access_token_expires=safe_access_token_expire_time,
+                profile_pic=firebase_user.photo_url,
+                library=[],
+                my_groups=[],
+                my_complaints=[],
+                is_admin=False
+            )
+            firebase.create_user(user_id, user)
+            print(f"Successfully created new user {user_id} with Spotify tokens")
+
+        return jsonify({"message": "Success!"}), 200
     
-    user_id = request.user_id
-    code: str = request.args.get("code")
-
-    spotify = SpotifyManager()
-
-    access_token_info: SpotifyAccessTokenInfo = spotify.get_access_token(code)
-
-    # sub 60 seconds to be safe
-    safe_access_token_expire_time: datetime = datetime.now() + timedelta(seconds=access_token_info.expires_in - 60)
-    
-    # Add user to firebase
-    firebase = FirebaseManager()
-
-    firebase_user = firebase.get_firebase_user_info(user_id)
-
-    user = User(
-        name=firebase_user.display_name,
-        spotify_id="", # TODO: get from spotify_manager
-        access_token=access_token_info.access_token,
-        refresh_token=access_token_info.refresh_token,
-        access_token_expires=safe_access_token_expire_time,
-        profile_pic=firebase_user.photo_url,
-        library=[],
-        my_groups=[],
-        my_complaints=[],
-        is_admin=False
-    )
-
-    firebase.create_user(user_id, user)
-
-    return jsonify({"message": "Success!"}), 200
+    except Exception as e:
+        print(f"Error in Spotify auth callback: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({"error": f"Failed to process callback: {str(e)}"}), 500
     
 @app.route('/get/groups')
 @FirebaseManager.require_firebase_auth
@@ -233,16 +271,39 @@ def edit_group():
 def get_users_playlists():
     user_id = request.user_id
 
-    spotify = SpotifyManager()
-    firebase = FirebaseManager()
+    try:
+        spotify = SpotifyManager()
+        firebase = FirebaseManager()
 
-    # refresh the access_token if needed
-    spotify.refresh_access_token_and_update_firebase_if_needed(user_id)
-    
-    # get the user's firebase object so we can get the spotify access token
-    user = firebase.get_user_info(user_id)
+        # get the user's firebase object so we can get the spotify access token
+        user = firebase.get_user_info(user_id)
+        
+        # Check if user has Spotify access token
+        if not user.access_token:
+            return jsonify({"error": "User has not connected Spotify account. Please complete the Spotify onboarding flow."}), 400
 
-    return jsonify({"data": spotify.get_users_playlists(user.access_token)}), 200
+        # Check if user has refresh token
+        if not user.refresh_token:
+            return jsonify({"error": "Spotify refresh token is missing. Please reconnect your Spotify account through the onboarding flow."}), 400
+
+        # refresh the access_token if needed
+        try:
+            spotify.refresh_access_token_and_update_firebase_if_needed(user_id)
+        except ValueError as ve:
+            # This is a user-facing error about missing/invalid tokens
+            return jsonify({"error": str(ve)}), 400
+        except Exception as token_error:
+            # Other token refresh errors
+            return jsonify({"error": f"Failed to refresh Spotify token: {str(token_error)}. Please reconnect your Spotify account."}), 400
+        
+        # Get fresh user data after potential token refresh
+        user = firebase.get_user_info(user_id)
+
+        playlists = spotify.get_users_playlists(user.access_token)
+        return jsonify({"data": playlists}), 200
+    except Exception as e:
+        print(f"Error fetching Spotify playlists: {e}")
+        return jsonify({"error": f"Failed to fetch playlists: {str(e)}"}), 500
 
 # gets a users playlists from firestore
 @app.route('/get/users/playlists/firebase')
