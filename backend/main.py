@@ -472,7 +472,7 @@ def exportPlaylist():
     playlist = firebase.get_playlist_info(playlist_id)
 
     spotify.export_playlist(access_token, playlist.title, playlist.description, playlist.songs)
-    return 200
+    return jsonify({"message": "Success!"}), 200
 
 
     
