@@ -5,7 +5,7 @@ from utils import ensure_datetime
 
 
 class User:
-    def __init__(self, name: str, spotify_id: str, access_token: str, refresh_token: str, access_token_expires: datetime, profile_pic: str, library: list[str], my_groups: list[str], my_complaints: list[str], is_admin: bool = False) -> None:
+    def __init__(self, name: str, spotify_id: str, access_token: str, refresh_token: str, access_token_expires: datetime, profile_pic: str, library: list[str], my_groups: list[str], my_complaints: list[str], exported_playlists: list[str], is_admin: bool = False) -> None:
         self.name = name
         self.spotify_id = spotify_id
         self.access_token = access_token
@@ -15,6 +15,7 @@ class User:
         self.library = library
         self.my_groups = my_groups
         self.my_complaints = my_complaints
+        self.exported_playlists = exported_playlists
         self.is_admin = is_admin
 
 
@@ -29,6 +30,7 @@ class User:
             "library": self.library,
             "my_groups": self.my_groups,
             "my_complaints": self.my_complaints,
+            "exported_playlists": self.exported_playlists,
             "is_admin": self.is_admin,
         }
 
@@ -52,5 +54,6 @@ class User:
             library=data.get('library', []),
             my_groups=data.get('my_groups', []),
             my_complaints=data.get('my_complaints', []),
+            exported_playlists=data.get('exported_playlists', []),
             is_admin=data.get('is_admin', False),
         )

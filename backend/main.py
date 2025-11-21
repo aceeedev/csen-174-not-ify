@@ -642,6 +642,11 @@ def exportPlaylist():
     spotify.refresh_access_token_and_update_firebase_if_needed(user_id)
 
     user = firebase.get_user_info(user_id)
+
+    # check if user has already exported this playlist
+    if playlist_id in user.exported_playlists:
+        return jsonify({"message": "playlist previously exported!"}), 400
+
     access_token = user.access_token
 
     # get spotify access token
