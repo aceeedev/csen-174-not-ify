@@ -64,7 +64,7 @@ const Callback: React.FC = () => {
 
         if (res.success) {
           setStatus("Successfully connected! Redirecting...");
-          setTimeout(() => navigate("/userHomePage"), 1500);
+          setTimeout(() => navigate("/"), 1500);
         } else {
           console.error("Backend error:", res.message);
           setError(`Failed to connect Spotify: ${res.message}. Please try again.`);

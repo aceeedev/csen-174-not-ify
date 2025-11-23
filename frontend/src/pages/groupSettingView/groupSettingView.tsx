@@ -1,15 +1,26 @@
 /*THIS IS THE PAGE WHERE THE USER CAN VIEW AND SETTINGS as a group owner */
 
 import { useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import './groupSettingView.css';
+import type { Group } from '../../models';
+
+
+/**
+ * Use like so:
+ * 
+ *  <Link to="/group/settings" state={{ group: group }}>
+        To group's settings page
+    </Link>
+ */
+
 
 function GroupSettingView() {
-  const { groupId } = useParams();
+  const navigate = useNavigate();
+  const location = useLocation();
   
-  // TODO: Fetch group data from backend
-  const [group, setGroup] = useState<any>(null);
-  
+  const group = location.state?.group as Group | undefined;
+
   // TODO: Fetch members from backend
   const [members, setMembers] = useState<any[]>([]);
   
@@ -44,12 +55,12 @@ function GroupSettingView() {
       {/* Navigation Bar */}
       <nav className="settings-navbar">
         <div className="nav-content">
-          <Link to={`/groups/${groupId}`} className="back-link">← Back to Group</Link>
+          <Link to='/group' state={{ group: group }} className="back-link">← Back to Group</Link>
           <Link to="/" className="logo-link">
             <h1 className="logo">Not-ify</h1>
           </Link>
           <div className="nav-links">
-            <Link to={`/groups/${groupId}`} className="btn-secondary">
+            <Link to="/group" state={{ group: group }} className="btn-secondary">
               Cancel
             </Link>
           </div>
@@ -75,7 +86,7 @@ function GroupSettingView() {
                 id="groupName"
                 value={groupName}
                 onChange={(e) => setGroupName(e.target.value)}
-                placeholder={group?.name || 'Enter group name'}
+                placeholder={group?.group_name || 'Enter group name'}
                 className="form-input"
                 maxLength={50}
               />
