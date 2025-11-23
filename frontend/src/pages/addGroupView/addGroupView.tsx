@@ -1,11 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../../components/Navbar';
-import { getIdToken } from '../../firebase';
 import './addGroupView.css';
-
-const API_BASE_URL =
-  import.meta.env.VITE_BACKEND_URL ?? 'http://127.0.0.1:5001';
+import { createGroupOnBackend } from '../../backendInterface';
 
 function AddGroupView() {
   const navigate = useNavigate();
@@ -29,41 +26,13 @@ function AddGroupView() {
     setErrorMessage(null);
 
     try {
-      const token = await getIdToken();
 
-      if (!token) {
-        setErrorMessage('You must be signed in to create a group.');
+      let response = await createGroupOnBackend(trimmedName, trimmedDescription);
+
+      if (!response.success) {
+        setErrorMessage(response.message);
         setIsSubmitting(false);
-        return;
-      }
 
-      const baseUrl = API_BASE_URL.endsWith('/')
-        ? API_BASE_URL.slice(0, -1)
-        : API_BASE_URL;
-
-      const response = await fetch(
-        `${baseUrl}/create/group?groupName=${encodeURIComponent(
-          trimmedName,
-        )}&description=${encodeURIComponent(trimmedDescription)}`,
-        {
-          method: 'GET',
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        },
-      );
-
-      if (!response.ok) {
-        let backendMessage = 'Failed to create group. Please try again.';
-        try {
-          const data = await response.json();
-          backendMessage = data?.error ?? backendMessage;
-        } catch (jsonError) {
-          console.error('Error parsing backend response:', jsonError);
-        }
-
-        setErrorMessage(backendMessage);
-        setIsSubmitting(false);
         return;
       }
 

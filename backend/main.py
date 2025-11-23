@@ -410,8 +410,7 @@ def get_group_playlists():
     for playlist_id in all_playlist_ids:
         try:
             playlist = firebase.get_playlist_info(playlist_id)
-            playlist_dict = playlist.to_dict()
-            playlist_dict['id'] = playlist_id
+            playlist_dict = playlist.to_dict_with_id(playlist_id)
             
             # Add metadata about whether this playlist can be taken by the current user
             # NOTE: For demo purposes, allowing users to take their own playlists
