@@ -36,7 +36,7 @@ function AddGroupView() {
         return;
       }
 
-      navigate('/userHomePage', { state: { groupCreated: true } });
+      navigate('/', { state: { groupCreated: true } });
     } catch (error) {
       console.error('Failed to create group:', error);
       setErrorMessage('Something went wrong. Please try again later.');
@@ -45,7 +45,7 @@ function AddGroupView() {
   };
 
   const handleCancel = () => {
-    navigate('/userHomePage');
+    navigate('/');
   };
 
   return (
