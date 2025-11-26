@@ -25,6 +25,19 @@ function UserHomePage() {
     navigate('/library');
   };
 
+  const handleViewPlaylist = (playlist: Playlist) => {
+  if (!playlist?.id) {
+    return;
+  }
+
+  navigate('/playlist', {
+    state: {
+      playlist,
+      // No groupID => means its in library
+    },
+  });
+};
+
   const handleViewGroup = (groupData: Group) => {
     if (!groupData?.id) {
       return;
@@ -191,7 +204,11 @@ function UserHomePage() {
             ) : (
               <div className="library-grid">
                 {library.slice(0, 6).map((item) => (
-                  <div key={item.id} className="library-item">
+                  <div 
+                    key={item.id} 
+                    className="library-item"
+                    onClick={() => handleViewPlaylist(item)}
+                    >
                     <div className="library-item-cover">
                       {item.cover ? (
                         <img src={item.cover} alt={item.title} />
