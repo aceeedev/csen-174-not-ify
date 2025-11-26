@@ -1,24 +1,27 @@
 /*This is a group view page where the user can view a group and the playlist board and its members */
 
-import { useEffect, useMemo, useState } from 'react';
-import { Link, useLocation, useParams, useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import './groupView.css';
-import { getIdToken, auth } from '../../firebase';
-import { takePlaylistFromGroupOnBackend, inviteToGroupOnBackend } from '../../backendInterface';
+import { auth } from '../../firebase';
+import { takePlaylistFromGroupOnBackend, inviteToGroupOnBackend, getGroupPlaylistsOnBackend } from '../../backendInterface';
+import type { Group } from '../../models';
 
-const API_BASE_URL =
-  import.meta.env.VITE_BACKEND_URL ?? 'http://127.0.0.1:5001';
+
+/**
+ * Use like so:
+ * 
+ *  <Link to="/group" state={{ group: group }}>
+        To group's page
+    </Link>
+ */
 
 function GroupView() {
-  const { groupId } = useParams();
   const navigate = useNavigate();
-  const location = useLocation() as { state?: { group?: any } };
-  const locationGroup = location.state?.group ?? null;
-
-  // TODO: Fetch group data from backend
-  const [group, setGroup] = useState<any>(
-    locationGroup ? { ...locationGroup, id: locationGroup.id ?? groupId } : null,
-  );
+  const location = useLocation();
+  
+  const group = location.state?.group as Group | undefined;
+  const groupId = group?.id;
 
   // TODO: Fetch members from backend
   const [members, setMembers] = useState<any[]>([]);
@@ -29,18 +32,9 @@ function GroupView() {
   // TODO: Check if current user is owner
   const [isOwner, setIsOwner] = useState(false);
 
-  const [isLoading, setIsLoading] = useState<boolean>(!locationGroup);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const baseUrl = useMemo(() => {
-    if (!API_BASE_URL) {
-      return '';
-    }
-
-    return API_BASE_URL.endsWith('/')
-      ? API_BASE_URL.slice(0, -1)
-      : API_BASE_URL;
-  }, []);
 
   useEffect(() => {
     let isMounted = true;
@@ -55,58 +49,15 @@ function GroupView() {
       setErrorMessage(null);
 
       try {
-        const token = await getIdToken();
-
-        if (!token) {
-          if (isMounted) {
-            setErrorMessage('You need to sign in to view this group.');
-          }
-
-          return;
-        }
-
-        let groupData = group;
-
-        if (!groupData || groupData.id !== groupId) {
-          const response = await fetch(`${baseUrl}/get/groups`, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          });
-
-          if (!response.ok) {
-            throw new Error('Unable to load group details.');
-          }
-
-          const data = await response.json();
-          const matchedGroup = Array.isArray(data)
-            ? data.find((item: any) => item.id === groupId)
-            : null;
-
-          if (!matchedGroup) {
-            throw new Error('Group not found.');
-          }
-
-          groupData = {
-            ...matchedGroup,
-            id: matchedGroup.id ?? groupId,
-          };
-        }
-
-        if (!groupData) {
-          throw new Error('Unable to load group.');
-        }
-
         const currentUserId = auth.currentUser?.uid ?? null;
 
         if (isMounted) {
-          setGroup(groupData);
           setIsOwner(
-            currentUserId != null && groupData.owner_id === currentUserId,
+            currentUserId != null && group.owner_id === currentUserId,
           );
 
-          const memberEntries = groupData.group_member_data
-            ? Object.entries(groupData.group_member_data)
+          const memberEntries = group.group_member_data
+            ? Object.entries(group.group_member_data)
             : [];
 
           const formattedMembers = memberEntries.map(
@@ -116,7 +67,7 @@ function GroupView() {
               lastPostingTimestamp: memberData?.last_posting_timestamp ?? null,
               takenPlaylists: memberData?.taken_playlists ?? [],
               postedPlaylists: memberData?.posted_playlists ?? [],
-              isOwner: memberId === groupData.owner_id,
+              isOwner: memberId === group.owner_id,
             }),
           );
 
@@ -124,29 +75,11 @@ function GroupView() {
         }
 
         try {
-          const playlistResponse = await fetch(
-            `${baseUrl}/get/playlist/group?group_id=${encodeURIComponent(
-              groupId,
-            )}`,
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            },
-          );
 
-          if (playlistResponse.ok) {
-            const playlistData = await playlistResponse.json();
+          const playlistResponse = await getGroupPlaylistsOnBackend(groupId);
 
-            if (isMounted) {
-              // Backend returns {"data": [...]} for group playlists
-              const playlistsArray = playlistData?.data || playlistData?.playlists || [];
-              setPlaylists(
-                Array.isArray(playlistsArray)
-                  ? playlistsArray
-                  : [],
-              );
-            }
+          if (playlistResponse && isMounted) {
+              setPlaylists(playlistResponse);
           } else {
             console.warn('Unable to load group playlists.');
           }
@@ -172,7 +105,7 @@ function GroupView() {
     return () => {
       isMounted = false;
     };
-  }, [groupId, baseUrl]);
+  }, [groupId]);
 
   const handleAddPlaylist = () => {
     if (!groupId) return;
@@ -250,7 +183,8 @@ function GroupView() {
 
   const handleSettings = () => {
     if (!groupId) return;
-    navigate(`/groups/${groupId}/settings`);
+
+    navigate(`/group/settings`, { state: { group: group }});
   };
 
   return (
@@ -258,7 +192,7 @@ function GroupView() {
       {/* Navigation Bar */}
       <nav className="group-navbar">
         <div className="nav-content">
-          <Link to="/userHomePage" className="back-link">← Back to Home</Link>
+          <Link to="/" className="back-link">← Back to Home</Link>
           <Link to="/" className="logo-link">
             <h1 className="logo">Not-ify</h1>
           </Link>

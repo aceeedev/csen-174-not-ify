@@ -3,36 +3,47 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './userHomePage.css';
-import { getIdToken } from '../../firebase';
 import Navbar from '../../components/Navbar';
-import { getLibraryPlaylistsOnBackend } from '../../backendInterface';
+import { getLibraryPlaylistsOnBackend, getGroupsOnBackend } from '../../backendInterface';
+import type { Group, Playlist } from '../../models';
 
-const API_BASE_URL =
-  import.meta.env.VITE_BACKEND_URL ?? 'http://127.0.0.1:5001';
 
 function UserHomePage() {
   const navigate = useNavigate();
-  const [groups, setGroups] = useState<any[]>([]);
+  const [groups, setGroups] = useState<Group[]>([]);
   const [isLoadingGroups, setIsLoadingGroups] = useState<boolean>(true);
   const [groupsError, setGroupsError] = useState<string | null>(null);
   
-  const [library, setLibrary] = useState<any[]>([]);
+  const [library, setLibrary] = useState<Playlist[]>([]);
   const [isLoadingLibrary, setIsLoadingLibrary] = useState<boolean>(true);
 
   const handleCreateGroup = () => {
-    navigate('/groups/new');
+    navigate('/new-group');
   };
 
   const handleViewLibrary = () => {
     navigate('/library');
   };
 
-  const handleViewGroup = (groupData: any) => {
+  const handleViewPlaylist = (playlist: Playlist) => {
+  if (!playlist?.id) {
+    return;
+  }
+
+  navigate('/playlist', {
+    state: {
+      playlist,
+      // No groupID => means its in library
+    },
+  });
+};
+
+  const handleViewGroup = (groupData: Group) => {
     if (!groupData?.id) {
       return;
     }
 
-    navigate(`/groups/${groupData.id}`, { state: { group: groupData } });
+    navigate(`/group`, { state: { group: groupData } });
   };
 
   useEffect(() => {
@@ -43,65 +54,15 @@ function UserHomePage() {
       setGroupsError(null);
 
       try {
-        const token = await getIdToken();
 
-        if (!token) {
-          if (isMounted) {
-            setGroupsError('Please sign in to view your groups.');
-            setGroups([]);
-          }
-          return;
+        const response = await getGroupsOnBackend();
+
+        if (!response) {
+          throw new Error('Unable to load groups.');
         }
 
-        const baseUrl = API_BASE_URL.endsWith('/')
-          ? API_BASE_URL.slice(0, -1)
-          : API_BASE_URL;
-
-        const response = await fetch(`${baseUrl}/get/groups`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (!response.ok) {
-          let message = 'Unable to load groups.';
-          try {
-            const data = await response.json();
-            if (data?.error) {
-              message = data.error;
-            }
-          } catch (parseError) {
-            console.error('Failed to parse groups response:', parseError);
-          }
-
-          throw new Error(message);
-        }
-
-        const responseData = await response.json();
-
-        if (isMounted) {
-          // Backend returns {"data": [...]}, so extract the data array
-          const groupsArray = responseData?.data || responseData || [];
-          const mappedGroups = Array.isArray(groupsArray)
-            ? groupsArray.map((groupItem: any) => ({
-                ...groupItem,
-                id: groupItem.id,
-                name: groupItem.group_name || groupItem.name, // Backend uses group_name
-                description: groupItem.description || '',
-                memberCount: groupItem.member_ids?.length || 0, // Calculate from member_ids array
-              }))
-            : [];
-          setGroups(mappedGroups);
-        }
-      } catch (error) {
-        console.error('Error fetching groups:', error);
-        if (isMounted) {
-          setGroupsError(
-            error instanceof Error
-              ? error.message
-              : 'Something went wrong while loading groups.',
-          );
-        }
+        setGroups(response);
+      
       } finally {
         if (isMounted) {
           setIsLoadingGroups(false);
@@ -196,14 +157,14 @@ function UserHomePage() {
                   }}
                 >
                   <div className="group-icon">🎵</div>
-                  <h3 className="group-name">{group.name || 'Untitled Group'}</h3>
-                  <p className="group-members">{group.memberCount || 0} members</p>
+                  <h3 className="group-name">{group.group_name || 'Untitled Group'}</h3>
+                  <p className="group-members">{group.member_ids.length || 0} members</p>
                   <p className="group-description">{group.description || 'No description'}</p>
                   <div className="group-actions">
                     <Link
-                      to={`/groups/${group.id}`}
+                      to={`/groups`}
                       className="group-link"
-                      state={{ group }}
+                      state={{ group: group }}
                     >
                       View Group →
                     </Link>
@@ -243,7 +204,11 @@ function UserHomePage() {
             ) : (
               <div className="library-grid">
                 {library.slice(0, 6).map((item) => (
-                  <div key={item.id} className="library-item">
+                  <div 
+                    key={item.id} 
+                    className="library-item"
+                    onClick={() => handleViewPlaylist(item)}
+                    >
                     <div className="library-item-cover">
                       {item.cover ? (
                         <img src={item.cover} alt={item.title} />

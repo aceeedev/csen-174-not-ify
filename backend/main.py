@@ -410,8 +410,7 @@ def get_group_playlists():
     for playlist_id in all_playlist_ids:
         try:
             playlist = firebase.get_playlist_info(playlist_id)
-            playlist_dict = playlist.to_dict()
-            playlist_dict['id'] = playlist_id
+            playlist_dict = playlist.to_dict_with_id(playlist_id)
             
             # Add metadata about whether this playlist can be taken by the current user
             # NOTE: For demo purposes, allowing users to take their own playlists
@@ -642,6 +641,15 @@ def exportPlaylist():
     spotify.refresh_access_token_and_update_firebase_if_needed(user_id)
 
     user = firebase.get_user_info(user_id)
+
+    # check if user has already exported this playlist
+    if playlist_id in user.exported_playlists:
+        return jsonify({"message": "playlist previously exported!"}), 400
+
+    #if not add to exported playlists
+    user.exported_playlists.append(playlist_id)
+    firebase.update_user(user_id, user)
+
     access_token = user.access_token
 
     # get spotify access token

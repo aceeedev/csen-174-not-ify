@@ -30,6 +30,9 @@ export interface Playlist {
     cover: string;
     description: string;
     songs: string[];
+    can_take: boolean | undefined;
+    is_owner: boolean | undefined;
+    is_taken: boolean | undefined;
 }
 
 
@@ -50,6 +53,7 @@ export interface firebaseUser {
     my_groups: string[];
     my_complaints: string[];
     is_admin: boolean;
+    exported_playlists: string[];
 }
 
 export interface SpotifyPlaylist {

@@ -203,7 +203,16 @@ export async function getPlaylistItemsOnBackend(playlistID: string): Promise<Son
 }
 
 export async function exportPlaylist(playlistID: string) {
-  const result = await fetchBackend<void>("/export/playlist", {
+  const res = await fetchBackend<void>("/export/playlist", {
     playlistID: playlistID
   });
+  return res.success
+
+}
+
+export async function inviteToGroupOnBackend(groupID: string, userID: string) {
+  return await fetchBackend<void>("/invite/group", {
+    groupID: groupID,
+    userID: userID
+  })
 }

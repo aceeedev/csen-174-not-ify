@@ -99,8 +99,22 @@ const PlaylistPage: React.FC = () => {
         await takePlaylistFromGroupOnBackend(groupID!, playlist.id!)
     }
 
+    const [buttonText, setButtonText] = useState("Export Playlist to your Spotify Library");
+    const [disabled, setDisabled] = useState(false);
+
     const handleExportPlaylist = async () => {
-        await exportPlaylist(playlist.id!);
+        const success = await exportPlaylist(playlist.id!);
+        if (success === true) {
+            setButtonText("Successfully Exported Playlist!");
+            setDisabled(true);
+        }
+        else if (success === false) {
+            setButtonText("Previously Exported");
+            setDisabled(true);
+        }
+        else {
+            setButtonText("Error Exporting")
+        }
     }
 
     return (
@@ -136,8 +150,8 @@ const PlaylistPage: React.FC = () => {
 
                 {pageOrigin === PageOrigin.FromLibrary && (
                     <div>
-                        <button onClick={handleExportPlaylist}>
-                            Export Playlist to your Spotify Library
+                        <button disabled={disabled} onClick={handleExportPlaylist}>
+                            {buttonText}
                         </button>
                     </div>
                 )}
