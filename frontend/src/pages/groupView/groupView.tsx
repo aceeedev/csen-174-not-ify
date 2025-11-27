@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import './groupView.css';
-import { auth } from '../../firebase';
+import { auth, getUserFromFirebase } from '../../firebase';
 import { takePlaylistFromGroupOnBackend, inviteToGroupOnBackend, getGroupPlaylistsOnBackend } from '../../backendInterface';
 import type { Group } from '../../models';
 
@@ -34,6 +34,8 @@ function GroupView() {
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const [ownerName, setOwnerName] = useState <string>('');
 
 
   useEffect(() => {
@@ -152,6 +154,23 @@ function GroupView() {
     });
   };
 
+  const handleGetOwnerName = async (group?: Group) => {
+    if (!group?.owner_id) {
+      setOwnerName("unknown");
+      return;
+    }
+
+    const owner = await getUserFromFirebase(group.owner_id);
+
+    if (!owner) {
+      setOwnerName("unkown");
+      return;
+    }
+    setOwnerName(owner.name);
+  };
+  handleGetOwnerName(group)
+
+
   const handleTakePlaylist = async (playlistId: string, event: React.MouseEvent) => {
     event.stopPropagation(); // Prevent triggering the card click
     
@@ -227,7 +246,7 @@ function GroupView() {
               <span className="meta-item">👤 {members.length || 0} members</span>
               <span className="meta-item">🎵 {playlists.length || 0} playlists</span>
               {group?.owner_id && (
-                <span className="meta-item">👑 Owner: {group.owner_id}</span>
+                <span className="meta-item">👑 Owner: {ownerName}</span>
               )}
             </div>
           </div>
