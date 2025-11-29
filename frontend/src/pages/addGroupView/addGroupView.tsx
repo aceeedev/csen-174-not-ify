@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Navbar from '../../components/Navbar';
+import Navbar, { BackButtonLocation } from '../../components/Navbar';
 import './addGroupView.css';
 import { createGroupOnBackend } from '../../backendInterface';
 
@@ -50,7 +50,7 @@ function AddGroupView() {
 
   return (
     <div className="add-group-view">
-      <Navbar />
+      <Navbar backButtonLocation={BackButtonLocation.ToHome}/>
 
       <main className="add-group-content">
         <section className="add-group-card">

@@ -5,7 +5,7 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { getUsersPlaylistsOnBackend } from '../../backendInterface';
 import type { Group, SpotifyPlaylist } from '../../models'
 import SpotifyPlaylistItem from '../../components/SpotifyPlaylistItem';
-import Navbar from '../../components/Navbar';
+import Navbar, { BackButtonLocation } from '../../components/Navbar';
 
 /**
  * Use like so:
@@ -82,7 +82,7 @@ const AddPlaylistPage: React.FC= () => {
 
   return (
     <div>
-      <Navbar />
+      <Navbar backButtonLocation={BackButtonLocation.ToGroup}/>
       
       {uploading && (
         <div style={{
@@ -112,20 +112,6 @@ const AddPlaylistPage: React.FC= () => {
 
       <div style={{ padding: '2rem', maxWidth: '1200px', margin: '0 auto' }}>
         <div style={{ marginBottom: '2rem' }}>
-          <button 
-            onClick={() => navigate(-1)}
-            style={{
-              padding: '8px 16px',
-              marginBottom: '1rem',
-              cursor: 'pointer',
-              border: '1px solid #ccc',
-              borderRadius: '4px',
-              backgroundColor: '#f5f5f5',
-              fontSize: '14px'
-            }}
-          >
-        ← Go Back
-          </button>
           <h1 style={{ margin: '0 0 0.5rem 0' }}>Add a playlist to {group.group_name}!</h1>
           <p style={{ color: '#666', margin: 0 }}>Select one of your Spotify playlists to add to this group</p>
         </div>

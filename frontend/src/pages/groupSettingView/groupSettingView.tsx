@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import './groupSettingView.css';
 import type { Group } from '../../models';
+import Navbar, { BackButtonLocation } from '../../components/Navbar';
 
 
 /**
@@ -52,20 +53,7 @@ function GroupSettingView() {
 
   return (
     <div className="group-settings-container">
-      {/* Navigation Bar */}
-      <nav className="settings-navbar">
-        <div className="nav-content">
-          <Link to='/group' state={{ group: group }} className="back-link">← Back to Group</Link>
-          <Link to="/" className="logo-link">
-            <h1 className="logo">Not-ify</h1>
-          </Link>
-          <div className="nav-links">
-            <Link to="/group" state={{ group: group }} className="btn-secondary">
-              Cancel
-            </Link>
-          </div>
-        </div>
-      </nav>
+      <Navbar backButtonLocation={BackButtonLocation.ToGroup} />
 
       {/* Main Content */}
       <div className="settings-content">
