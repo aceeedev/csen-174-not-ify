@@ -8,8 +8,6 @@ import GroupView from './pages/groupView/groupView.tsx'
 import GroupSettingView from './pages/groupSettingView/groupSettingView.tsx'
 import AddGroupView from './pages/addGroupView/addGroupView.tsx'
 import LibraryView from './pages/libraryView/libraryView.tsx'
-import App from './App.tsx'
-import TestPage from './pages/TestPage.tsx'
 import Callback from './pages/CallbackPage.tsx';
 import OnboardingPage from './pages/onboardingPage/OnboardingPage.tsx';
 import AddPlaylistPage from './pages/addPlaylistPage/AddPlaylistPage.tsx';
@@ -31,10 +29,6 @@ createRoot(document.getElementById('root')!).render(
       <Route path="/group" element={<GroupView />} />
       <Route path="/group/settings" element={<GroupSettingView />} />
       <Route path="/new-group" element={<AddGroupView />} />
-
-      {/** test endpoints */}
-      <Route path="/app" element={<App />} />
-      <Route path="/test" element={<TestPage />} />
     </Routes>
   </BrowserRouter>,
 )
