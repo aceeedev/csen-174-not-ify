@@ -470,7 +470,7 @@ def add_playlist_to_group():
         spotify_id=spotify_playlist_id,
         owner_id=user_id,
         title=raw_playlist["name"],
-        cover=raw_playlist["images"][-1]["url"],
+        cover=raw_playlist["images"][0]["url"],
         description=raw_playlist["description"],
         songs=[]
     )
@@ -486,7 +486,7 @@ def add_playlist_to_group():
         except ValueError:
             song = Song(
                 spotify_id=spotify_song_id,
-                album_cover=spotify_song["album"]["images"][-1]["url"],
+                album_cover=spotify_song["album"]["images"][0]["url"],
                 album_name=spotify_song["album"]["name"],
                 artist_name=", ".join([artist_data["name"] for artist_data in spotify_song["artists"]]),
                 title=spotify_song["name"]
