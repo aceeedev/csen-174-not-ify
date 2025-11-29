@@ -129,14 +129,14 @@ def get_groups():
 @app.route('/create/group')
 @FirebaseManager.require_firebase_auth
 def create_group():
-    error = validate_params(['groupName', 'description'])
+    error = validate_params(['group_name', 'description'])
     if error:
         return error
 
     firebase = FirebaseManager()
 
     user_id: str = request.user_id
-    group_name: str = request.args.get("groupName")
+    group_name: str = request.args.get("group_name")
     description: str = request.args.get("description")
     
     #Make group object from group.py in models
@@ -288,6 +288,8 @@ def edit_group():
         return jsonify({"message": "Success!"}), 200
     
     #If actions == update_settings: update group name/description
+    #Unsure of what this does, or where params = json is generated from.
+    #It may be better if there is a separate endpoint called update_group that has these parameters. 
     elif action == 'update_settings':
         if user_id != firebase_group.owner_id:
             return jsonify({"error": "Access denied, user is not the owner"}), 400
@@ -522,13 +524,13 @@ def add_playlist_to_group():
 @FirebaseManager.require_firebase_auth
 def take_playlist_from_group():
     firebase = FirebaseManager()
-    error = validate_params(["groupID", "playlistID"])
+    error = validate_params(["group_id", "playlist_id"])
     if error:
         return error
 
     user_id: str = request.user_id
-    group_id: str = request.args.get("groupID")
-    playlist_id: str = request.args.get("playlistID")
+    group_id: str = request.args.get("group_id")
+    playlist_id: str = request.args.get("playlist_id")
 
     firebase_user = firebase.get_user_info(user_id)
     firebase_group = firebase.get_group_info(group_id)
