@@ -108,7 +108,6 @@ function UserHomePage() {
 
   return (
     <div className="user-home-container">
-      {/* Navigation Bar */}
       <Navbar />
 
       {/* Main Content */}

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from 'react-router-dom';
 import type { Group, Playlist, Song } from '../../models'
-import Navbar from "../../components/Navbar";
+import Navbar, { BackButtonLocation } from "../../components/Navbar";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "../../firebase";
 import { getPlaylistItemsOnBackend, takePlaylistFromGroupOnBackend, exportPlaylist } from "../../backendInterface"
@@ -119,7 +119,7 @@ const PlaylistPage: React.FC = () => {
 
     return (
         <div>
-            <Navbar/>
+            <Navbar backButtonLocation={pageOrigin == PageOrigin.FromLibrary ? BackButtonLocation.ToHome : BackButtonLocation.ToGroup}/>
 
             {loading ? (
                 <p>Loading...</p>

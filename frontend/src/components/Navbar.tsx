@@ -4,7 +4,18 @@ import { signInWithPopup, onAuthStateChanged, signOut } from "firebase/auth";
 import { Link, useNavigate } from 'react-router-dom';
 import type { firebaseUser } from "../models"
 
-const Navbar: React.FC = () => {
+// basically an enum
+export const BackButtonLocation = {
+    None: undefined,
+    ToHome: '← Back To Home',
+    ToGroup: '← Back To Group',
+} as const;
+
+export interface NavbarProps {
+  backButtonLocation?: typeof BackButtonLocation[keyof typeof BackButtonLocation];
+}
+
+const Navbar: React.FC<NavbarProps> = ({ backButtonLocation = BackButtonLocation.None }) => {
   const navigate = useNavigate();
 
   const [user, setUser] = useState<firebaseUser | null>(null);
@@ -68,7 +79,8 @@ const Navbar: React.FC = () => {
       <header style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 20px', background: 'black', color: 'white'}}>
         <div style={{display: 'flex', alignItems: 'center', gap: 16}}>
           <Link to={"/"} style={{fontWeight: 700, fontSize: 20, textDecoration: 'none', color: 'white', userSelect: 'none', cursor: 'pointer'}}>Bop Swap</Link>
-          {user ? (
+          {/* COMMENTED OUT FOR NOW, since u can access everything from home page */}
+          {/* {user ? (
             <>            
             <nav style={{display: 'flex', gap: 12}}>
               <Link 
@@ -82,6 +94,33 @@ const Navbar: React.FC = () => {
           </>
           ) : (
             <></>
+          )} */}
+          {user && backButtonLocation ? (
+            <>
+            <nav>
+              <button
+                onClick={() => navigate(-1)}
+                style={{
+                  cursor: 'pointer',
+                  textDecoration: 'none',
+                  color: 'white',
+                  padding: '8px 12px',
+                  borderRadius: '4px',
+                  transition: 'background-color 0.2s',
+                  background: 'transparent',
+                  border: 'none'
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)')}
+                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+                aria-label={backButtonLocation}
+              >
+                {backButtonLocation}
+              </button>
+            </nav>
+            </>
+            ) : (
+            <>
+            </>
           )}
         </div>
 
