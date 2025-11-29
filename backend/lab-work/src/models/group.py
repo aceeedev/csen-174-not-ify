@@ -15,8 +15,8 @@ class Group:
         self.shelf = shelf
         self.description = desc
         self.groupName = groupName
-        self.maxPLists = 20
-        self.maxMembers = 20
+        self.max_playlists = 20
+        self.max_members = 20
         self.groupID = ''.join (random.choices(string.digits, k=10)) #Make a random 10 digit groupID
 
     def __eq__(self, other) -> bool:
@@ -32,7 +32,7 @@ class Group:
         if inviteeID in self.memberIDs: 
             raise Exception("User {inviteeID} is already a member of group {self.groupName}")
             errorCaught = True
-        if len(self.memberIDs) == self.maxMembers:
+        if len(self.memberIDs) == self.max_members:
             raise Exception("Group is already at maximum capacity, cannot add more members.")
             errorCaught = True
         if errorCaught: #Allows for multiple failure to be displayed. 

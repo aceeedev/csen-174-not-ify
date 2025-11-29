@@ -97,8 +97,8 @@ class Group:
         self.group_member_data = group_member_data
 
         # Constants
-        self.maxPLists = 20
-        self.maxMembers = 20
+        self.max_playlists = 20
+        self.max_members = 20
 
 
     def to_dict(self) -> dict[str, Any]:

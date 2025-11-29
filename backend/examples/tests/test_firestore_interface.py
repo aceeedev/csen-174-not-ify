@@ -60,14 +60,14 @@ class TestFireStoreInterface:
     
     def test_make_group_validation(self):
         """Test makeGroup validation"""
-        # Test invalid maxMembers
+        # Test invalid max_members
         with pytest.raises(ValueError, match="Max members must be between 1 and 20"):
             makeGroup("Test", TEST_USER_ID, 0, "", 10)
         
         with pytest.raises(ValueError, match="Max members must be between 1 and 20"):
             makeGroup("Test", TEST_USER_ID, 21, "", 10)
         
-        # Test invalid maxPLists
+        # Test invalid max_playlists
         with pytest.raises(ValueError, match="Max playlists must be between 1 and 20"):
             makeGroup("Test", TEST_USER_ID, 10, "", 0)
         

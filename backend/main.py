@@ -186,7 +186,7 @@ def join_group():
         return jsonify({"error": "User already member of this group"}), 400
     
     # check to see if the group is full
-    if len(group.member_ids) >= group.maxMembers:
+    if len(group.member_ids) >= group.max_members:
         return jsonify({"error": "This group has already reached the max number of members"}), 400
     
     # add the user to the group
@@ -225,7 +225,7 @@ def invite_to_group():
         return jsonify({"error": "User is already a member of this group"}), 400
     
     # Check if group is full
-    if len(group.member_ids) >= group.maxMembers:
+    if len(group.member_ids) >= group.max_members:
         return jsonify({"error": "This group has reached the maximum number of members"}), 400
     
     # Check if invitee user exists
@@ -300,10 +300,10 @@ def edit_group():
                 firebase_group.group_name = settings['group_name']
             if 'description' in settings:
                 firebase_group.description = settings['description']
-            if 'maxMembers' in settings:
-                firebase_group.maxMembers = int(settings['maxMembers'])
-            if 'maxPLists' in settings:
-                firebase_group.maxPLists = int(settings['maxPLists'])
+            if 'max_members' in settings:
+                firebase_group.max_members = int(settings['max_members'])
+            if 'max_playlists' in settings:
+                firebase_group.max_playlists = int(settings['max_playlists'])
             
             firebase.update_group(group_id, firebase_group)
             return jsonify({"message": "Success!"}), 200
