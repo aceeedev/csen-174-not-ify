@@ -113,7 +113,7 @@ class SpotifyManager:
             # Handle playlists that might not have images
             cover_url = ""
             if playlist.get("images") and len(playlist["images"]) > 0:
-                cover_url = playlist["images"][-1]["url"]
+                cover_url = playlist["images"][0]["url"]
             
             playlists.append({
                 "spotify_id": playlist["id"],
