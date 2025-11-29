@@ -134,9 +134,6 @@ const Navbar: React.FC<NavbarProps> = ({ backButtonLocation = BackButtonLocation
               <Link to={"/profile"} style={{cursor: 'pointer', padding: '8px 12px', fontSize: 14, textDecoration: 'none', color: 'white', borderRadius: '4px', transition: 'background-color 0.2s'}} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
                   Profile
               </Link>
-              <button onClick={handleSignOut} style={{padding: '8px 12px'}}>
-                Sign out
-              </button>
             </>
           ) : (
             <button onClick={signInToGoogle} disabled={loading} style={{padding: '8px 12px'}}>

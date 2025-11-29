@@ -312,9 +312,9 @@ function GroupView() {
                   className="playlist-card"
                   onClick={() => handleViewPlaylist(playlist.id)}
                 >
-                  <div className="playlist-cover">
+                  <div>
                     {playlist.cover ? (
-                      <img src={playlist.cover} alt={playlist.title} />
+                      <img src={playlist.cover} alt={playlist.title} className="playlist-cover" />
                     ) : (
                       <div className="playlist-placeholder">🎵</div>
                     )}
