@@ -3,9 +3,11 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import './groupView.css';
-import { auth, getUserFromFirebase } from '../../firebase';
+import { auth, getUserFromFirebase,getCurrentUserFromFirebase } from '../../firebase';
 import { takePlaylistFromGroupOnBackend, inviteToGroupOnBackend, getGroupPlaylistsOnBackend } from '../../backendInterface';
-import type { Group } from '../../models';
+import type { Group, firebaseUser } from '../../models';
+import { signInWithPopup, onAuthStateChanged, signOut, type User } from "firebase/auth";
+import { getGroupsOnBackend, editGroupOnBackend } from "../../backendInterface";
 
 
 /**
@@ -23,23 +25,36 @@ function GroupView() {
   const group = location.state?.group as Group | undefined;
   const groupId = group?.id;
 
-  // TODO: Fetch members from backend
   const [members, setMembers] = useState<any[]>([]);
 
-  // TODO: Fetch playlists from backend
   const [playlists, setPlaylists] = useState<any[]>([]);
 
-  // TODO: Check if current user is owner
   const [isOwner, setIsOwner] = useState(false);
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const [ownerName, setOwnerName] = useState <string>('');
+  
+  const [aUser, setUser] = useState<User | null>(null) //google authentication user
+  const [fUser, setfUser] = useState<firebaseUser | null>(null)        //firebase user object
+  const [groups, setGroups] = useState<Group[]>([]);     // Full group objects for display
 
 
   useEffect(() => {
     let isMounted = true;
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);                           //updates the user variable on login/out
+
+      if (currentUser !== null){
+        getUserObjectData(currentUser);               //call this function at the start of the load. keep
+      }
+        });
+
+  const getUserObjectData= async (user: User) =>{     //firebase user
+    setfUser (await getCurrentUserFromFirebase());
+    setGroups (await getGroupsOnBackend() ?? []);
+  }
 
     const fetchGroupDetails = async () => {
       if (!groupId) {
@@ -119,6 +134,25 @@ function GroupView() {
     });
   };
 
+  const handleleaveGroup = async()=>{
+      if (!aUser || !groupId) return;
+      
+      // Ask for confirmation first (Just to be sure)
+      const confirmed = window.confirm("Are you sure you want to leave this group?");
+      if (!confirmed) return;
+  
+      //remove user from the group on the backend.
+      const response = await editGroupOnBackend(groupId, "remove_user", aUser.uid);
+  
+      if (response.success) {
+        // Only remove from state after backend confirms success
+        setGroups (await getGroupsOnBackend() ?? []);
+        navigate("/")
+      } else {
+        alert("Could not leave group: " + response.message);
+      }
+    }
+
   const handleInviteMember = async () => {
     if (!groupId) return;
     
@@ -196,9 +230,6 @@ function GroupView() {
     // TODO: Navigate to member profile
   };
 
-  const handleLeaveGroup = () => {
-    // TODO: Implement leave group functionality
-  };
 
   const handleSettings = () => {
     if (!groupId) return;
@@ -382,7 +413,7 @@ function GroupView() {
 
           {!isOwner && (
             <div className="leave-group-section">
-              <button className="btn-danger" onClick={handleLeaveGroup}>
+              <button className="btn-danger" onClick={handleleaveGroup}>
                 Leave Group
               </button>
             </div>
