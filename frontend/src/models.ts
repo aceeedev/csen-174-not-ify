@@ -17,8 +17,8 @@ export interface Group {
     description: string;
     group_name: string;
     group_member_data: Record<string, GroupMemberData>; // maps user_id -> GroupMemberData
-    maxPLists?: number;
-    maxMembers?: number;
+    max_playlists?: number;
+    max_members?: number;
 }
 
 
