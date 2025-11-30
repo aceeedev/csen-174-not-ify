@@ -250,20 +250,25 @@ def invite_to_group():
 def edit_group():
     firebase = FirebaseManager()
 
-    error = validate_params(["groupID", "action", "params"])
+    # Validate required params (params is optional for del_group)
+    error = validate_params(["groupID", "action"])
     if error:
         return error
     
     user_id: str = request.user_id
     group_id: str = request.args.get("groupID")
     action: str = request.args.get("action")
-    params: str = request.args.get("params")
+    params: str = request.args.get("params", "")  # Default to empty string if not provided
 
     firebase_group = firebase.get_group_info(group_id)
     firebase_user = firebase.get_user_info(user_id)
     
     #If actions == remove_user: remove user from group functionality:
     if action == 'remove_user':
+        # Validate params is provided for remove_user
+        if not params:
+            return jsonify({"error": "Missing required parameter: params (user ID to remove)"}), 400
+        
         #If a general user wants to remove themselves, allow them to
         if params == firebase_group.owner_id: 
             return jsonify({"error": "Implementation error, cannot remove the group owner"}), 400
@@ -291,6 +296,10 @@ def edit_group():
     #Unsure of what this does, or where params = json is generated from.
     #It may be better if there is a separate endpoint called update_group that has these parameters. 
     elif action == 'update_settings':
+        # Validate params is provided for update_settings
+        if not params:
+            return jsonify({"error": "Missing required parameter: params (JSON settings)"}), 400
+        
         if user_id != firebase_group.owner_id:
             return jsonify({"error": "Access denied, user is not the owner"}), 400
         
@@ -314,17 +323,11 @@ def edit_group():
     
     #If actions == del_group: deleting the group functionality
     elif action == 'del_group':
-        #remove groupID from the member's myGroup's array
+        # Verify user is the owner
         if user_id != firebase_group.owner_id:
-            return jsonify({"error": "Access denied, user is not the owner"}), 400        
-        for member in firebase_group.member_ids:
-            firebase_member = firebase.get_user_info(member)
-            if group_id not in firebase_member.my_groups:
-                return jsonify({"error": "Data continuity error: member does not claim to be in group, though group claims that user."}), 400
-            firebase_member.my_groups.remove(group_id)
-            firebase.update_user(member, firebase_member)
-
-        #Delete the group from the firebase
+            return jsonify({"error": "Access denied, user is not the owner"}), 400
+        
+        # Delete the group (cleanup is handled internally by delete_group)
         firebase.delete_group(group_id)
         
         print(f"Group with groupID: {group_id} successfully deleted")

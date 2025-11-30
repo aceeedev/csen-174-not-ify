@@ -134,7 +134,7 @@ export async function getGroupsOnBackend(): Promise<Group[] | null> {
 
 export async function createGroupOnBackend(groupName: string, description: string): Promise<BackendResponse<void>> {
     return fetchBackend<void>("/create/group", {
-        groupName: groupName,
+        group_name: groupName,  // Backend expects snake_case
         description: description,
     });
 }
