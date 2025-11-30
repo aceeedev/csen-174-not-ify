@@ -30,7 +30,7 @@ createRoot(document.getElementById('root')!).render(
       <Route path="/group" element={<GroupView />} />
       <Route path="/group/settings" element={<GroupSettingView />} />
       <Route path="/new-group" element={<AddGroupView />} />
-      <Route path="/group-overview" element={<GroupOverview/>}/>
+      <Route path="/group-overview" element={<GroupOverview />}/>
     </Routes>
   </BrowserRouter>,
 )

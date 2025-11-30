@@ -5,7 +5,7 @@ import Navbar from "../../components/Navbar";
 import { auth, getCurrentUserFromFirebase} from '../../firebase';
 import { signInWithPopup, onAuthStateChanged, signOut, type User } from "firebase/auth";
 import { Link, useNavigate } from 'react-router-dom';
-import { getGroupsOnBackend, getUsersPlaylistsOnBackend } from "../../backendInterface";
+import { getGroupMembersListOnBackend, getGroupsOnBackend, getUsersPlaylistsOnBackend } from "../../backendInterface";
 import type { Group, firebaseUser } from "../../models"
 
 export default function GroupsOverview() {
@@ -24,6 +24,7 @@ export default function GroupsOverview() {
       if (currentUser !== null){
         getUserObjectData(currentUser);               //call this function at the start of the load. keep
       }
+
     });
 
     return () => unsubscribe();
@@ -56,12 +57,41 @@ export default function GroupsOverview() {
 }
 
 function GroupOverRow({ group }: { group: Group}) {
+  const [firebase_members, setMembers] = useState<firebaseUser[]>([])
+
+  useEffect(() =>{
+    async function loadMembers(){
+      setMembers(await getGroupMembersListOnBackend(group.id!) ?? []);
+    };
+    loadMembers();
+  }, [group.id])
+
+
   return (
     <div className="group-row-style">
       <div style={{ display: "flex", gap: "3rem", alignItems: "center" }}>
-        <span style={{fontSize: 18}}>{group.group_name}</span>    {/* Display the group name */}
+        <span style={{fontSize: 20, fontStyle: 'bold'}}>{group.group_name}</span>    {/* Display the group name */}
         <span style={{fontStyle:'italic'}}>{group.description}</span>
-        <span style={{}}>{group.member_ids}</span>
+        <span>
+          {firebase_members.map((member: firebaseUser, index) => (
+            <span key={index}> 
+            {/* Display the profile picture */}
+            <img 
+              src={member.profile_pic || '/default-avatar.png'} 
+              style={{
+                width: "1rem",
+                height: "1rem",
+                borderRadius: "50%",
+              }} 
+            />
+            {" "}
+            {/* Display the Member's Name */}
+            {member.name}
+            <br />
+            </span>
+          ))}
+        </span>
+        
       </div>
       {/* Button to link to the group */}
         <Link

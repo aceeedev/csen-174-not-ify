@@ -217,8 +217,10 @@ export async function inviteToGroupOnBackend(groupID: string, userID: string) {
   })
 }
 
-export async function getGroupMembersListOnBackend(): Promise<firebaseUser[] | null> {
-    const result = await fetchBackend<firebaseUser[]>("/get/group/members/list");
+export async function getGroupMembersListOnBackend(group_id: string): Promise<firebaseUser[] | null> {
+    const result = await fetchBackend<firebaseUser[]>("/get/group/members/list", {
+      group_id: group_id
+    });
     
     return result.success ? result.data : null;
 }
