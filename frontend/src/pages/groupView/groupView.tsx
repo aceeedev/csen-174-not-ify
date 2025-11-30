@@ -208,20 +208,47 @@ function GroupView() {
         </div>
       ) : (
       <>
+      
       {/* Group Header */}
       <section className="group-header">
         <div className="group-header-content">
-          <div className="group-info">
-            <h1 className="group-title">{group?.group_name || 'Group Name'}</h1>
+          <div style={{
+            textAlign: 'center'
+          }}>
+            {/* Group Name */}
+            <span style={{
+              fontSize: '3rem',
+              textAlign: 'center'
+            }}>
+              {group?.group_name || 'Group Name'}
+            </span>
+
+            {/* Group Descritpion */}
             <p className="group-description">{group?.description || 'No description available'}</p>
-            <div className="group-meta">
-              <span className="meta-item">👤 {members.length || 0} members</span>
-              <span className="meta-item">🎵 {playlists.length || 0} playlists</span>
-              {group?.owner_id && (
-                <span className="meta-item">👑 Owner: {ownerName}</span>
-              )}
+            
+            {/* Group Stats (Based on user stats) */}
+            <div className="stats-container">
+              <div className='stats-left'>
+                <div>Group Members </div>
+                <div>{members.length || 0}</div>
+              </div>
+              <div className="stats-center">♪</div>
+              <div className='stats-right'>
+                <div>Posted Playlists </div>
+                <div>{playlists.length || 0}</div>
+              </div>
+            </div>
+
+            {/* Coins that you have */}
+            <div style = {{
+              marginTop:  '1rem',
+            }}> 
+              {group && aUser && (
+              <p>Your Coins: {group.group_member_data[aUser!.uid].coins}</p>
+            )}
             </div>
           </div>
+          
           <div className="group-actions-header">
             {isOwner && (
               <button className="btn-secondary" onClick={handleSettings}>
@@ -242,10 +269,6 @@ function GroupView() {
               + Add Playlist
             </button>
           </div>
-
-            {group && aUser && (
-              <p>Your coins: {group.group_member_data[aUser!.uid].coins}</p>
-            )}
 
           {playlists.length === 0 ? (
             <div className="empty-state">
