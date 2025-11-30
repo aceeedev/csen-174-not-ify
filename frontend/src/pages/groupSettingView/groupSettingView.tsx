@@ -28,8 +28,6 @@ function GroupSettingView() {
   // Form state for group settings
   const [groupName, setGroupName] = useState('');
   const [description, setDescription] = useState('');
-  const [maxMembers, setMaxMembers] = useState(20);
-  const [maxPlaylists, setMaxPlaylists] = useState(20);
 
   const handleSaveSettings = () => {
     // TODO: Implement save group settings functionality
@@ -93,36 +91,6 @@ function GroupSettingView() {
               />
             </div>
 
-            <div className="form-row">
-              <div className="form-group">
-                <label htmlFor="maxMembers">Max Members</label>
-                <input
-                  type="number"
-                  id="maxMembers"
-                  value={maxMembers}
-                  onChange={(e) => setMaxMembers(parseInt(e.target.value) || 20)}
-                  min={1}
-                  max={20}
-                  className="form-input"
-                />
-                <span className="form-hint">Between 1 and 20</span>
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="maxPlaylists">Max Playlists</label>
-                <input
-                  type="number"
-                  id="maxPlaylists"
-                  value={maxPlaylists}
-                  onChange={(e) => setMaxPlaylists(parseInt(e.target.value) || 20)}
-                  min={1}
-                  max={20}
-                  className="form-input"
-                />
-                <span className="form-hint">Between 1 and 20</span>
-              </div>
-            </div>
-
             <div className="form-actions">
               <button type="button" className="btn-secondary" onClick={() => window.history.back()}>
                 Cancel
@@ -138,14 +106,10 @@ function GroupSettingView() {
         <section className="members-section">
           <div className="section-header">
             <h2 className="section-title">Members ({members.length || 0})</h2>
-            <button className="btn-primary" onClick={handleInviteMember}>
-              + Invite Member
-            </button>
           </div>
 
           {members.length === 0 ? (
             <div className="empty-state">
-              <div className="empty-icon">👥</div>
               <p className="empty-text">No members in this group</p>
             </div>
           ) : (

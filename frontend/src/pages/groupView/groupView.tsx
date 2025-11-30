@@ -345,11 +345,6 @@ function GroupView() {
         <section className="members-section">
           <div className="section-header">
             <h2 className="section-title">Members ({members.length || 0})</h2>
-            {isOwner && (
-              <button className="btn-secondary" onClick={handleInviteMember}>
-                + Invite Member
-              </button>
-            )}
           </div>
 
           {members.length === 0 ? (
