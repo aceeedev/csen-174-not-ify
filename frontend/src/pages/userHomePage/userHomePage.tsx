@@ -6,6 +6,7 @@ import './userHomePage.css';
 import Navbar from '../../components/Navbar';
 import { getLibraryPlaylistsOnBackend, getGroupsOnBackend } from '../../backendInterface';
 import type { Group, Playlist } from '../../models';
+import PlaylistCard from '../../components/PlaylistCard';
 
 
 function UserHomePage() {
@@ -202,21 +203,7 @@ function UserHomePage() {
             ) : (
               <div className="library-grid">
                 {library.slice(0, 6).map((item) => (
-                  <div 
-                    key={item.id} 
-                    className="library-item"
-                    onClick={() => handleViewPlaylist(item)}
-                    >
-                    <div className="library-item-cover">
-                      {item.cover ? (
-                        <img src={item.cover} alt={item.title} />
-                      ) : (
-                        <div className="library-placeholder">🎵</div>
-                      )}
-                    </div>
-                    <h4 className="library-item-title">{item.title || 'Untitled'}</h4>
-                    <p className="library-item-artist">{item.description || 'No description'}</p>
-                  </div>
+                  <PlaylistCard playlist={item}/>
                 ))}
               </div>
             )}
