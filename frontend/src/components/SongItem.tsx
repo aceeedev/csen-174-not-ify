@@ -34,9 +34,31 @@ const SongItem: React.FC<SongItemProps> = ({ song, isBlurred }) => {
                 }}
             />
 
-            <div style={{ flex: 1 }}>
+            <div 
+                style={{ 
+                    flex: 1,
+                    fontStyle: 'bold',
+                    }}>
                 {song.title}
             </div>
+
+            <div 
+                style={{ 
+                    flex: 1,
+                    fontStyle: 'italic',
+                }}>
+                {song.artist_name}
+            </div>
+
+            <div 
+                style={{ 
+                    flex: 1,
+                    fontStyle: 'italic',
+                    color: 'grey'
+                    }}>
+                {'['}{song.album_name}{']'}
+            </div>
+
         </div>
     );
 };
