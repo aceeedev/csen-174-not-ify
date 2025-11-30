@@ -1,42 +1,53 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import type { Playlist } from '../models';
+import type { Group, Playlist } from '../models';
+
+
+
 
 interface PlaylistCardProps {
     playlist: Playlist;
+    group?: Group | undefined;
+    groupID?: string | undefined;
 }
 
-const PlaylistCard: React.FC<PlaylistCardProps> = ({ playlist }) => {
+const PlaylistCard: React.FC<PlaylistCardProps> = ({ playlist, group = undefined, groupID = undefined }) => {
     const navigate = useNavigate();
 
     const handleClick = () => {
         navigate('/playlist', { 
             state: { 
                 playlist: playlist,
-                // No groupID means it's from library
+                group: group,
+                groupID: groupID
             } 
         });
     };
 
     return (
-        <div 
-            className="playlist-card" 
-            onClick={handleClick}
-            style={{
-                border: '1px solid #ddd',
-                borderRadius: '8px',
-                padding: '16px',
-                margin: '8px',
-                boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                backgroundColor: 'white',
-                transition: 'box-shadow 0.3s ease',
-                cursor: 'pointer'
-            }}
-            onMouseEnter={(e) => e.currentTarget.style.boxShadow = '0 4px 8px rgba(0,0,0,0.15)'}
-            onMouseLeave={(e) => e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)'}
+        <div
+            className="playlist-card"
+            onClick={() => handleClick()}
         >
-            <h3 style={{ margin: '0 0 8px 0', color: '#333' }}>{playlist.title}</h3>
-            <p style={{ margin: '0', color: '#666' }}>{playlist.description}</p>
+            <div>
+            {playlist.cover ? (
+                <img src={playlist.cover} alt={playlist.title} className="playlist-cover" />
+            ) : (
+                <div className="playlist-placeholder">🎵</div>
+            )}
+            </div>
+            <div className="playlist-info">
+            <h3 className="playlist-title">{playlist.title || 'Untitled Playlist'}</h3>
+            <p className="playlist-owner">
+                {playlist.is_owner ? 'Your playlist' : `by ${playlist.owner_id || 'Unknown'}`}
+            </p>
+            <p className="playlist-songs">{playlist.songs?.length || 0} songs</p>
+            {playlist.is_owner && !playlist.is_taken && (
+                <div style={{ marginTop: '0.25rem', fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.5)' }}>
+                Your playlist
+                </div>
+            )}
+            </div>
         </div>
     );
 };

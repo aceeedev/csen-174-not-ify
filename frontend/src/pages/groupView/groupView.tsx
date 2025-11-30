@@ -9,6 +9,7 @@ import type { Group, firebaseUser } from '../../models';
 import { signInWithPopup, onAuthStateChanged, signOut, type User } from "firebase/auth";
 import { getGroupsOnBackend, editGroupOnBackend } from "../../backendInterface";
 import Navbar, { BackButtonLocation } from '../../components/Navbar';
+import PlaylistCard from '../../components/PlaylistCard';
 
 
 /**
@@ -281,44 +282,7 @@ function GroupView() {
           ) : (
             <div className="playlist-board-grid">
               {playlists.map((playlist) => (
-                <div
-                  key={playlist.id}
-                  className="playlist-card"
-                  onClick={() => handleViewPlaylist(playlist.id)}
-                >
-                  <div>
-                    {playlist.cover ? (
-                      <img src={playlist.cover} alt={playlist.title} className="playlist-cover" />
-                    ) : (
-                      <div className="playlist-placeholder">🎵</div>
-                    )}
-                  </div>
-                  <div className="playlist-info">
-                    <h3 className="playlist-title">{playlist.title || 'Untitled Playlist'}</h3>
-                    <p className="playlist-owner">
-                      {playlist.is_owner ? 'Your playlist' : `by ${playlist.owner_id || 'Unknown'}`}
-                    </p>
-                    <p className="playlist-songs">{playlist.songs?.length || 0} songs</p>
-                    {playlist.is_taken ? (
-                      <div style={{ marginTop: '0.5rem', padding: '0.5rem', background: 'rgba(34, 197, 94, 0.2)', borderRadius: '4px', fontSize: '0.85rem', color: 'rgba(255, 255, 255, 0.7)' }}>
-                        Already Taken
-                      </div>
-                    ) : playlist.can_take ? (
-                      <button 
-                        className="btn-primary" 
-                        onClick={(e) => handleTakePlaylist(playlist.id, e)}
-                        style={{ marginTop: '0.5rem' }}
-                      >
-                        Take Playlist (1 coin)
-                      </button>
-                    ) : null}
-                    {playlist.is_owner && !playlist.is_taken && (
-                      <div style={{ marginTop: '0.25rem', fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.5)' }}>
-                        Your playlist
-                      </div>
-                    )}
-                  </div>
-                </div>
+                <PlaylistCard playlist={playlist} group={group} groupID={groupId}/>
               ))}
             </div>
           )}
