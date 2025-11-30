@@ -240,7 +240,7 @@ function GroupView() {
 
   return (
     <div className="group-view-container">
-      <Navbar backButtonLocation={BackButtonLocation.ToHome} />
+      <Navbar />
 
       {isLoading ? (
         <div className="group-status-message">Loading group...</div>

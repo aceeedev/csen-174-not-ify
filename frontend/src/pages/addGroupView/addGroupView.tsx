@@ -50,7 +50,7 @@ function AddGroupView() {
 
   return (
     <div className="add-group-view">
-      <Navbar backButtonLocation={BackButtonLocation.ToHome}/>
+      <Navbar />
 
       <main className="add-group-content">
         <section className="add-group-card">

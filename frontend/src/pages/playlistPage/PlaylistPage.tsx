@@ -119,7 +119,7 @@ const PlaylistPage: React.FC = () => {
 
     return (
         <div>
-            <Navbar backButtonLocation={pageOrigin == PageOrigin.FromLibrary ? BackButtonLocation.ToHome : BackButtonLocation.ToGroup}/>
+            <Navbar backButtonLocation={pageOrigin == PageOrigin.FromGroup ? BackButtonLocation.ToGroup : BackButtonLocation.None}/>
 
             {loading ? (
                 <p>Loading...</p>
