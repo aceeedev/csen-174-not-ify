@@ -36,7 +36,7 @@ function LibraryView() {
 
   return (
     <>
-      <Navbar backButtonLocation={BackButtonLocation.ToHome} />
+      <Navbar/>
       
       <h1>Library</h1>
       <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'nowrap', overflowX: 'auto', gap: '1rem' }}>

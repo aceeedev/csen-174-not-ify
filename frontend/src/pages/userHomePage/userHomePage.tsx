@@ -173,7 +173,7 @@ function UserHomePage() {
           </div>
 
           <div className="section-footer">
-            <Link to="/groups" className="view-all-link">
+            <Link to="/my-groups" className="view-all-link">
               View All Groups →
             </Link>
           </div>
@@ -195,7 +195,7 @@ function UserHomePage() {
               <div className="empty-state">
                 <div className="empty-icon">📚</div>
                 <p className="empty-text">Your library is empty</p>
-                <Link to="/library" className="btn-primary">
+                <Link to="/my-library" className="btn-primary">
                   Explore Library
                 </Link>
               </div>
@@ -223,7 +223,7 @@ function UserHomePage() {
           </div>
 
           <div className="section-footer">
-            <Link to="/library" className="view-all-link">
+            <Link to="/my-library" className="view-all-link">
               View Full Library →
             </Link>
           </div>
