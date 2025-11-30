@@ -72,7 +72,7 @@ const Navbar: React.FC = () => {
             <>            
             <nav style={{display: 'flex', gap: 12}}>
               <Link 
-              to={"/groups"} style={{cursor: 'pointer', textDecoration: 'none', color: 'white', padding: '8px 12px', borderRadius: '4px', transition: 'background-color 0.2s'}} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
+              to={"/group-overview"} style={{cursor: 'pointer', textDecoration: 'none', color: 'white', padding: '8px 12px', borderRadius: '4px', transition: 'background-color 0.2s'}} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
                   Groups
               </Link>
               <Link to={"/library"} style={{cursor: 'pointer', textDecoration: 'none', color: 'white', padding: '8px 12px', borderRadius: '4px', transition: 'background-color 0.2s'}} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>

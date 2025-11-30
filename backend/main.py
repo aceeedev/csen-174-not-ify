@@ -333,6 +333,31 @@ def edit_group():
     else:
         return jsonify({"error": "Selected action is not provided"}), 400
 
+@app.route('get/group/members/list')
+@FirebaseManager.require_firebase_auth
+def get_group_members_list():
+    firebase = FirebaseManager()
+
+    error = validate_params(["group_id"])
+    if error:
+        return error
+    
+    user_id: str = request.user_id
+    group_id: str = request.args.get("group_id")
+
+    firebase_group = firebase.get_group_info(group_id)
+    firebase_user = firebase.get_user_info(user_id)
+
+    if group_id not in firebase_user.my_groups:
+        return jsonify({"error": "Implementation error, cannot access a group you are not in"}), 400        
+
+    firebase_members = [firebase.get_user_info(member_id) for member_id in firebase_group.member_ids]
+
+    # I'm not sure if that's actually needed. 
+
+    return jsonify({"data": firebase_members}), 200
+    
+
 @app.route('/get/users/playlists') #Getting spotify playlists, as opposed to get library 
 @FirebaseManager.require_firebase_auth
 def get_users_playlists():
