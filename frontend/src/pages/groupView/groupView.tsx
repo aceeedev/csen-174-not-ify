@@ -255,7 +255,6 @@ function GroupView() {
       {/* Group Header */}
       <section className="group-header">
         <div className="group-header-content">
-          <div className="group-icon-large">🎵</div>
           <div className="group-info">
             <h1 className="group-title">{group?.group_name || 'Group Name'}</h1>
             <p className="group-description">{group?.description || 'No description available'}</p>
@@ -268,14 +267,6 @@ function GroupView() {
             </div>
           </div>
           <div className="group-actions-header">
-            <button className="btn-primary" onClick={handleAddPlaylist}>
-              + Add Playlist
-            </button>
-            {!isOwner && (
-              <button className="btn-secondary" onClick={handleInviteMember}>
-                Invite Member
-              </button>
-            )}
             {isOwner && (
               <button className="btn-secondary" onClick={handleSettings}>
                 Group Settings

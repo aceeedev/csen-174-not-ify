@@ -155,7 +155,6 @@ function UserHomePage() {
                     }
                   }}
                 >
-                  <div className="group-icon">🎵</div>
                   <h3 className="group-name">{group.group_name || 'Untitled Group'}</h3>
                   <p className="group-members">{group.member_ids.length || 0} members</p>
                   <p className="group-description">{group.description || 'No description'}</p>
