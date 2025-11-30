@@ -201,7 +201,7 @@ function UserHomePage() {
                 </Link>
               </div>
             ) : (
-              <div className="library-grid">
+              <div className="playlist-board-grid">
                 {library.slice(0, 6).map((item) => (
                   <PlaylistCard playlist={item}/>
                 ))}

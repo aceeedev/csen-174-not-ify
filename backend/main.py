@@ -435,7 +435,7 @@ def get_group_playlists():
     for playlist_id in all_playlist_ids:
         try:
             playlist = firebase.get_playlist_info(playlist_id)
-            playlist_dict = playlist.to_dict_with_id(playlist_id)
+            playlist_dict = playlist.to_dict_with_id_and_owner_name(firebase, playlist_id)
             
             # Add metadata about whether this playlist can be taken by the current user
             # NOTE: For demo purposes, allowing users to take their own playlists
@@ -628,7 +628,7 @@ def get_library_playlists():
     for playlist_id in user.library:
         try:
             playlist = firebase.get_playlist_info(playlist_id)
-            playlist_dict = playlist.to_dict_with_id(playlist_id)
+            playlist_dict = playlist.to_dict_with_id_and_owner_name(firebase, playlist_id)
             playlists.append(playlist_dict)
         except ValueError:
             # Playlist doesn't exist, skip it

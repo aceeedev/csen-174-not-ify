@@ -39,7 +39,7 @@ function LibraryView() {
       <Navbar/>
       
       <h1>Library</h1>
-      <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'nowrap', overflowX: 'auto', gap: '1rem' }}>
+      <div className="playlist-board-grid">
         {playlists.map((playlist, index) => (
             <PlaylistCard key={index} playlist={playlist} />
         ))}

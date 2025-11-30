@@ -64,3 +64,10 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+
+
+.playlist-board-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1rem;
+}
