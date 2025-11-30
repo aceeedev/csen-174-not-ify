@@ -12,6 +12,7 @@ import Callback from './pages/CallbackPage.tsx';
 import OnboardingPage from './pages/onboardingPage/OnboardingPage.tsx';
 import AddPlaylistPage from './pages/addPlaylistPage/AddPlaylistPage.tsx';
 import PlaylistPage from './pages/playlistPage/PlaylistPage.tsx';
+import GroupOverview from './pages/groupOverview/groupOverview.tsx';
 
 createRoot(document.getElementById('root')!).render(
   <BrowserRouter>
@@ -29,6 +30,7 @@ createRoot(document.getElementById('root')!).render(
       <Route path="/group" element={<GroupView />} />
       <Route path="/group/settings" element={<GroupSettingView />} />
       <Route path="/new-group" element={<AddGroupView />} />
+      <Route path="/group-overview" element={<GroupOverview />}/>
     </Routes>
   </BrowserRouter>,
 )

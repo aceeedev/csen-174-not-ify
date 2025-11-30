@@ -28,7 +28,7 @@ function GroupSettingView() {
   // Form state for group settings
   const [groupName, setGroupName] = useState('');
   const [description, setDescription] = useState('');
-  const [maxMembers, setMaxMembers] = useState(20);
+  const [max_members, setmax_members] = useState(20);
   const [maxPlaylists, setMaxPlaylists] = useState(20);
 
   const handleSaveSettings = () => {
@@ -95,12 +95,12 @@ function GroupSettingView() {
 
             <div className="form-row">
               <div className="form-group">
-                <label htmlFor="maxMembers">Max Members</label>
+                <label htmlFor="max_members">Max Members</label>
                 <input
                   type="number"
-                  id="maxMembers"
-                  value={maxMembers}
-                  onChange={(e) => setMaxMembers(parseInt(e.target.value) || 20)}
+                  id="max_members"
+                  value={max_members}
+                  onChange={(e) => setmax_members(parseInt(e.target.value) || 20)}
                   min={1}
                   max={20}
                   className="form-input"

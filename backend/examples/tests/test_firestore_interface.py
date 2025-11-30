@@ -9,7 +9,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 import pytest
 from FireStoreInterface import (
-    getFirestoreDB, getDocInfo, getCollection, createDoc, deleteDoc, updateDoc,
+    getFirestoreDB, get_doc_info, get_collection, create_doc, delete_doc, update_doc,
     makeGroup, getGroups, deleteGroup, addMember, removeMember,
     getUserInfo, getUserList, getSongInfo, getSongs
 )
@@ -46,28 +46,28 @@ class TestFireStoreInterface:
             'name': 'Test Document',
             'value': 123
         }
-        # Note: createDoc doesn't return the ID, so we can't test retrieval easily
-        # You might want to modify createDoc to return the document ID
-        print("✅ createDoc() can be called (requires manual verification in Firebase)")
+        # Note: create_doc doesn't return the ID, so we can't test retrieval easily
+        # You might want to modify create_doc to return the document ID
+        print("✅ create_doc() can be called (requires manual verification in Firebase)")
     
     def test_get_doc_info(self):
         """Test getting document info"""
         # Try to get a document that might exist
-        result = getDocInfo('Users', TEST_USER_ID)
+        result = get_doc_info('Users', TEST_USER_ID)
         # Result will either be data or error dict
         assert isinstance(result, dict)
-        print(f"✅ getDocInfo() returns dict: {result}")
+        print(f"✅ get_doc_info() returns dict: {result}")
     
     def test_make_group_validation(self):
         """Test makeGroup validation"""
-        # Test invalid maxMembers
+        # Test invalid max_members
         with pytest.raises(ValueError, match="Max members must be between 1 and 20"):
             makeGroup("Test", TEST_USER_ID, 0, "", 10)
         
         with pytest.raises(ValueError, match="Max members must be between 1 and 20"):
             makeGroup("Test", TEST_USER_ID, 21, "", 10)
         
-        # Test invalid maxPLists
+        # Test invalid max_playlists
         with pytest.raises(ValueError, match="Max playlists must be between 1 and 20"):
             makeGroup("Test", TEST_USER_ID, 10, "", 0)
         
@@ -115,7 +115,7 @@ class TestFireStoreInterface:
         """Test getting all groups"""
         groups = getGroups()
         assert isinstance(groups, list)
-        # Each group should have an 'id' field from streamToDict
+        # Each group should have an 'id' field from stream_to_dict
         if groups:
             assert 'id' in groups[0]
         print(f"✅ getGroups() returns list of {len(groups)} groups")

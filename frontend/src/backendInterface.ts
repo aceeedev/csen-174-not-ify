@@ -1,5 +1,5 @@
 import { sendRequestWithIdToken } from "./firebase"
-import type { Group, Playlist, SpotifyPlaylist, Song } from "./models";
+import type { Group, Playlist, SpotifyPlaylist, Song, firebaseUser} from "./models";
 
 
 const baseURL: string = import.meta.env.VITE_BACKEND_URL ?? "http://127.0.0.1:5001";
@@ -215,4 +215,12 @@ export async function inviteToGroupOnBackend(groupID: string, userID: string) {
     groupID: groupID,
     userID: userID
   })
+}
+
+export async function getGroupMembersListOnBackend(group_id: string): Promise<firebaseUser[] | null> {
+    const result = await fetchBackend<firebaseUser[]>("/get/group/members/list", {
+      group_id: group_id
+    });
+    
+    return result.success ? result.data : null;
 }

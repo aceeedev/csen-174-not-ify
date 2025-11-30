@@ -114,54 +114,53 @@ def auth_callback():
 @app.route('/get/groups')
 @FirebaseManager.require_firebase_auth
 def get_groups():
-    #return the list of all groups that user userID is a member of
-    userID = request.user_id
-    fb = FirebaseManager()
+    #return the list of all groups that user user_id is a member of
+    user_id = request.user_id
+    firebase = FirebaseManager()
 
-    fUser = fb.get_user_info(userID)
-    outLists = [] #empty list to store the output
+    firebase_user = firebase.get_user_info(user_id)
+    output_lists = [] #empty list to store the output
 
-    for gID in fUser.my_groups:
-        outLists.append(fb.get_group_info(gID).to_dict_with_id(gID))
+    for group_id in firebase_user.my_groups:
+        output_lists.append(firebase.get_group_info(group_id).to_dict_with_id(group_id))
     
-    return jsonify({"data": outLists}), 200
+    return jsonify({"data": output_lists}), 200
 
 @app.route('/create/group')
 @FirebaseManager.require_firebase_auth
 def create_group():
-    error = validate_params(['groupName', 'description'])
+    error = validate_params(['group_name', 'description'])
     if error:
         return error
 
-    fb = FirebaseManager()
+    firebase = FirebaseManager()
 
-    userID: str = request.user_id
-
-    groupName: str = request.args.get("groupName")
+    user_id: str = request.user_id
+    group_name: str = request.args.get("group_name")
     description: str = request.args.get("description")
     
     #Make group object from group.py in models
     ownersMemberData = GroupMemberData.default()
     newGroup = Group(
-        owner_id=userID, 
-        member_ids=[userID], 
+        owner_id=user_id, 
+        member_ids=[user_id], 
         description=description,
-        group_name=groupName, 
+        group_name=group_name, 
         group_member_data={
-            userID: ownersMemberData
+            user_id: ownersMemberData
         }
     ) #default
 
     #Make group using firebase call, passing the object group
-    group_id = fb.create_group(newGroup)
+    group_id = firebase.create_group(newGroup)
 
     # add group id to the user's groups
-    user = fb.get_user_info(userID)
+    user = firebase.get_user_info(user_id)
     user.my_groups.append(group_id)
 
-    fb.update_user(userID, user)
+    firebase.update_user(user_id, user)
 
-    print("Group {groupName} successfully created by user {userID}")
+    print("Group {group_name} successfully created by user {user_id}")
 
     return jsonify({"message": "Success!"}), 200
 
@@ -187,7 +186,7 @@ def join_group():
         return jsonify({"error": "User already member of this group"}), 400
     
     # check to see if the group is full
-    if len(group.member_ids) >= group.maxMembers:
+    if len(group.member_ids) >= group.max_members:
         return jsonify({"error": "This group has already reached the max number of members"}), 400
     
     # add the user to the group
@@ -226,7 +225,7 @@ def invite_to_group():
         return jsonify({"error": "User is already a member of this group"}), 400
     
     # Check if group is full
-    if len(group.member_ids) >= group.maxMembers:
+    if len(group.member_ids) >= group.max_members:
         return jsonify({"error": "This group has reached the maximum number of members"}), 400
     
     # Check if invitee user exists
@@ -249,49 +248,50 @@ def invite_to_group():
 @app.route('/edit/group')
 @FirebaseManager.require_firebase_auth
 def edit_group():
-    fb = FirebaseManager()
+    firebase = FirebaseManager()
 
-    # userID: str = request.args.get("userID")
     error = validate_params(["groupID", "action", "params"])
     if error:
         return error
     
-    userID: str = request.user_id
-    groupID: str = request.args.get("groupID")
+    user_id: str = request.user_id
+    group_id: str = request.args.get("groupID")
     action: str = request.args.get("action")
     params: str = request.args.get("params")
 
-    fGroup = fb.get_group_info(groupID)
-    fUser = fb.get_user_info(userID)
+    firebase_group = firebase.get_group_info(group_id)
+    firebase_user = firebase.get_user_info(user_id)
     
     #If actions == remove_user: remove user from group functionality:
     if action == 'remove_user':
         #If a general user wants to remove themselves, allow them to
-        if params == fGroup.owner_id: 
+        if params == firebase_group.owner_id: 
             return jsonify({"error": "Implementation error, cannot remove the group owner"}), 400
-        if params != userID and userID != fGroup.owner_id:
+        if params != user_id and user_id != firebase_group.owner_id:
             return jsonify({"error": "Cannot remove another user if you are not the owner"}), 400   
-        if groupID not in fUser.my_groups:
+        if group_id not in firebase_user.my_groups:
             return jsonify({"error": "Implementation error, cannot access a group you are not in"}), 400
-        if params not in fGroup.member_ids:
+        if params not in firebase_user.member_ids:
             return jsonify({"error": "Implementation error, cannot remove a member that is not in the group"}), 400
         
-        fParams = fb.get_user_info(params)
-        if groupID not in fParams.my_groups:
+        firebase_params = firebase.get_user_info(params)
+        if group_id not in firebase_params.my_groups:
             return jsonify({"error": "Data continuity error: member does not claim to be in group, though group claims that user."}), 400
-        fParams.my_groups.remove(groupID)
-        fb.update_user(params, fParams)
+        firebase_params.my_groups.remove(group_id)
+        firebase.update_user(params, firebase_params)
 
-        fGroup.member_ids.remove(params)
-        del fGroup.group_member_data[params] #delete the removed user's data, not the caller's
-        fb.update_group(groupID, fGroup)
+        firebase_group.member_ids.remove(params)
+        del firebase_group.group_member_data[params] #delete the removed user's data, not the caller's
+        firebase.update_group(group_id, firebase_group)
         
-        print(f"User with userID {params} successfully removed from group with groupID {groupID}")
+        print(f"User with user_id {params} successfully removed from group with group_id {group_id}")
         return jsonify({"message": "Success!"}), 200
     
     #If actions == update_settings: update group name/description
+    #Unsure of what this does, or where params = json is generated from.
+    #It may be better if there is a separate endpoint called update_group that has these parameters. 
     elif action == 'update_settings':
-        if userID != fGroup.owner_id:
+        if user_id != firebase_group.owner_id:
             return jsonify({"error": "Access denied, user is not the owner"}), 400
         
         # params should be JSON string with group_name and/or description
@@ -299,15 +299,15 @@ def edit_group():
         try:
             settings = json.loads(params)
             if 'group_name' in settings:
-                fGroup.group_name = settings['group_name']
+                firebase_group.group_name = settings['group_name']
             if 'description' in settings:
-                fGroup.description = settings['description']
-            if 'maxMembers' in settings:
-                fGroup.maxMembers = int(settings['maxMembers'])
-            if 'maxPLists' in settings:
-                fGroup.maxPLists = int(settings['maxPLists'])
+                firebase_group.description = settings['description']
+            if 'max_members' in settings:
+                firebase_group.max_members = int(settings['max_members'])
+            if 'max_playlists' in settings:
+                firebase_group.max_playlists = int(settings['max_playlists'])
             
-            fb.update_group(groupID, fGroup)
+            firebase.update_group(group_id, firebase_group)
             return jsonify({"message": "Success!"}), 200
         except json.JSONDecodeError:
             return jsonify({"error": "Invalid JSON in params"}), 400
@@ -315,23 +315,48 @@ def edit_group():
     #If actions == del_group: deleting the group functionality
     elif action == 'del_group':
         #remove groupID from the member's myGroup's array
-        if userID != fGroup.owner_id:
+        if user_id != firebase_group.owner_id:
             return jsonify({"error": "Access denied, user is not the owner"}), 400        
-        for member in fGroup.member_ids:
-            fMember = fb.get_user_info(member)
-            if groupID not in fMember.my_groups:
+        for member in firebase_group.member_ids:
+            firebase_member = firebase.get_user_info(member)
+            if group_id not in firebase_member.my_groups:
                 return jsonify({"error": "Data continuity error: member does not claim to be in group, though group claims that user."}), 400
-            fMember.my_groups.remove(groupID)
-            fb.update_user(member, fMember)
+            firebase_member.my_groups.remove(group_id)
+            firebase.update_user(member, firebase_member)
 
         #Delete the group from the firebase
-        fb.delete_group(groupID)
+        firebase.delete_group(group_id)
         
-        print(f"Group with groupID: {groupID} successfully deleted")
+        print(f"Group with groupID: {group_id} successfully deleted")
         return jsonify({"message": "Success!"}), 200
     
     else:
         return jsonify({"error": "Selected action is not provided"}), 400
+
+@app.route('/get/group/members/list')
+@FirebaseManager.require_firebase_auth
+def get_group_members_list():
+    firebase = FirebaseManager()
+
+    error = validate_params(["group_id"])
+    if error:
+        return error
+    
+    user_id: str = request.user_id
+    group_id: str = request.args.get("group_id")
+
+    firebase_group = firebase.get_group_info(group_id)
+    firebase_user = firebase.get_user_info(user_id)
+
+    if group_id not in firebase_user.my_groups:
+        return jsonify({"error": "Implementation error, cannot access a group you are not in"}), 400        
+
+    firebase_members = [firebase.get_user_info(member_id).to_dict() for member_id in firebase_group.member_ids]
+
+    # I'm not sure if that's actually needed. 
+
+    return jsonify({"data": firebase_members}), 200
+    
 
 @app.route('/get/users/playlists') #Getting spotify playlists, as opposed to get library 
 @FirebaseManager.require_firebase_auth
@@ -523,64 +548,68 @@ def add_playlist_to_group():
 @app.route('/take/playlist/group')
 @FirebaseManager.require_firebase_auth
 def take_playlist_from_group():
-    fb = FirebaseManager()
-    error = validate_params(["groupID", "playlistID"])
+    firebase = FirebaseManager()
+    error = validate_params(["group_id", "playlist_id"])
     if error:
         return error
 
-    userID: str = request.user_id
-    groupID: str = request.args.get("groupID")
-    playlistID: str = request.args.get("playlistID")
+    user_id: str = request.user_id
+    group_id: str = request.args.get("group_id")
+    playlist_id: str = request.args.get("playlist_id")
 
-    fUser = fb.get_user_info(userID)
-    fGroup = fb.get_group_info(groupID)
-    fPlaylist = fb.get_playlist_info(playlistID)
+    firebase_user = firebase.get_user_info(user_id)
+    firebase_group = firebase.get_group_info(group_id)
+    firebase_playlist = firebase.get_playlist_info(playlist_id)
 
     #Make sure person is in the group
-    if userID not in fGroup.member_ids:
+    if user_id not in firebase_group.member_ids:
         return jsonify({"error": "User is not a member of this group"}), 400
-    if groupID not in fUser.my_groups:
+    if group_id not in firebase_user.my_groups:
         return jsonify({"error": "Data is not consistent, group claims user, but user does not claim group"}), 400
 
-    # NOTE: For demo purposes, allowing users to take their own playlists
-    # Original check commented out:
-    # #Make sure that the user is not the owner of the playlist
-    # if userID == fPlaylist.owner_id:
-    #     return jsonify({"error":"User cannot swap for a playlist they created"})
-    #     #TODO: Possibly change this implementation to be "take down a playlist without spending a coin" if we want that functionality
+    # Make sure that the user is not the owner of the playlist
+    if user_id == firebase_playlist.owner_id:
+        return jsonify({"error":"User cannot swap for a playlist they created"}), 400
+    
+    #TODO: Possibly change this implementation to be "take down a playlist without spending a coin,"
+    # if we want the functionality to take down playlists.
 
     #Make sure that the person has not taken the playlist before
-    if playlistID in fGroup.group_member_data[userID].taken_playlists:
+    if playlist_id in firebase_group.group_member_data[user_id].taken_playlists:
         return jsonify({"error": "User has already taken this playlist."}), 400
     
     # Check if playlist is already in user's library (data consistency check)
-    if playlistID in fUser.library:
+    if playlist_id in firebase_user.library:
         return jsonify({"error": "Playlist is already in your library."}), 400
     
     #Make sure that they have the coins to do it.
-    if fGroup.group_member_data[userID].coins <= 0:
+    if firebase_group.group_member_data[user_id].coins <= 0:
         return jsonify({"error": "User does not have enough coins to take this playlist"}), 400
     
     # Add the playlist to the user's library
-    fUser.library.append(playlistID)
-    fb.update_user(userID, fUser)
+    firebase_user.library.append(playlist_id)
+    firebase.update_user(user_id, firebase_user)
     
     # Mark the playlist as taken in the group
-    fGroup.group_member_data[userID].taken_playlists.append(playlistID)
+    firebase_group.group_member_data[user_id].taken_playlists.append(playlist_id)
     
     # Increment the number of times that playlist has been downloaded for the owner
-    for member_id, member_data in fGroup.group_member_data.items():
+    for member_id, member_data in firebase_group.group_member_data.items():
         for posted_playlist in member_data.posted_playlists:
-            if posted_playlist.playlist_id == playlistID:
+            if posted_playlist.playlist_id == playlist_id:
                 posted_playlist.number_downloaded += 1
-                #TODO: Make a function call for when this playlist has been downloaded by everyone to remove the playlist from the group
-                break
+            
+                #If the playlist has been downloaded by all users aside from the poster, remove it from the group. 
+                if posted_playlist.number_downloaded == len(firebase_group.member_ids) - 1:
+                    #remove the playlist from the 'posted_playlists' group
+                    member_data.posted_playlists.remove(posted_playlist)
+                    #TODO: OPTIONAL: Remove from every other user's taken_playlists array                        
 
     #'Charge' the user a coin for taking the playlist. 
-    fGroup.group_member_data[userID].coins -= 1
+    firebase_group.group_member_data[user_id].coins -= 1
     
     # Update the group in Firebase using helper function
-    fb.update_group(groupID, fGroup)
+    firebase.update_group(group_id, firebase_group)
 
     return jsonify({"message": "Success!"}), 200
 
