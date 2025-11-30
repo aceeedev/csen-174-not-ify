@@ -351,7 +351,7 @@ def get_group_members_list():
     if group_id not in firebase_user.my_groups:
         return jsonify({"error": "Implementation error, cannot access a group you are not in"}), 400        
 
-    firebase_members = [firebase.get_user_info(member_id).to_dict() for member_id in firebase_group.member_ids]
+    firebase_members = [firebase.get_user_info(member_id).to_dict_with_id(member_id) for member_id in firebase_group.member_ids]
 
     # I'm not sure if that's actually needed. 
 

@@ -57,3 +57,10 @@ class User:
             exported_playlists=data.get('exported_playlists', []),
             is_admin=data.get('is_admin', False),
         )
+    
+    def to_dict_with_id(self, firebase_id: str) -> dict[str, Any]:
+        as_dict: dict[str, Any] = self.to_dict()
+
+        as_dict["id"] = firebase_id
+
+        return as_dict

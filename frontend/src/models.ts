@@ -45,6 +45,7 @@ export interface Song {
 }
 
 export interface firebaseUser {
+    id?: string;
     name: string;
     spotify_id: string;
     access_token: string;

@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import './groupView.css';
 import { auth, getUserFromFirebase,getCurrentUserFromFirebase } from '../../firebase';
-import { takePlaylistFromGroupOnBackend, inviteToGroupOnBackend, getGroupPlaylistsOnBackend } from '../../backendInterface';
+import { takePlaylistFromGroupOnBackend, inviteToGroupOnBackend, getGroupPlaylistsOnBackend, getGroupMembersListOnBackend } from '../../backendInterface';
 import type { Group, firebaseUser } from '../../models';
 import { signInWithPopup, onAuthStateChanged, signOut, type User } from "firebase/auth";
 import { getGroupsOnBackend, editGroupOnBackend } from "../../backendInterface";
@@ -26,7 +26,7 @@ function GroupView() {
   const group = location.state?.group as Group | undefined;
   const groupId = group?.id;
 
-  const [members, setMembers] = useState<any[]>([]);
+  const [members, setMembers] = useState<firebaseUser[]>([]);
 
   const [playlists, setPlaylists] = useState<any[]>([]);
 
@@ -39,8 +39,6 @@ function GroupView() {
   
   const [aUser, setUser] = useState<User | null>(null) //google authentication user
   const [fUser, setfUser] = useState<firebaseUser | null>(null)        //firebase user object
-  const [groups, setGroups] = useState<Group[]>([]);     // Full group objects for display
-
 
   useEffect(() => {
     let isMounted = true;
@@ -49,12 +47,13 @@ function GroupView() {
 
       if (currentUser !== null){
         getUserObjectData(currentUser);               //call this function at the start of the load. keep
+
+        setIsOwner(group?.owner_id == currentUser.uid)
       }
         });
 
   const getUserObjectData= async (user: User) =>{     //firebase user
     setfUser (await getCurrentUserFromFirebase());
-    setGroups (await getGroupsOnBackend() ?? []);
   }
 
     const fetchGroupDetails = async () => {
@@ -66,56 +65,18 @@ function GroupView() {
       setIsLoading(true);
       setErrorMessage(null);
 
-      try {
-        const currentUserId = auth.currentUser?.uid ?? null;
 
-        if (isMounted) {
-          setIsOwner(
-            currentUserId != null && group.owner_id === currentUserId,
-          );
+      setMembers(await getGroupMembersListOnBackend(groupId) ?? []);
 
-          const memberEntries = group.group_member_data
-            ? Object.entries(group.group_member_data)
-            : [];
+      const playlistResponse = await getGroupPlaylistsOnBackend(groupId);
 
-          const formattedMembers = memberEntries.map(
-            ([memberId, memberData]: [string, any]) => ({
-              id: memberId,
-              coins: memberData?.coins ?? 0,
-              lastPostingTimestamp: memberData?.last_posting_timestamp ?? null,
-              takenPlaylists: memberData?.taken_playlists ?? [],
-              postedPlaylists: memberData?.posted_playlists ?? [],
-              isOwner: memberId === group.owner_id,
-            }),
-          );
-
-          setMembers(formattedMembers);
-        }
-
-        try {
-
-          const playlistResponse = await getGroupPlaylistsOnBackend(groupId);
-
-          if (playlistResponse && isMounted) {
-              setPlaylists(playlistResponse);
-          } else {
-            console.warn('Unable to load group playlists.');
-          }
-        } catch (playlistError) {
-          console.error('Error loading playlists:', playlistError);
-        }
-      } catch (error) {
-        console.error('Failed to load group data:', error);
-        if (isMounted) {
-          setErrorMessage(
-            error instanceof Error ? error.message : 'Failed to load group.',
-          );
-        }
-      } finally {
-        if (isMounted) {
-          setIsLoading(false);
-        }
+      if (playlistResponse && isMounted) {
+          setPlaylists(playlistResponse);
+      } else {
+        console.warn('Unable to load group playlists.');
       }
+        
+      setIsLoading(false);
     };
 
     fetchGroupDetails();
@@ -147,7 +108,6 @@ function GroupView() {
   
       if (response.success) {
         // Only remove from state after backend confirms success
-        setGroups (await getGroupsOnBackend() ?? []);
         navigate("/")
       } else {
         alert("Could not leave group: " + response.message);
@@ -227,10 +187,6 @@ function GroupView() {
     }
   };
 
-  const handleViewMember = (_memberId: string) => {
-    // TODO: Navigate to member profile
-  };
-
 
   const handleSettings = () => {
     if (!groupId) return;
@@ -286,6 +242,10 @@ function GroupView() {
               + Add Playlist
             </button>
           </div>
+
+            {group && aUser && (
+              <p>Your coins: {group.group_member_data[aUser!.uid].coins}</p>
+            )}
 
           {playlists.length === 0 ? (
             <div className="empty-state">
@@ -354,15 +314,14 @@ function GroupView() {
             </div>
           ) : (
             <div className="members-list">
-              {members.map((member) => (
+              {members.map((member, index) => (
                 <div
-                  key={member.id}
+                  key={index}
                   className="member-card"
-                  onClick={() => handleViewMember(member.id)}
                 >
                   <div className="member-avatar">
-                    {member.profilePic ? (
-                      <img src={member.profilePic} alt={member.name} />
+                    {member.profile_pic ? (
+                      <img src={member.profile_pic} alt={member.name} />
                     ) : (
                       <div className="member-placeholder">
                         {member.name?.charAt(0) || 'U'}
@@ -371,13 +330,8 @@ function GroupView() {
                   </div>
                   <div className="member-info">
                     <h3 className="member-name">{member.name || 'Unknown User'}</h3>
-                    <p className="member-role">
-                      {member.isOwner ? '👑 Owner' : 'Member'}
-                    </p>
                   </div>
-                  {member.isOwner && (
-                    <div className="owner-badge">👑</div>
-                  )}
+                  <p>Coins: {group.group_member_data[member.id!].coins}</p>
                 </div>
               ))}
             </div>
