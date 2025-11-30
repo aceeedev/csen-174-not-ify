@@ -3,7 +3,7 @@ import './libraryView.css';
 import { auth } from '../../firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import type { Playlist } from '../../models';
-import Navbar from '../../components/Navbar';
+import Navbar, { BackButtonLocation } from '../../components/Navbar';
 import { getLibraryPlaylistsOnBackend } from '../../backendInterface';
 import PlaylistCard from '../../components/PlaylistCard';
 
@@ -36,7 +36,8 @@ function LibraryView() {
 
   return (
     <>
-      <Navbar></Navbar>
+      <Navbar backButtonLocation={BackButtonLocation.ToHome} />
+      
       <h1>Library</h1>
       <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'nowrap', overflowX: 'auto', gap: '1rem' }}>
         {playlists.map((playlist, index) => (

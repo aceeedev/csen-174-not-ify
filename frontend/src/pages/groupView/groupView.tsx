@@ -8,6 +8,7 @@ import { takePlaylistFromGroupOnBackend, inviteToGroupOnBackend, getGroupPlaylis
 import type { Group, firebaseUser } from '../../models';
 import { signInWithPopup, onAuthStateChanged, signOut, type User } from "firebase/auth";
 import { getGroupsOnBackend, editGroupOnBackend } from "../../backendInterface";
+import Navbar, { BackButtonLocation } from '../../components/Navbar';
 
 
 /**
@@ -239,22 +240,7 @@ function GroupView() {
 
   return (
     <div className="group-view-container">
-      {/* Navigation Bar */}
-      <nav className="group-navbar">
-        <div className="nav-content">
-          <Link to="/" className="back-link">← Back to Home</Link>
-          <Link to="/" className="logo-link">
-            <h1 className="logo">Not-ify</h1>
-          </Link>
-          <div className="nav-links">
-            {isOwner && (
-              <button className="btn-secondary" onClick={handleSettings}>
-                Settings
-              </button>
-            )}
-          </div>
-        </div>
-      </nav>
+      <Navbar backButtonLocation={BackButtonLocation.ToHome} />
 
       {isLoading ? (
         <div className="group-status-message">Loading group...</div>
@@ -326,9 +312,9 @@ function GroupView() {
                   className="playlist-card"
                   onClick={() => handleViewPlaylist(playlist.id)}
                 >
-                  <div className="playlist-cover">
+                  <div>
                     {playlist.cover ? (
-                      <img src={playlist.cover} alt={playlist.title} />
+                      <img src={playlist.cover} alt={playlist.title} className="playlist-cover" />
                     ) : (
                       <div className="playlist-placeholder">🎵</div>
                     )}
