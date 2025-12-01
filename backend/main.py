@@ -639,11 +639,6 @@ def add_playlist_to_group():
     # Create playlist in firebase using helper function
     playlist_id = firebase.create_playlist(playlist)
     
-    # Add playlist to user's library
-    if playlist_id not in user.library:
-        user.library.append(playlist_id)
-        firebase.update_user(user_id, user)
-    
     # Update group with playlist info using helper function
     group.group_member_data[user_id].posted_playlists.append(PostedPlaylist(
         playlist_id=playlist_id,
@@ -717,7 +712,9 @@ def take_playlist_from_group():
                 if posted_playlist.number_downloaded == len(firebase_group.member_ids) - 1:
                     #remove the playlist from the 'posted_playlists' group
                     member_data.posted_playlists.remove(posted_playlist)
-                    #TODO: OPTIONAL: Remove from every other user's taken_playlists array                        
+                    #TODO: OPTIONAL: Remove from every other user's taken_playlists array 
+                firebase_group.group_member_data[member_id].coins += 1
+                     
 
     #'Charge' the user a coin for taking the playlist. 
     firebase_group.group_member_data[user_id].coins -= 1

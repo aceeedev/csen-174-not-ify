@@ -132,8 +132,7 @@
 }
 
 .group-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 30px rgba(102, 126, 234, 0.2);
+  box-shadow: 0 0 10px rgba(102, 126, 234, 0.2);
   border-color: rgba(102, 126, 234, 0.3);
 }
 
@@ -212,7 +211,7 @@
 }
 
 .library-item:hover {
-  transform: translateY(-5px);
+
 }
 
 .library-item-cover {

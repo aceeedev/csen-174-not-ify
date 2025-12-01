@@ -7,6 +7,7 @@ import Navbar from '../../components/Navbar';
 import { getLibraryPlaylistsOnBackend, getGroupsOnBackend } from '../../backendInterface';
 import type { Group, Playlist } from '../../models';
 import PlaylistCard from '../../components/PlaylistCard';
+import { getCurrentUserFromFirebase } from '../../firebase';
 
 
 function UserHomePage() {
@@ -200,11 +201,8 @@ function UserHomePage() {
               <div className="status-message">Loading library…</div>
             ) : library.length === 0 ? (
               <div className="empty-state">
-                <div className="empty-icon">📚</div>
                 <p className="empty-text">Your library is empty</p>
-                <Link to="/my-library" className="btn-primary">
-                  Explore Library
-                </Link>
+                <p className="empty-text">Join or Create a Group to add Playlists to your Library.</p>
               </div>
             ) : (
               <div className="playlist-board-grid">

@@ -76,7 +76,7 @@ function JoinGroupByCode() {
             Enter the invite code shared by a group member to join their group.
           </p>
 
-          <form className="join-group-form" onSubmit={handleSubmit}>
+          <form className="join-group-form" onSubmit={handleSubmit} autoComplete='off'>
             <label htmlFor="invite-code">Invite Code</label>
             <input
               id="invite-code"

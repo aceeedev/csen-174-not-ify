@@ -295,10 +295,9 @@ function GroupView() {
 
           {playlists.length === 0 ? (
             <div className="empty-state">
-              <div className="empty-icon">🎵</div>
               <p className="empty-text">No playlists in this group yet</p>
               <button className="btn-primary" onClick={handleAddPlaylist}>
-                Add First Playlist
+                Add A Playlist
               </button>
             </div>
           ) : (

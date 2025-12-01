@@ -60,7 +60,7 @@ function AddGroupView() {
             playlists together.
           </p>
 
-          <form className="add-group-form" onSubmit={handleSubmit}>
+          <form className="add-group-form" onSubmit={handleSubmit} autoComplete='off'>
             <label htmlFor="group-name">Group name</label>
             <input
               id="group-name"
