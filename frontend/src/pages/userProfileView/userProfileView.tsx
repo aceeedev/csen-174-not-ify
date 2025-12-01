@@ -67,65 +67,67 @@ export default function UserProfileView() {
   }
 
   return (
-    <div>
+    <div className="user-profile-container">
       <Navbar></Navbar>
-      {/* User Info */}
-      {fUser && (
-        <div className="profile-avatar-container">
-          {/* Profile Picture */}
-          <img
-            src={fUser.profile_pic || '/default-avatar.png'}
-            alt={`${fUser.name}'s profile`}
-            className="profile-avatar-img"
-          />
+      <div className="profile-content">
+        {/* User Info */}
+        {fUser && (
+          <div className="profile-avatar-container">
+            {/* Profile Picture */}
+            <img
+              src={fUser.profile_pic || '/default-avatar.png'}
+              alt={`${fUser.name}'s profile`}
+              className="profile-avatar-img"
+            />
 
-          {/* User Info */}
-          <div className="profile-info">
-            <h2 className="profile-name">{fUser.name}</h2>
-          </div>
-
-          {/* User Stats */}
-          <div className="stats-container">
-            <div className='stats-left'>
-              <div>Playlists Posted</div>
-              <div>{fUser.library.length}</div>
+            {/* User Info */}
+            <div className="profile-info">
+              <h2 className="profile-name">{fUser.name}</h2>
             </div>
-            <div className="stats-center">♪</div>
-            <div className='stats-right'>
-              <div>Groups I'm In</div>
-              <div>{fUser.my_groups.length}</div>
+
+            {/* User Stats */}
+            <div className="stats-container">
+              <div className='stats-left'>
+                <div>Playlists Posted</div>
+                <div>{fUser.library.length}</div>
+              </div>
+              <div className="stats-center">♪</div>
+              <div className='stats-right'>
+                <div>Groups I'm In</div>
+                <div>{fUser.my_groups.length}</div>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
 
-      {/** Settings */}
-      <section id="user-settings" className="user-settings-section">
-        <h2 className="settings-section-title">Settings</h2>
+        {/** Settings */}
+        <section id="user-settings" className="user-settings-section">
+          <h2 className="settings-section-title">Settings</h2>
 
-        <div className='user-settings-grid'>
-            {/* Render a GroupRow for each group */}
-            <h3 className="settings-subsection-title">Edit Groups</h3>
+          <div className='user-settings-grid'>
+              {/* Render a GroupRow for each group */}
+              <h3 className="settings-subsection-title" style= {{alignContent: "center"}}>Edit Groups</h3>
 
-            {groups.map(group => (
-              <GroupRow
-                key={group.id}
-                group={group}
-                onLeave={leaveGroup}          
-              />
-            ))}
-        </div>
-      </section>
+              {groups.map(group => (
+                <GroupRow
+                  key={group.id}
+                  group={group}
+                  onLeave={leaveGroup}          
+                />
+              ))}
+          </div>
+        </section>
 
-      {/* Sign Out -> Adopted from NavBar*/}
-      <section>
-        <div>
-          <button onClick={handleSignOut} style={{padding: '8px 12px'}}>
-            Sign out of Bop Swap
-          </button>
-        </div>
-      </section>
+        {/* Sign Out -> Adopted from NavBar*/}
+        <section>
+          <div>
+            <button onClick={handleSignOut} style={{padding: '8px 12px'}}>
+              Sign out of Bop Swap
+            </button>
+          </div>
+        </section>
+      </div>
     </div>
   );
 }
