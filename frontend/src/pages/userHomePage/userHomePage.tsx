@@ -184,9 +184,6 @@ function UserHomePage() {
         <section className="library-section">
           <div className="section-header">
             <h2 className="section-title">Your Library</h2>
-            <button className="btn-secondary" onClick={handleViewLibrary}>
-              View Full Library →
-            </button>
           </div>
 
           <div className="library-preview">

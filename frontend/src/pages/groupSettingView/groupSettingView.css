@@ -2,7 +2,6 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
 }
 
 /* Navigation */
@@ -81,14 +80,6 @@
 /* Section Styles */
 .settings-section,
 .members-section,
-.danger-section {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  padding: 2rem;
-  margin-bottom: 2rem;
-}
 
 .section-title {
   font-size: 1.75rem;
@@ -307,60 +298,9 @@
   border-color: rgba(220, 38, 38, 0.5);
 }
 
-/* Danger Zone */
-.danger-section {
-  border-color: rgba(220, 38, 38, 0.3);
-}
-
-.danger-title {
-  color: #ef4444;
-}
-
-.danger-content {
-  margin-top: 1.5rem;
-}
-
-.danger-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1.5rem;
-  background: rgba(220, 38, 38, 0.05);
-  border: 1px solid rgba(220, 38, 38, 0.2);
-  border-radius: 8px;
-}
-
-.danger-info {
-  flex: 1;
-}
-
-.danger-item-title {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.9);
-  margin-bottom: 0.5rem;
-}
-
-.danger-item-description {
-  font-size: 0.9rem;
-  color: rgba(255, 255, 255, 0.6);
-  margin: 0;
-}
-
 /* Buttons */
 .btn-primary,
 .btn-secondary,
-.btn-danger {
-  padding: 0.75rem 1.5rem;
-  border-radius: 8px;
-  font-size: 1rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  border: none;
-  text-decoration: none;
-  display: inline-block;
-}
 
 .btn-primary {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -380,19 +320,6 @@
 
 .btn-secondary:hover {
   background: rgba(255, 255, 255, 0.2);
-}
-
-.btn-danger {
-  background: rgba(220, 38, 38, 0.2);
-  color: #ef4444;
-  border: 1px solid rgba(220, 38, 38, 0.3);
-}
-
-.btn-danger:hover {
-  background: rgba(220, 38, 38, 0.3);
-  border-color: rgba(220, 38, 38, 0.5);
-  transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(220, 38, 38, 0.3);
 }
 
 /* Empty State */

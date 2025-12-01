@@ -248,17 +248,6 @@
 /* Buttons */
 .btn-primary,
 .btn-secondary,
-.btn-danger {
-  padding: 0.75rem 1.5rem;
-  border-radius: 8px;
-  font-size: 1rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  border: none;
-  text-decoration: none;
-  display: inline-block;
-}
 
 .btn-primary {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -278,17 +267,6 @@
 
 .btn-secondary:hover {
   background: rgba(255, 255, 255, 0.2);
-}
-
-.btn-danger {
-  background: rgba(220, 38, 38, 0.2);
-  color: #ef4444;
-  border: 1px solid rgba(220, 38, 38, 0.3);
-}
-
-.btn-danger:hover {
-  background: rgba(220, 38, 38, 0.3);
-  border-color: rgba(220, 38, 38, 0.5);
 }
 
 /* Responsive */

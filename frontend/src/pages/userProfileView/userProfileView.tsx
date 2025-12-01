@@ -107,7 +107,7 @@ export default function UserProfileView() {
 
           <div className='user-settings-grid'>
               {/* Render a GroupRow for each group */}
-              <h3 className="settings-subsection-title" style= {{alignContent: "center"}}>Edit Groups</h3>
+              <h3 className="settings-subsection-title" >Edit Groups</h3>
 
               {groups.map(group => (
                 <GroupRow
@@ -120,11 +120,20 @@ export default function UserProfileView() {
         </section>
 
         {/* Sign Out -> Adopted from NavBar*/}
-        <section>
-          <div>
-            <button onClick={handleSignOut} style={{padding: '8px 12px'}}>
-              Sign out of Bop Swap
-            </button>
+        <section className="danger-section">
+          <h2 className="section-title danger-title">Danger Zone</h2>
+          <div className="danger-content">
+            <div className="danger-item">
+              <div className="danger-info">
+                <h3 className="danger-item-title">Sign Out of Bop Swap</h3>
+                <p className="danger-item-description">
+                  Signs you out, to see your account you need to log back in.
+                </p>
+              </div>
+              <button className="btn-danger" onClick={handleSignOut}>
+                Sign Out
+              </button>
+            </div>
           </div>
         </section>
       </div>
