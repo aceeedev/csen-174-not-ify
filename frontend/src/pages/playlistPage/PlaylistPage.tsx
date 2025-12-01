@@ -41,6 +41,8 @@ const PlaylistPage: React.FC = () => {
 
     const pageOrigin = (group && groupID) ? PageOrigin.FromGroup : PageOrigin.FromLibrary;
 
+    const [userID, setUserID] = useState<string | null>(null);
+
     const [loading, setLoading] = useState<boolean>(true);
     const [userCoins, setCoins] = useState<number | null>(null);
     const [playlistItems, setPlaylistItems] = useState<Song[]>([]);
@@ -82,6 +84,7 @@ const PlaylistPage: React.FC = () => {
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
             if (currentUser) {
+                setUserID(currentUser.uid);
                 setCoins(group?.group_member_data[currentUser.uid].coins ?? null)
 
                 fetchData()
@@ -138,7 +141,7 @@ const PlaylistPage: React.FC = () => {
 
                 <h2>Actions</h2>
 
-                {pageOrigin === PageOrigin.FromGroup && (
+                {pageOrigin === PageOrigin.FromGroup && userID && playlist.owner_id !== userID && (
                     <div>
                         <p>You have {userCoins} coins.</p>
                     

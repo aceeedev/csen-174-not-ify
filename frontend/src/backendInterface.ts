@@ -210,8 +210,8 @@ export async function addPlaylistToGroupOnBackend(groupID: string, spotifyPlayli
 
 export async function takePlaylistFromGroupOnBackend(groupID: string, playlistID: string): Promise<BackendResponse<void>> {
     return fetchBackend<void>("/take/playlist/group", {
-            groupID: groupID,
-            playlistID: playlistID
+            group_id: groupID,
+            playlist_id: playlistID
         });
 }
 
