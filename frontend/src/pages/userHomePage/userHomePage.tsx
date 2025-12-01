@@ -151,7 +151,7 @@ function UserHomePage() {
                 </button>
               </div>
             ) : (
-              groups.map((group) => (
+              groups.slice(0, 3).map((group) => (
                 <div
                   key={group.id}
                   className="group-card"
@@ -208,7 +208,7 @@ function UserHomePage() {
               </div>
             ) : (
               <div className="playlist-board-grid">
-                {library.slice(0, 6).map((item) => (
+                {library.slice(0, 3).map((item) => (
                   <PlaylistCard playlist={item}/>
                 ))}
               </div>

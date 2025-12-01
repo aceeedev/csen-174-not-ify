@@ -24,9 +24,10 @@ function GroupView() {
   const navigate = useNavigate();
   const location = useLocation();
   
-  const group = location.state?.group as Group | undefined;
-  const groupId = group?.id;
+  const initialGroup = location.state?.group as Group | undefined;
+  const groupId = initialGroup?.id;
 
+  const [group, setGroup] = useState<Group | undefined>(initialGroup);
   const [members, setMembers] = useState<firebaseUser[]>([]);
 
   const [playlists, setPlaylists] = useState<any[]>([]);
@@ -37,7 +38,6 @@ function GroupView() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   
   const [aUser, setUser] = useState<User | null>(null) //google authentication user
-  const [fUser, setfUser] = useState<firebaseUser | null>(null)        //firebase user object
 
   useEffect(() => {
     let isMounted = true;
@@ -45,15 +45,9 @@ function GroupView() {
       setUser(currentUser);                           //updates the user variable on login/out
 
       if (currentUser !== null){
-        getUserObjectData(currentUser);               //call this function at the start of the load. keep
-
         setIsOwner(group?.owner_id == currentUser.uid)
       }
         });
-
-  const getUserObjectData= async (user: User) =>{     //firebase user
-    setfUser (await getCurrentUserFromFirebase());
-  }
 
     const fetchGroupDetails = async () => {
       if (!groupId) {
@@ -63,6 +57,13 @@ function GroupView() {
 
       setIsLoading(true);
       setErrorMessage(null);
+
+      // refetch group and update state
+      const groups = await getGroupsOnBackend() ?? [];
+      const updatedGroup = groups.find((item) => item.id === groupId);
+      if (updatedGroup) {
+        setGroup(updatedGroup);
+      }
 
       setMembers(await getGroupMembersListOnBackend(groupId) ?? []);
 
@@ -84,7 +85,7 @@ function GroupView() {
     return () => {
       isMounted = false;
     };
-  }, [groupId, group]);
+  }, []);
 
   const handleAddPlaylist = () => {
     if (!groupId) return;
