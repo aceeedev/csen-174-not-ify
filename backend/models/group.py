@@ -71,7 +71,7 @@ class GroupMemberData:
 
 
 class Group:
-    def __init__(self, owner_id: str, member_ids: list[str], description: str, group_name: str, group_member_data: dict[str, GroupMemberData]) -> None:
+    def __init__(self, owner_id: str, member_ids: list[str], description: str, group_name: str, group_member_data: dict[str, GroupMemberData], invite_code: str = None) -> None:
         """
         Represents a group document stored in Firestore.
 
@@ -88,6 +88,7 @@ class Group:
                         "uid_123": GroupMemberData(...),
                         "uid_456": GroupMemberData(...)
                     }
+            invite_code (str): Unique invite code for the group (like Kahoot game codes).
         """
 
         self.owner_id = owner_id
@@ -95,6 +96,7 @@ class Group:
         self.description = description
         self.group_name = group_name
         self.group_member_data = group_member_data
+        self.invite_code = invite_code
 
         # Constants
         self.max_playlists = 20
@@ -110,7 +112,8 @@ class Group:
             "group_member_data": {
                 member_id: member_data.to_dict()
                 for member_id, member_data in self.group_member_data.items()
-            }
+            },
+            "invite_code": self.invite_code
         }
 
     @classmethod
@@ -123,7 +126,8 @@ class Group:
             group_member_data={
                 member_id: GroupMemberData.from_dict(member_data)
                 for member_id, member_data in data['group_member_data'].items()
-            }
+            },
+            invite_code=data.get('invite_code')  # Handle backward compatibility
         )
     
     def to_dict_with_id(self, firebase_id: str) -> dict[str, Any]:
