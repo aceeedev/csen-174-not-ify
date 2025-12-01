@@ -123,6 +123,33 @@ class FirebaseManager:
         return self.create_doc(GROUP_COLLECTION, group.to_dict())
 
     def delete_group(self, group_id: str):
+        """
+        Deletes a group and performs all necessary cleanup:
+        - Removes the group_id from all members' my_groups arrays
+        - Deletes the group document from Firestore
+        
+        Args:
+            group_id (str): The ID of the group to delete
+            
+        Raises:
+            ValueError: If the group does not exist
+        """
+        # Get group info to access member_ids
+        group = self.get_group_info(group_id)
+        
+        # Remove group_id from all members' my_groups arrays
+        for member_id in group.member_ids:
+            try:
+                member = self.get_user_info(member_id)
+                if group_id in member.my_groups:
+                    member.my_groups.remove(group_id)
+                    self.update_user(member_id, member)
+            except ValueError:
+                # If member doesn't exist, skip (data inconsistency, but don't fail)
+                print(f"Warning: Member {member_id} not found when deleting group {group_id}")
+                continue
+        
+        # Delete the group document
         self.delete_doc(GROUP_COLLECTION, group_id)
     
     def update_group(self, group_id: str, group: Group):

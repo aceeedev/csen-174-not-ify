@@ -22,6 +22,10 @@ function UserHomePage() {
     navigate('/new-group');
   };
 
+  const handleJoinGroup = () => {
+    navigate('/join-group');
+  };
+
   const handleViewLibrary = () => {
     navigate('/library');
   };
@@ -123,9 +127,14 @@ function UserHomePage() {
         <section className="groups-section">
           <div className="section-header">
             <h2 className="section-title">Your Groups</h2>
-            <button className="btn-primary" onClick={handleCreateGroup}>
-              + Create Group
-            </button>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <button className="btn-secondary" onClick={handleJoinGroup}>
+                🔑 Join Group
+              </button>
+              <button className="btn-primary" onClick={handleCreateGroup}>
+                + Create Group
+              </button>
+            </div>
           </div>
 
           <div className="groups-grid">
@@ -184,9 +193,6 @@ function UserHomePage() {
         <section className="library-section">
           <div className="section-header">
             <h2 className="section-title">Your Library</h2>
-            <button className="btn-secondary" onClick={handleViewLibrary}>
-              View Full Library →
-            </button>
           </div>
 
           <div className="library-preview">
