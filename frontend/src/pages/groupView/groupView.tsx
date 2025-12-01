@@ -35,14 +35,9 @@ function GroupView() {
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
-  const [ownerName, setOwnerName] = useState <string>('');
   
   const [aUser, setUser] = useState<User | null>(null) //google authentication user
   const [fUser, setfUser] = useState<firebaseUser | null>(null)        //firebase user object
-  const [groups, setGroups] = useState<Group[]>([]);     // Full group objects for display
-  const [fullGroup, setFullGroup] = useState<Group | null>(null);
-
 
   useEffect(() => {
     let isMounted = true;
@@ -69,51 +64,7 @@ function GroupView() {
       setIsLoading(true);
       setErrorMessage(null);
 
-      try {
-        // If group data is incomplete, fetch it from backend
-        let completeGroup = group;
-        if (!group || !group.group_member_data || !group.owner_id) {
-          const allGroups = await getGroupsOnBackend();
-          const foundGroup = allGroups?.find(g => g.id === groupId);
-          if (foundGroup) {
-            completeGroup = foundGroup;
-            setFullGroup(foundGroup);
-          } else {
-            throw new Error('Group not found');
-          }
-        } else {
-          setFullGroup(group);
-        }
-
-        const currentUserId = auth.currentUser?.uid ?? null;
-
-        if (isMounted && completeGroup) {
-          setIsOwner(
-            currentUserId != null && completeGroup.owner_id === currentUserId,
-          );
-
-          const memberEntries = completeGroup.group_member_data
-            ? Object.entries(completeGroup.group_member_data)
-            : [];
-
-          const formattedMembers = memberEntries.map(
-            ([memberId, memberData]: [string, any]) => ({
-              id: memberId,
-              coins: memberData?.coins ?? 0,
-              lastPostingTimestamp: memberData?.last_posting_timestamp ?? null,
-              takenPlaylists: memberData?.taken_playlists ?? [],
-              postedPlaylists: memberData?.posted_playlists ?? [],
-              isOwner: memberId === completeGroup.owner_id,
-            }),
-          );
-
-          setMembers(formattedMembers);
-          
-          // Fetch owner name
-          handleGetOwnerName(completeGroup);
-        }
-
-        try {
+      setMembers(await getGroupMembersListOnBackend(groupId) ?? []);
 
       const playlistResponse = await getGroupPlaylistsOnBackend(groupId);
 
@@ -236,22 +187,6 @@ function GroupView() {
     });
   };
 
-  const handleGetOwnerName = async (group?: Group) => {
-    if (!group?.owner_id) {
-      setOwnerName("unknown");
-      return;
-    }
-
-    const owner = await getUserFromFirebase(group.owner_id);
-
-    if (!owner) {
-      setOwnerName("unkown");
-      return;
-    }
-    setOwnerName(owner.name);
-  };
-  handleGetOwnerName(group)
-
 
   const handleTakePlaylist = async (playlistId: string, event: React.MouseEvent) => {
     event.stopPropagation(); // Prevent triggering the card click
@@ -307,11 +242,11 @@ function GroupView() {
               fontSize: '3rem',
               textAlign: 'center'
             }}>
-              {(fullGroup || group)?.group_name || 'Group Name'}
+              {group?.group_name || 'Group Name'}
             </span>
 
             {/* Group Descritpion */}
-            <p className="group-description">{(fullGroup || group)?.description || 'No description available'}</p>
+            <p className="group-description">{group?.description || 'No description available'}</p>
             
             {/* Group Stats (Based on user stats) */}
             <div className="stats-container">
@@ -412,7 +347,7 @@ function GroupView() {
                 onClick={handleCopyInviteCode}
                 style={{ marginRight: '0.5rem' }}
               >
-                📋 Copy Code
+                Copy Code
               </button>
               <button 
                 className="btn-secondary" 
@@ -433,7 +368,7 @@ function GroupView() {
             <h2 className="section-title">Members ({members.length || 0})</h2>
             {isOwner && (
               <button className="btn-secondary" onClick={handleInviteMember}>
-                📤 Share Invite Code
+                Share Invite Code
               </button>
             )}
           </div>

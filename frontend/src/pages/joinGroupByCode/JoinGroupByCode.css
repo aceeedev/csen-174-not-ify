@@ -1,6 +1,5 @@
 .join-group-by-code {
   min-height: 100vh;
-  background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
   color: rgba(255, 255, 255, 0.9);
 }
 
@@ -47,7 +46,7 @@
 }
 
 .join-group-form input {
-  width: 100%;
+  width: 80%;
   padding: 1rem;
   background: rgba(0, 0, 0, 0.3);
   border: 2px solid rgba(255, 255, 255, 0.1);

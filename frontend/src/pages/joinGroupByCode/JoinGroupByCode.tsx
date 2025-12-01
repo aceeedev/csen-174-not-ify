@@ -67,7 +67,7 @@ function JoinGroupByCode() {
 
   return (
     <div className="join-group-by-code">
-      <Navbar backButtonLocation={BackButtonLocation.ToHome} />
+      <Navbar/>
 
       <main className="join-group-content">
         <section className="join-group-card">
