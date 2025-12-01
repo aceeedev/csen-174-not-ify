@@ -114,6 +114,7 @@ def auth_callback():
                 access_token_expires=safe_access_token_expire_time,
                 profile_pic=firebase_user.photo_url,
                 library=[],
+                exported_playlists=[],
                 my_groups=[],
                 my_complaints=[],
                 is_admin=False
