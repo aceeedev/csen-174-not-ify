@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import './groupView.css';
 import { auth, getUserFromFirebase,getCurrentUserFromFirebase } from '../../firebase';
-import { takePlaylistFromGroupOnBackend, inviteToGroupOnBackend, getGroupPlaylistsOnBackend, getGroupMembersListOnBackend } from '../../backendInterface';
+import { takePlaylistFromGroupOnBackend, inviteToGroupOnBackend, getGroupPlaylistsOnBackend, getGroupMembersListOnBackend, getGroupInviteCodeOnBackend } from '../../backendInterface';
 import type { Group, firebaseUser } from '../../models';
 import { signInWithPopup, onAuthStateChanged, signOut, type User } from "firebase/auth";
 import { getGroupsOnBackend, editGroupOnBackend } from "../../backendInterface";
@@ -40,6 +40,9 @@ function GroupView() {
   
   const [aUser, setUser] = useState<User | null>(null) //google authentication user
   const [fUser, setfUser] = useState<firebaseUser | null>(null)        //firebase user object
+  const [groups, setGroups] = useState<Group[]>([]);     // Full group objects for display
+  const [fullGroup, setFullGroup] = useState<Group | null>(null);
+
 
   useEffect(() => {
     let isMounted = true;
@@ -66,8 +69,51 @@ function GroupView() {
       setIsLoading(true);
       setErrorMessage(null);
 
+      try {
+        // If group data is incomplete, fetch it from backend
+        let completeGroup = group;
+        if (!group || !group.group_member_data || !group.owner_id) {
+          const allGroups = await getGroupsOnBackend();
+          const foundGroup = allGroups?.find(g => g.id === groupId);
+          if (foundGroup) {
+            completeGroup = foundGroup;
+            setFullGroup(foundGroup);
+          } else {
+            throw new Error('Group not found');
+          }
+        } else {
+          setFullGroup(group);
+        }
 
-      setMembers(await getGroupMembersListOnBackend(groupId) ?? []);
+        const currentUserId = auth.currentUser?.uid ?? null;
+
+        if (isMounted && completeGroup) {
+          setIsOwner(
+            currentUserId != null && completeGroup.owner_id === currentUserId,
+          );
+
+          const memberEntries = completeGroup.group_member_data
+            ? Object.entries(completeGroup.group_member_data)
+            : [];
+
+          const formattedMembers = memberEntries.map(
+            ([memberId, memberData]: [string, any]) => ({
+              id: memberId,
+              coins: memberData?.coins ?? 0,
+              lastPostingTimestamp: memberData?.last_posting_timestamp ?? null,
+              takenPlaylists: memberData?.taken_playlists ?? [],
+              postedPlaylists: memberData?.posted_playlists ?? [],
+              isOwner: memberId === completeGroup.owner_id,
+            }),
+          );
+
+          setMembers(formattedMembers);
+          
+          // Fetch owner name
+          handleGetOwnerName(completeGroup);
+        }
+
+        try {
 
       const playlistResponse = await getGroupPlaylistsOnBackend(groupId);
 
@@ -80,12 +126,14 @@ function GroupView() {
       setIsLoading(false);
     };
 
-    fetchGroupDetails();
+    if (groupId) {
+      fetchGroupDetails();
+    }
 
     return () => {
       isMounted = false;
     };
-  }, [groupId]);
+  }, [groupId, group]);
 
   const handleAddPlaylist = () => {
     if (!groupId) return;
@@ -115,7 +163,45 @@ function GroupView() {
       }
     }
 
+  const [inviteCode, setInviteCode] = useState<string | null>(null);
+  const [showInviteCode, setShowInviteCode] = useState(false);
+
   const handleInviteMember = async () => {
+    if (!groupId) return;
+    
+    // Fetch invite code if not already loaded
+    if (!inviteCode && group?.invite_code) {
+      setInviteCode(group.invite_code);
+      setShowInviteCode(true);
+      return;
+    }
+    
+    if (!inviteCode) {
+      try {
+        const result = await getGroupInviteCodeOnBackend(groupId);
+        if (result.success) {
+          setInviteCode(result.data);
+          setShowInviteCode(true);
+        } else {
+          alert(`Error: ${result.message || 'Failed to get invite code'}`);
+        }
+      } catch (error) {
+        console.error('Error fetching invite code:', error);
+        alert('Failed to get invite code');
+      }
+    } else {
+      setShowInviteCode(true);
+    }
+  };
+
+  const handleCopyInviteCode = () => {
+    if (inviteCode) {
+      navigator.clipboard.writeText(inviteCode);
+      alert('Invite code copied to clipboard!');
+    }
+  };
+
+  const handleInviteMemberOld = async () => {
     if (!groupId) return;
     
     const userID = prompt("Enter the user ID (Firebase UID) of the person you want to invite:");
@@ -221,11 +307,11 @@ function GroupView() {
               fontSize: '3rem',
               textAlign: 'center'
             }}>
-              {group?.group_name || 'Group Name'}
+              {(fullGroup || group)?.group_name || 'Group Name'}
             </span>
 
             {/* Group Descritpion */}
-            <p className="group-description">{group?.description || 'No description available'}</p>
+            <p className="group-description">{(fullGroup || group)?.description || 'No description available'}</p>
             
             {/* Group Stats (Based on user stats) */}
             <div className="stats-container">
@@ -288,10 +374,68 @@ function GroupView() {
           )}
         </section>
 
+        {/* Invite Code Section */}
+        {showInviteCode && inviteCode && (
+          <section className="invite-code-section" style={{
+            background: 'rgba(102, 126, 234, 0.1)',
+            border: '2px solid rgba(102, 126, 234, 0.3)',
+            borderRadius: '12px',
+            padding: '1.5rem',
+            marginBottom: '2rem',
+            textAlign: 'center'
+          }}>
+            <h3 style={{ marginBottom: '1rem', color: 'rgba(255, 255, 255, 0.9)' }}>Group Invite Code</h3>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '1rem',
+              marginBottom: '1rem'
+            }}>
+              <div style={{
+                fontSize: '2rem',
+                fontWeight: 'bold',
+                letterSpacing: '0.5rem',
+                color: '#667eea',
+                fontFamily: 'monospace',
+                padding: '1rem 2rem',
+                background: 'rgba(0, 0, 0, 0.3)',
+                borderRadius: '8px',
+                border: '2px dashed rgba(102, 126, 234, 0.5)'
+              }}>
+                {inviteCode}
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
+              <button 
+                className="btn-primary" 
+                onClick={handleCopyInviteCode}
+                style={{ marginRight: '0.5rem' }}
+              >
+                📋 Copy Code
+              </button>
+              <button 
+                className="btn-secondary" 
+                onClick={() => setShowInviteCode(false)}
+              >
+                Close
+              </button>
+            </div>
+            <p style={{ marginTop: '1rem', fontSize: '0.9rem', color: 'rgba(255, 255, 255, 0.6)' }}>
+              Share this code with friends to invite them to your group!
+            </p>
+          </section>
+        )}
+
         {/* Members Section */}
         <section className="members-section">
           <div className="section-header">
             <h2 className="section-title">Members ({members.length || 0})</h2>
+            {isOwner && (
+              <button className="btn-secondary" onClick={handleInviteMember}>
+                📤 Share Invite Code
+              </button>
+            )}
           </div>
 
           {members.length === 0 ? (

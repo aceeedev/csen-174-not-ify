@@ -5,6 +5,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import './groupSettingView.css';
 import type { Group } from '../../models';
 import Navbar, { BackButtonLocation } from '../../components/Navbar';
+import { editGroupOnBackend } from '../../backendInterface';
 
 
 /**
@@ -37,8 +38,38 @@ function GroupSettingView() {
     // TODO: Implement remove member functionality
   };
 
-  const handleDeleteGroup = () => {
-    // TODO: Implement delete group functionality
+  const handleDeleteGroup = async () => {
+    if (!group?.id) {
+      alert('Error: Group information not available');
+      return;
+    }
+
+    // Confirm deletion
+    const confirmed = window.confirm(
+      'Are you sure you want to permanently delete this group? This action cannot be undone.'
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      const result = await editGroupOnBackend(group.id, 'del_group', '');
+      
+      if (result.success) {
+        // Navigate to home page (IndexPage shows UserHomePage when logged in)
+        navigate('/', { replace: true });
+        // Show success message after navigation
+        setTimeout(() => {
+          alert('Group deleted successfully!');
+        }, 100);
+      } else {
+        alert(`Error deleting group: ${result.message || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error('Error deleting group:', error);
+      alert('Failed to delete group. Please try again.');
+    }
   };
 
   const handleInviteMember = () => {

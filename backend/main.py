@@ -10,9 +10,27 @@ from models.song import Song
 from models.user import User
 
 from datetime import datetime, timedelta, timezone
+import random
+import string
 
 app = Flask(__name__)
 CORS(app)
+
+
+def generate_invite_code(length: int = 6) -> str:
+    """
+    Generates a unique invite code similar to Kahoot game codes.
+    Uses uppercase letters and numbers, excluding confusing characters (0, O, I, 1).
+    
+    Args:
+        length (int): Length of the code (default 6)
+    
+    Returns:
+        str: A random invite code
+    """
+    # Use characters that are easy to distinguish: A-Z (excluding I, O), 2-9
+    chars = string.ascii_uppercase.replace('I', '').replace('O', '') + '23456789'
+    return ''.join(random.choice(chars) for _ in range(length))
 
 
 def validate_params(required_params: list[str]):
@@ -139,6 +157,22 @@ def create_group():
     group_name: str = request.args.get("group_name")
     description: str = request.args.get("description")
     
+    # Generate unique invite code
+    invite_code = generate_invite_code()
+    
+    # Ensure code is unique (check if it exists, regenerate if needed)
+    max_attempts = 10
+    for _ in range(max_attempts):
+        # Check if code already exists by querying groups
+        all_groups = firebase.get_collection("Groups")
+        code_exists = any(group.get('invite_code') == invite_code for group in all_groups)
+        if not code_exists:
+            break
+        invite_code = generate_invite_code()
+    else:
+        # If we couldn't generate a unique code after max attempts, use a longer one
+        invite_code = generate_invite_code(length=8)
+    
     #Make group object from group.py in models
     ownersMemberData = GroupMemberData.default()
     newGroup = Group(
@@ -148,7 +182,8 @@ def create_group():
         group_name=group_name, 
         group_member_data={
             user_id: ownersMemberData
-        }
+        },
+        invite_code=invite_code
     ) #default
 
     #Make group using firebase call, passing the object group
@@ -201,6 +236,81 @@ def join_group():
 
     return jsonify({"message": "Success!"}), 200
 
+@app.route('/join/group/by-code')
+@FirebaseManager.require_firebase_auth
+def join_group_by_code():
+    """
+    Join a group using an invite code (Kahoot-style).
+    """
+    error = validate_params(["invite_code"])
+    if error:
+        return error
+
+    user_id: str = request.user_id
+    invite_code: str = request.args.get("invite_code").upper().strip()  # Normalize to uppercase
+
+    firebase = FirebaseManager()
+    
+    # Find group by invite code
+    all_groups = firebase.get_collection("Groups")
+    group_data = None
+    group_id = None
+    
+    for group in all_groups:
+        if group.get('invite_code') == invite_code:
+            group_data = group
+            group_id = group.get('id')
+            break
+    
+    if not group_data or not group_id:
+        return jsonify({"error": "Invalid invite code"}), 404
+    
+    # Get group object
+    group = firebase.get_group_info(group_id)
+    user = firebase.get_user_info(user_id)
+
+    # Check if the user is already a member of the group
+    if user_id in group.member_ids:
+        return jsonify({"error": "You are already a member of this group"}), 400
+    
+    # Check if the group is full
+    if len(group.member_ids) >= group.max_members:
+        return jsonify({"error": "This group has reached the maximum number of members"}), 400
+    
+    # Add the user to the group
+    group.member_ids.append(user_id)
+    group.group_member_data[user_id] = GroupMemberData.default()
+
+    user.my_groups.append(group_id)
+
+    # Update the firebase objects
+    firebase.update_group(group_id, group)
+    firebase.update_user(user_id, user)
+
+    return jsonify({"message": "Success!", "group_id": group_id, "group_name": group.group_name}), 200
+
+@app.route('/get/group/invite-code')
+@FirebaseManager.require_firebase_auth
+def get_group_invite_code():
+    """
+    Get the invite code for a group.
+    """
+    error = validate_params(["group_id"])
+    if error:
+        return error
+    
+    user_id: str = request.user_id
+    group_id: str = request.args.get("group_id")
+    
+    firebase = FirebaseManager()
+    group = firebase.get_group_info(group_id)
+    
+    # Verify user is a member of the group
+    if user_id not in group.member_ids:
+        return jsonify({"error": "You must be a member of the group to view the invite code"}), 403
+    
+    return jsonify({"invite_code": group.invite_code}), 200
+
 @app.route('/invite/group')
 @FirebaseManager.require_firebase_auth
 def invite_to_group():
@@ -250,20 +360,25 @@ def invite_to_group():
 def edit_group():
     firebase = FirebaseManager()
 
-    error = validate_params(["groupID", "action", "params"])
+    # Validate required params (params is optional for del_group)
+    error = validate_params(["groupID", "action"])
     if error:
         return error
     
     user_id: str = request.user_id
     group_id: str = request.args.get("groupID")
     action: str = request.args.get("action")
-    params: str = request.args.get("params")
+    params: str = request.args.get("params", "")  # Default to empty string if not provided
 
     firebase_group = firebase.get_group_info(group_id)
     firebase_user = firebase.get_user_info(user_id)
     
     #If actions == remove_user: remove user from group functionality:
     if action == 'remove_user':
+        # Validate params is provided for remove_user
+        if not params:
+            return jsonify({"error": "Missing required parameter: params (user ID to remove)"}), 400
+        
         #If a general user wants to remove themselves, allow them to
         if params == firebase_group.owner_id: 
             return jsonify({"error": "Implementation error, cannot remove the group owner"}), 400
@@ -271,7 +386,7 @@ def edit_group():
             return jsonify({"error": "Cannot remove another user if you are not the owner"}), 400   
         if group_id not in firebase_user.my_groups:
             return jsonify({"error": "Implementation error, cannot access a group you are not in"}), 400
-        if params not in firebase_user.member_ids:
+        if params not in firebase_group.member_ids:
             return jsonify({"error": "Implementation error, cannot remove a member that is not in the group"}), 400
         
         firebase_params = firebase.get_user_info(params)
@@ -291,6 +406,10 @@ def edit_group():
     #Unsure of what this does, or where params = json is generated from.
     #It may be better if there is a separate endpoint called update_group that has these parameters. 
     elif action == 'update_settings':
+        # Validate params is provided for update_settings
+        if not params:
+            return jsonify({"error": "Missing required parameter: params (JSON settings)"}), 400
+        
         if user_id != firebase_group.owner_id:
             return jsonify({"error": "Access denied, user is not the owner"}), 400
         
@@ -314,17 +433,11 @@ def edit_group():
     
     #If actions == del_group: deleting the group functionality
     elif action == 'del_group':
-        #remove groupID from the member's myGroup's array
+        # Verify user is the owner
         if user_id != firebase_group.owner_id:
-            return jsonify({"error": "Access denied, user is not the owner"}), 400        
-        for member in firebase_group.member_ids:
-            firebase_member = firebase.get_user_info(member)
-            if group_id not in firebase_member.my_groups:
-                return jsonify({"error": "Data continuity error: member does not claim to be in group, though group claims that user."}), 400
-            firebase_member.my_groups.remove(group_id)
-            firebase.update_user(member, firebase_member)
-
-        #Delete the group from the firebase
+            return jsonify({"error": "Access denied, user is not the owner"}), 400
+        
+        # Delete the group (cleanup is handled internally by delete_group)
         firebase.delete_group(group_id)
         
         print(f"Group with groupID: {group_id} successfully deleted")

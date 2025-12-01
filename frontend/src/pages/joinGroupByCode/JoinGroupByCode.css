@@ -1,0 +1,121 @@
+.join-group-by-code {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.join-group-content {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 2rem;
+  padding-top: 4rem;
+}
+
+.join-group-card {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 2.5rem;
+}
+
+.join-group-card h1 {
+  font-size: 2rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.join-group-description {
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 2rem;
+  line-height: 1.6;
+}
+
+.join-group-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.join-group-form label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 0.5rem;
+}
+
+.join-group-form input {
+  width: 100%;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.3);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.join-group-form input:focus {
+  outline: none;
+  border-color: rgba(102, 126, 234, 0.5);
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.join-group-form input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.join-group-error {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: rgba(239, 68, 68, 0.9);
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+}
+
+.join-group-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.join-group-button {
+  flex: 1;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: none;
+}
+
+.join-group-button.primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.join-group-button.primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+}
+
+.join-group-button.secondary {
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.join-group-button.secondary:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.join-group-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
