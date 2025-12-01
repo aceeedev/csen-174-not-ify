@@ -145,6 +145,27 @@ export async function joinGroupOnBackend(groupID: string): Promise<BackendRespon
         });
 }
 
+export async function joinGroupByCodeOnBackend(inviteCode: string): Promise<BackendResponse<{group_id: string, group_name: string}>> {
+    return fetchBackend<{group_id: string, group_name: string}>("/join/group/by-code", {
+            invite_code: inviteCode
+        });
+}
+
+export async function getGroupInviteCodeOnBackend(groupID: string): Promise<BackendResponse<string>> {
+    const result = await fetchBackend<{invite_code: string}>("/get/group/invite-code", {
+            group_id: groupID
+        });
+    
+    if (result.success) {
+        return {
+            success: true,
+            data: result.data.invite_code
+        };
+    } else {
+        return result as any;
+    }
+}
+
 export async function editGroupOnBackend(groupID: string, action: "remove_user" | "del_group", params: string): Promise<BackendResponse<void>> {
     return fetchBackend<void>("/edit/group", {
             groupID: groupID,
