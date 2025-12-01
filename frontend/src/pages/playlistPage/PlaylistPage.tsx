@@ -100,8 +100,11 @@ const PlaylistPage: React.FC = () => {
 
     const handleTakePlaylist = async () => {
         await takePlaylistFromGroupOnBackend(groupID!, playlist.id!)
-
-        navigate("/playlist", { state: { playlist: playlist } })
+        const confirmed = window.confirm("Succes! Playlist added to your library. Would you like to view this in your library?");
+        if (confirmed)   
+            navigate("/playlist", { state: { playlist: playlist } })     
+        else   
+            navigate(-1)
     }
 
     const [buttonText, setButtonText] = useState("Export Playlist to your Spotify Library");
