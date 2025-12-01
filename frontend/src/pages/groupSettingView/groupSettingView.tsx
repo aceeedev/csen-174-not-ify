@@ -23,7 +23,7 @@ function GroupSettingView() {
   
   const group = location.state?.group as Group | undefined;
 
-  // TODO: Fetch members from backend
+  // Fetch members from backend
   const [members, setMembers] = useState<firebaseUser[]>([]);
   
   // Form state for group settings
@@ -31,8 +31,7 @@ function GroupSettingView() {
   const [description, setDescription] = useState('');
 
   const handleSaveSettings = async () => {
-    // TODO: Implement save group settings functionality
-    // since it auto updates when typing save just needs to update group
+
     if (group?.id) {
       // Use the existing group values as defaults if the inputs are empty
       const finalName = groupName === '' ? group.group_name : groupName;
