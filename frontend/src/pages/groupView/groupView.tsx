@@ -309,68 +309,68 @@ function GroupView() {
           )}
         </section>
 
-        {/* Invite Code Section */}
-        {showInviteCode && inviteCode && (
-          <section className="invite-code-section" style={{
-            background: 'rgba(102, 126, 234, 0.1)',
-            border: '2px solid rgba(102, 126, 234, 0.3)',
-            borderRadius: '12px',
-            padding: '1.5rem',
-            marginBottom: '2rem',
-            textAlign: 'center'
-          }}>
-            <h3 style={{ marginBottom: '1rem', color: 'rgba(255, 255, 255, 0.9)' }}>Group Invite Code</h3>
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '1rem',
-              marginBottom: '1rem'
-            }}>
-              <div style={{
-                fontSize: '2rem',
-                fontWeight: 'bold',
-                letterSpacing: '0.5rem',
-                color: '#667eea',
-                fontFamily: 'monospace',
-                padding: '1rem 2rem',
-                background: 'rgba(0, 0, 0, 0.3)',
-                borderRadius: '8px',
-                border: '2px dashed rgba(102, 126, 234, 0.5)'
-              }}>
-                {inviteCode}
-              </div>
-            </div>
-            <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
-              <button 
-                className="btn-primary" 
-                onClick={handleCopyInviteCode}
-                style={{ marginRight: '0.5rem' }}
-              >
-                Copy Code
-              </button>
-              <button 
-                className="btn-secondary" 
-                onClick={() => setShowInviteCode(false)}
-              >
-                Close
-              </button>
-            </div>
-            <p style={{ marginTop: '1rem', fontSize: '0.9rem', color: 'rgba(255, 255, 255, 0.6)' }}>
-              Share this code with friends to invite them to your group!
-            </p>
-          </section>
-        )}
-
         {/* Members Section */}
         <section className="members-section">
+          {showInviteCode && inviteCode && (
+            <div style={{
+              background: 'rgba(102, 126, 234, 0.1)',
+              border: '2px solid rgba(102, 126, 234, 0.3)',
+              borderRadius: '12px',
+              padding: '1rem',
+              marginBottom: '2rem',
+              textAlign: 'center',
+              maxWidth: '500px',
+              margin: '0 auto 2rem',
+              position: 'relative',
+              height: 'fit-content'
+            }}>
+              <h3 style={{ marginBottom: '0.5rem', color: 'rgba(255, 255, 255, 0.9)' }}>Group Invite Code</h3>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '1rem',
+                marginBottom: '0.75rem'
+              }}>
+                <div style={{
+                  fontSize: '1.5rem',
+                  fontWeight: 'bold',
+                  letterSpacing: '0.5rem',
+                  color: '#667eea',
+                  fontFamily: 'monospace',
+                  padding: '0.75rem 1.5rem',
+                  background: 'rgba(0, 0, 0, 0.3)',
+                  borderRadius: '8px',
+                  border: '2px dashed rgba(102, 126, 234, 0.5)'
+                }}>
+                  {inviteCode}
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', marginBottom: '0.5rem' }}>
+                <button 
+                  className="btn-primary" 
+                  onClick={handleCopyInviteCode}
+                  style={{ marginRight: '0.5rem' }}
+                >
+                  Copy Code
+                </button>
+                <button 
+                  className="btn-secondary" 
+                  onClick={() => setShowInviteCode(false)}
+                >
+                  Close
+                </button>
+              </div>
+              <p style={{ marginTop: '0.5rem', marginBottom: '0', fontSize: '0.85rem', color: 'rgba(255, 255, 255, 0.6)' }}>
+                Share this code with friends to invite them to your group!
+              </p>
+            </div>
+          )}
           <div className="section-header">
             <h2 className="section-title">Members ({members.length || 0})</h2>
-            {isOwner && (
-              <button className="btn-secondary" onClick={handleInviteMember}>
-                Share Invite Code
-              </button>
-            )}
+            {!showInviteCode && <button className="btn-secondary" onClick={handleInviteMember}>
+              Share Invite Code
+            </button>}
           </div>
 
           {members.length === 0 ? (
