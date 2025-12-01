@@ -5,7 +5,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import './groupSettingView.css';
 import type { firebaseUser, Group } from '../../models';
 import Navbar, { BackButtonLocation } from '../../components/Navbar';
-import { editGroupOnBackend, getGroupMembersListOnBackend } from '../../backendInterface';
+import { editGroupOnBackend, getGroupMembersListOnBackend, updateGroupNameDescription } from '../../backendInterface';
 
 
 /**
@@ -30,8 +30,20 @@ function GroupSettingView() {
   const [groupName, setGroupName] = useState('');
   const [description, setDescription] = useState('');
 
-  const handleSaveSettings = () => {
+  const handleSaveSettings = async () => {
     // TODO: Implement save group settings functionality
+    // since it auto updates when typing save just needs to update group
+    if (group?.id) {
+      // Use the existing group values as defaults if the inputs are empty
+      const finalName = groupName === '' ? group.group_name : groupName;
+      const finalDescription =
+        description === '' ? group.description : description;
+
+      await updateGroupNameDescription(group.id, finalDescription, finalName);
+      navigate(`/group`, { state: { group: group } });
+    }
+    
+
   };
 
   const handleRemoveMember = async (memberId: string) =>  {

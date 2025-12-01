@@ -245,3 +245,11 @@ export async function getGroupMembersListOnBackend(group_id: string): Promise<fi
     
     return result.success ? result.data : null;
 }
+
+export async function updateGroupNameDescription(group_id: string, description: string, name: string) {
+  return await fetchBackend<void>("/edit/group/nameAndDescription", {
+    group_id: group_id,
+    group_description: description,
+    group_name: name
+  });
+}

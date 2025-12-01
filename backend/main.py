@@ -801,6 +801,35 @@ def exportPlaylist():
     spotify.export_playlist(access_token, playlist.title, playlist.description, playlist.songs)
     return jsonify({"message": "Success!"}), 200
 
+@app.route('/edit/group/nameAndDescription')
+@FirebaseManager.require_firebase_auth
+def edit_group_name_and_description():
+    firebase = FirebaseManager()
+    error = validate_params(["group_id", "group_description", "group_name"])
+    if error:
+        return error
+    user_id = request.user_id
+
+    group_id: str = request.args.get("group_id")
+    group_description: str = request.args.get("group_description")
+    group_name: str = request.args.get("group_name")
+
+
+    firebase = FirebaseManager()
+    spotify = SpotifyManager()
+
+    spotify.refresh_access_token_and_update_firebase_if_needed(user_id)
+
+    user = firebase.get_user_info(user_id)
+    
+    group = firebase.get_group_info(group_id)
+
+    group.description = group_description
+    group.group_name = group_name
+
+    firebase.update_group(group_id, group)
+    return jsonify({"message": "Success!"}), 200
+
 
 if __name__ == "__main__":
     app.run(debug=True, host='0.0.0.0', port=5001)
