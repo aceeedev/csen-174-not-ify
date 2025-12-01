@@ -1,11 +1,11 @@
 /*THIS IS THE PAGE WHERE THE USER CAN VIEW AND SETTINGS as a group owner */
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import './groupSettingView.css';
-import type { Group } from '../../models';
+import type { firebaseUser, Group } from '../../models';
 import Navbar, { BackButtonLocation } from '../../components/Navbar';
-import { editGroupOnBackend } from '../../backendInterface';
+import { editGroupOnBackend, getGroupMembersListOnBackend } from '../../backendInterface';
 
 
 /**
@@ -24,7 +24,7 @@ function GroupSettingView() {
   const group = location.state?.group as Group | undefined;
 
   // TODO: Fetch members from backend
-  const [members, setMembers] = useState<any[]>([]);
+  const [members, setMembers] = useState<firebaseUser[]>([]);
   
   // Form state for group settings
   const [groupName, setGroupName] = useState('');
@@ -34,8 +34,13 @@ function GroupSettingView() {
     // TODO: Implement save group settings functionality
   };
 
-  const handleRemoveMember = (memberId: string) => {
-    // TODO: Implement remove member functionality
+  const handleRemoveMember = async (memberId: string) =>  {
+    if (group?.id) {
+      await editGroupOnBackend(group.id, "remove_user", memberId);
+
+      // refetch members
+      await setMembers(await getGroupMembersListOnBackend(group.id) ?? [])
+    }
   };
 
   const handleDeleteGroup = async () => {
@@ -72,13 +77,13 @@ function GroupSettingView() {
     }
   };
 
-  const handleInviteMember = () => {
-    // TODO: Implement invite member functionality
-  };
-
-  const handleChangeOwner = (memberId: string) => {
-    // TODO: Implement change owner functionality
-  };
+  useEffect(() => {
+    (async () => {
+      if (group?.id) {
+        await setMembers(await getGroupMembersListOnBackend(group.id) ?? [])
+      }
+    })();
+  }, []);
 
   return (
     <div className="group-settings-container">
@@ -148,8 +153,8 @@ function GroupSettingView() {
               {members.map((member) => (
                 <div key={member.id} className="member-card">
                   <div className="member-avatar">
-                    {member.profilePic ? (
-                      <img src={member.profilePic} alt={member.name} />
+                    {member.profile_pic ? (
+                      <img src={member.profile_pic} alt={member.name} />
                     ) : (
                       <div className="member-placeholder">
                         {member.name?.charAt(0) || 'U'}
@@ -159,27 +164,19 @@ function GroupSettingView() {
                   <div className="member-info">
                     <div className="member-name-row">
                       <h3 className="member-name">{member.name || 'Unknown User'}</h3>
-                      {member.isOwner && (
+                      {member.id === group?.owner_id && (
                         <span className="owner-badge">👑 Owner</span>
                       )}
                     </div>
-                    <p className="member-email">{member.email || 'No email'}</p>
                   </div>
                   <div className="member-actions">
-                    {member.isOwner ? (
+                    {member.id === group?.owner_id? (
                       <span className="member-status">Owner</span>
                     ) : (
                       <>
                         <button
-                          className="btn-action btn-change-owner"
-                          onClick={() => handleChangeOwner(member.id)}
-                          title="Transfer ownership"
-                        >
-                          Make Owner
-                        </button>
-                        <button
                           className="btn-action btn-remove"
-                          onClick={() => handleRemoveMember(member.id)}
+                          onClick={() => { if (member.id) handleRemoveMember(member.id) }}
                           title="Remove member"
                         >
                           Remove
