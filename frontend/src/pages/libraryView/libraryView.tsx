@@ -35,16 +35,18 @@ function LibraryView() {
     }, [userReady]);
 
   return (
-    <>
+    <div className="library-view-container">
       <Navbar/>
       
-      <h1>Library</h1>
-      <div className="playlist-board-grid">
-        {playlists.map((playlist, index) => (
-            <PlaylistCard key={index} playlist={playlist} />
-        ))}
+      <div className="library-content">
+        <h2 className="title-section">Library</h2>
+        <div className="playlist-board-grid">
+          {playlists.map((playlist, index) => (
+              <PlaylistCard key={index} playlist={playlist} />
+          ))}
+        </div>
       </div>
-    </>
+    </div>
   )
 }
  

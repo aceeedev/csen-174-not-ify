@@ -26,6 +26,7 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
+  background: linear-gradient(135deg, rgba(30, 30, 30, 0.95) 0%, rgba(36, 36, 36, 0.95) 100%);
 }
 
 h1 {
@@ -70,4 +71,13 @@ button:focus-visible {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 1rem;
+}
+
+.title-section{
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 1.5rem;
+  margin-top: 1.5rem;
+  text-align: center;
 }
