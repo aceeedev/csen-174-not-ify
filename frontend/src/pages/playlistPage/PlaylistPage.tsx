@@ -124,8 +124,8 @@ const PlaylistPage: React.FC = () => {
             {loading ? (
                 <p>Loading...</p>
             ) : 
-            <>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem' }}>
+            <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '2rem', textAlign: 'center' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1rem', padding: '1rem' }}>
                     <img 
                         src={playlist.cover} 
                         alt={playlist.title}
@@ -161,7 +161,7 @@ const PlaylistPage: React.FC = () => {
                 {playlistItems.map((song, index) => 
                     <SongItem key={index} song={song} isBlurred={index >= playlistItemsBlurIndex && pageOrigin === PageOrigin.FromGroup}/>
                 )}
-            </>}
+            </div>}
 
         </div>
         );
