@@ -375,7 +375,6 @@ function GroupView() {
 
           {members.length === 0 ? (
             <div className="empty-state">
-              <div className="empty-icon">👥</div>
               <p className="empty-text">No members in this group</p>
             </div>
           ) : (

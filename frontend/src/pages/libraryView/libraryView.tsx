@@ -40,6 +40,11 @@ function LibraryView() {
       
       <div className="library-content">
         <h2 className="title-section">Library</h2>
+
+        {playlists.length === 0 && (
+          <p style={{ textAlign: 'center' }}>You have not taken any playlists, first you need to be in a group!</p>
+        )}
+
         <div className="playlist-board-grid">
           {playlists.map((playlist, index) => (
               <PlaylistCard key={index} playlist={playlist} />

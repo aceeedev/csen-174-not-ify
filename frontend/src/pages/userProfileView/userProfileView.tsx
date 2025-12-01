@@ -109,6 +109,10 @@ export default function UserProfileView() {
               {/* Render a GroupRow for each group */}
               <h3 className="settings-subsection-title" >Edit Groups</h3>
 
+              {groups.length === 0 && (
+                <p style={{ gridColumn: '1 / -1', textAlign: 'center' }}>You are in no groups!</p>
+              )}
+
               {groups.map(group => (
                 <GroupRow
                   key={group.id}

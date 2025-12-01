@@ -130,7 +130,7 @@ function UserHomePage() {
             <h2 className="section-title">Your Groups</h2>
             <div style={{ display: 'flex', gap: '0.5rem' }}>
               <button className="btn-secondary" onClick={handleJoinGroup}>
-                🔑 Join Group
+                Join Group
               </button>
               <button className="btn-primary" onClick={handleCreateGroup}>
                 + Create Group
@@ -145,7 +145,6 @@ function UserHomePage() {
               <div className="status-message error">{groupsError}</div>
             ) : groups.length === 0 ? (
               <div className="empty-state">
-                <div className="empty-icon">👥</div>
                 <p className="empty-text">You're not in any groups yet</p>
                 <button className="btn-primary" onClick={handleCreateGroup}>
                   Create Your First Group

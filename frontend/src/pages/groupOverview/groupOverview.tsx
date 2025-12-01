@@ -44,6 +44,10 @@ export default function GroupsOverview() {
           <h2 className="title-section">My Groups</h2>
 
           <div className='user-groups-grid'>
+              {groups.length == 0 && (
+                <p style={{ gridColumn: '1 / -1', textAlign: 'center' }}>You aren't in any groups! Either <Link to="/new-group">create a group</Link> or <Link to="/join-group">join a group</Link>.</p>
+              )}
+
               {/* Render a GroupOverRow for each group */}
               {groups.map(group => (
                 <GroupOverRow
@@ -52,6 +56,7 @@ export default function GroupsOverview() {
                 />
               ))}
           </div>
+          
         </section>
       </div>
     </div>
