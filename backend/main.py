@@ -551,9 +551,9 @@ def get_group_playlists():
             playlist_dict = playlist.to_dict_with_id_and_owner_name(firebase, playlist_id)
             
             # Add metadata about whether this playlist can be taken by the current user
-            # NOTE: For demo purposes, allowing users to take their own playlists
             playlist_dict['can_take'] = (
                 playlist_id not in group.group_member_data[user_id].taken_playlists
+                and playlist.owner_id is not user_id
             )
             playlist_dict['is_owner'] = playlist.owner_id == user_id
             playlist_dict['is_taken'] = playlist_id in group.group_member_data[user_id].taken_playlists
