@@ -98,7 +98,7 @@ const AddPlaylistPage: React.FC= () => {
           zIndex: 1000
         }}>
           <div style={{
-            backgroundColor: 'white',
+            backgroundColor: 'gray',
             padding: '2rem',
             borderRadius: '8px',
             textAlign: 'center',

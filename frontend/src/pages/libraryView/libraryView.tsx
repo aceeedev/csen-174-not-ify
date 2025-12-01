@@ -35,16 +35,23 @@ function LibraryView() {
     }, [userReady]);
 
   return (
-    <>
-      <Navbar backButtonLocation={BackButtonLocation.ToHome} />
+    <div className="library-view-container">
+      <Navbar/>
       
-      <h1>Library</h1>
-      <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'nowrap', overflowX: 'auto', gap: '1rem' }}>
-        {playlists.map((playlist, index) => (
-            <PlaylistCard key={index} playlist={playlist} />
-        ))}
+      <div className="library-content">
+        <h2 className="title-section">Library</h2>
+
+        {playlists.length === 0 && (
+          <p style={{ textAlign: 'center' }}>You have not taken any playlists, first you need to be in a group!</p>
+        )}
+
+        <div className="playlist-board-grid">
+          {playlists.map((playlist, index) => (
+              <PlaylistCard key={index} playlist={playlist} />
+          ))}
+        </div>
       </div>
-    </>
+    </div>
   )
 }
  

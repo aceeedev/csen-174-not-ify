@@ -114,6 +114,7 @@ def auth_callback():
                 access_token_expires=safe_access_token_expire_time,
                 profile_pic=firebase_user.photo_url,
                 library=[],
+                exported_playlists=[],
                 my_groups=[],
                 my_complaints=[],
                 is_admin=False
@@ -464,7 +465,7 @@ def get_group_members_list():
     if group_id not in firebase_user.my_groups:
         return jsonify({"error": "Implementation error, cannot access a group you are not in"}), 400        
 
-    firebase_members = [firebase.get_user_info(member_id).to_dict() for member_id in firebase_group.member_ids]
+    firebase_members = [firebase.get_user_info(member_id).to_dict_with_id(member_id) for member_id in firebase_group.member_ids]
 
     # I'm not sure if that's actually needed. 
 
@@ -548,12 +549,12 @@ def get_group_playlists():
     for playlist_id in all_playlist_ids:
         try:
             playlist = firebase.get_playlist_info(playlist_id)
-            playlist_dict = playlist.to_dict_with_id(playlist_id)
+            playlist_dict = playlist.to_dict_with_id_and_owner_name(firebase, playlist_id)
             
             # Add metadata about whether this playlist can be taken by the current user
-            # NOTE: For demo purposes, allowing users to take their own playlists
             playlist_dict['can_take'] = (
                 playlist_id not in group.group_member_data[user_id].taken_playlists
+                and playlist.owner_id is not user_id
             )
             playlist_dict['is_owner'] = playlist.owner_id == user_id
             playlist_dict['is_taken'] = playlist_id in group.group_member_data[user_id].taken_playlists
@@ -638,11 +639,6 @@ def add_playlist_to_group():
     # Create playlist in firebase using helper function
     playlist_id = firebase.create_playlist(playlist)
     
-    # Add playlist to user's library
-    if playlist_id not in user.library:
-        user.library.append(playlist_id)
-        firebase.update_user(user_id, user)
-    
     # Update group with playlist info using helper function
     group.group_member_data[user_id].posted_playlists.append(PostedPlaylist(
         playlist_id=playlist_id,
@@ -716,7 +712,9 @@ def take_playlist_from_group():
                 if posted_playlist.number_downloaded == len(firebase_group.member_ids) - 1:
                     #remove the playlist from the 'posted_playlists' group
                     member_data.posted_playlists.remove(posted_playlist)
-                    #TODO: OPTIONAL: Remove from every other user's taken_playlists array                        
+                    #TODO: OPTIONAL: Remove from every other user's taken_playlists array 
+                firebase_group.group_member_data[member_id].coins += 1
+                     
 
     #'Charge' the user a coin for taking the playlist. 
     firebase_group.group_member_data[user_id].coins -= 1
@@ -741,7 +739,7 @@ def get_library_playlists():
     for playlist_id in user.library:
         try:
             playlist = firebase.get_playlist_info(playlist_id)
-            playlist_dict = playlist.to_dict_with_id(playlist_id)
+            playlist_dict = playlist.to_dict_with_id_and_owner_name(firebase, playlist_id)
             playlists.append(playlist_dict)
         except ValueError:
             # Playlist doesn't exist, skip it

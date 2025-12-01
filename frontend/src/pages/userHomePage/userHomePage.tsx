@@ -6,6 +6,8 @@ import './userHomePage.css';
 import Navbar from '../../components/Navbar';
 import { getLibraryPlaylistsOnBackend, getGroupsOnBackend } from '../../backendInterface';
 import type { Group, Playlist } from '../../models';
+import PlaylistCard from '../../components/PlaylistCard';
+import { getCurrentUserFromFirebase } from '../../firebase';
 
 
 function UserHomePage() {
@@ -128,7 +130,7 @@ function UserHomePage() {
             <h2 className="section-title">Your Groups</h2>
             <div style={{ display: 'flex', gap: '0.5rem' }}>
               <button className="btn-secondary" onClick={handleJoinGroup}>
-                🔑 Join Group
+                Join Group
               </button>
               <button className="btn-primary" onClick={handleCreateGroup}>
                 + Create Group
@@ -143,14 +145,13 @@ function UserHomePage() {
               <div className="status-message error">{groupsError}</div>
             ) : groups.length === 0 ? (
               <div className="empty-state">
-                <div className="empty-icon">👥</div>
                 <p className="empty-text">You're not in any groups yet</p>
                 <button className="btn-primary" onClick={handleCreateGroup}>
                   Create Your First Group
                 </button>
               </div>
             ) : (
-              groups.map((group) => (
+              groups.slice(0, 3).map((group) => (
                 <div
                   key={group.id}
                   className="group-card"
@@ -164,7 +165,6 @@ function UserHomePage() {
                     }
                   }}
                 >
-                  <div className="group-icon">🎵</div>
                   <h3 className="group-name">{group.group_name || 'Untitled Group'}</h3>
                   <p className="group-members">{group.member_ids.length || 0} members</p>
                   <p className="group-description">{group.description || 'No description'}</p>
@@ -183,7 +183,7 @@ function UserHomePage() {
           </div>
 
           <div className="section-footer">
-            <Link to="/groups" className="view-all-link">
+            <Link to="/my-groups" className="view-all-link">
               View All Groups →
             </Link>
           </div>
@@ -193,9 +193,6 @@ function UserHomePage() {
         <section className="library-section">
           <div className="section-header">
             <h2 className="section-title">Your Library</h2>
-            <button className="btn-secondary" onClick={handleViewLibrary}>
-              View Full Library →
-            </button>
           </div>
 
           <div className="library-preview">
@@ -203,37 +200,20 @@ function UserHomePage() {
               <div className="status-message">Loading library…</div>
             ) : library.length === 0 ? (
               <div className="empty-state">
-                <div className="empty-icon">📚</div>
                 <p className="empty-text">Your library is empty</p>
-                <Link to="/library" className="btn-primary">
-                  Explore Library
-                </Link>
+                <p className="empty-text">Join or Create a Group to add Playlists to your Library.</p>
               </div>
             ) : (
-              <div className="library-grid">
-                {library.slice(0, 6).map((item) => (
-                  <div 
-                    key={item.id} 
-                    className="library-item"
-                    onClick={() => handleViewPlaylist(item)}
-                    >
-                    <div className="library-item-cover">
-                      {item.cover ? (
-                        <img src={item.cover} alt={item.title} />
-                      ) : (
-                        <div className="library-placeholder">🎵</div>
-                      )}
-                    </div>
-                    <h4 className="library-item-title">{item.title || 'Untitled'}</h4>
-                    <p className="library-item-artist">{item.description || 'No description'}</p>
-                  </div>
+              <div className="playlist-board-grid">
+                {library.slice(0, 3).map((item) => (
+                  <PlaylistCard playlist={item}/>
                 ))}
               </div>
             )}
           </div>
 
           <div className="section-footer">
-            <Link to="/library" className="view-all-link">
+            <Link to="/my-library" className="view-all-link">
               View Full Library →
             </Link>
           </div>

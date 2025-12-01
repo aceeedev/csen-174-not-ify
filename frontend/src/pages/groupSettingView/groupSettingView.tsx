@@ -1,11 +1,11 @@
 /*THIS IS THE PAGE WHERE THE USER CAN VIEW AND SETTINGS as a group owner */
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import './groupSettingView.css';
-import type { Group } from '../../models';
+import type { firebaseUser, Group } from '../../models';
 import Navbar, { BackButtonLocation } from '../../components/Navbar';
-import { editGroupOnBackend } from '../../backendInterface';
+import { editGroupOnBackend, getGroupMembersListOnBackend } from '../../backendInterface';
 
 
 /**
@@ -24,20 +24,23 @@ function GroupSettingView() {
   const group = location.state?.group as Group | undefined;
 
   // TODO: Fetch members from backend
-  const [members, setMembers] = useState<any[]>([]);
+  const [members, setMembers] = useState<firebaseUser[]>([]);
   
   // Form state for group settings
   const [groupName, setGroupName] = useState('');
   const [description, setDescription] = useState('');
-  const [max_members, setmax_members] = useState(20);
-  const [maxPlaylists, setMaxPlaylists] = useState(20);
 
   const handleSaveSettings = () => {
     // TODO: Implement save group settings functionality
   };
 
-  const handleRemoveMember = (memberId: string) => {
-    // TODO: Implement remove member functionality
+  const handleRemoveMember = async (memberId: string) =>  {
+    if (group?.id) {
+      await editGroupOnBackend(group.id, "remove_user", memberId);
+
+      // refetch members
+      await setMembers(await getGroupMembersListOnBackend(group.id) ?? [])
+    }
   };
 
   const handleDeleteGroup = async () => {
@@ -74,13 +77,13 @@ function GroupSettingView() {
     }
   };
 
-  const handleInviteMember = () => {
-    // TODO: Implement invite member functionality
-  };
-
-  const handleChangeOwner = (memberId: string) => {
-    // TODO: Implement change owner functionality
-  };
+  useEffect(() => {
+    (async () => {
+      if (group?.id) {
+        await setMembers(await getGroupMembersListOnBackend(group.id) ?? [])
+      }
+    })();
+  }, []);
 
   return (
     <div className="group-settings-container">
@@ -124,36 +127,6 @@ function GroupSettingView() {
               />
             </div>
 
-            <div className="form-row">
-              <div className="form-group">
-                <label htmlFor="max_members">Max Members</label>
-                <input
-                  type="number"
-                  id="max_members"
-                  value={max_members}
-                  onChange={(e) => setmax_members(parseInt(e.target.value) || 20)}
-                  min={1}
-                  max={20}
-                  className="form-input"
-                />
-                <span className="form-hint">Between 1 and 20</span>
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="maxPlaylists">Max Playlists</label>
-                <input
-                  type="number"
-                  id="maxPlaylists"
-                  value={maxPlaylists}
-                  onChange={(e) => setMaxPlaylists(parseInt(e.target.value) || 20)}
-                  min={1}
-                  max={20}
-                  className="form-input"
-                />
-                <span className="form-hint">Between 1 and 20</span>
-              </div>
-            </div>
-
             <div className="form-actions">
               <button type="button" className="btn-secondary" onClick={() => window.history.back()}>
                 Cancel
@@ -169,14 +142,10 @@ function GroupSettingView() {
         <section className="members-section">
           <div className="section-header">
             <h2 className="section-title">Members ({members.length || 0})</h2>
-            <button className="btn-primary" onClick={handleInviteMember}>
-              + Invite Member
-            </button>
           </div>
 
           {members.length === 0 ? (
             <div className="empty-state">
-              <div className="empty-icon">👥</div>
               <p className="empty-text">No members in this group</p>
             </div>
           ) : (
@@ -184,8 +153,8 @@ function GroupSettingView() {
               {members.map((member) => (
                 <div key={member.id} className="member-card">
                   <div className="member-avatar">
-                    {member.profilePic ? (
-                      <img src={member.profilePic} alt={member.name} />
+                    {member.profile_pic ? (
+                      <img src={member.profile_pic} alt={member.name} />
                     ) : (
                       <div className="member-placeholder">
                         {member.name?.charAt(0) || 'U'}
@@ -195,27 +164,19 @@ function GroupSettingView() {
                   <div className="member-info">
                     <div className="member-name-row">
                       <h3 className="member-name">{member.name || 'Unknown User'}</h3>
-                      {member.isOwner && (
+                      {member.id === group?.owner_id && (
                         <span className="owner-badge">👑 Owner</span>
                       )}
                     </div>
-                    <p className="member-email">{member.email || 'No email'}</p>
                   </div>
                   <div className="member-actions">
-                    {member.isOwner ? (
+                    {member.id === group?.owner_id? (
                       <span className="member-status">Owner</span>
                     ) : (
                       <>
                         <button
-                          className="btn-action btn-change-owner"
-                          onClick={() => handleChangeOwner(member.id)}
-                          title="Transfer ownership"
-                        >
-                          Make Owner
-                        </button>
-                        <button
                           className="btn-action btn-remove"
-                          onClick={() => handleRemoveMember(member.id)}
+                          onClick={() => { if (member.id) handleRemoveMember(member.id) }}
                           title="Remove member"
                         >
                           Remove

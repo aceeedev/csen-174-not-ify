@@ -41,6 +41,8 @@ const PlaylistPage: React.FC = () => {
 
     const pageOrigin = (group && groupID) ? PageOrigin.FromGroup : PageOrigin.FromLibrary;
 
+    const [userID, setUserID] = useState<string | null>(null);
+
     const [loading, setLoading] = useState<boolean>(true);
     const [userCoins, setCoins] = useState<number | null>(null);
     const [playlistItems, setPlaylistItems] = useState<Song[]>([]);
@@ -82,6 +84,7 @@ const PlaylistPage: React.FC = () => {
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
             if (currentUser) {
+                setUserID(currentUser.uid);
                 setCoins(group?.group_member_data[currentUser.uid].coins ?? null)
 
                 fetchData()
@@ -97,6 +100,11 @@ const PlaylistPage: React.FC = () => {
 
     const handleTakePlaylist = async () => {
         await takePlaylistFromGroupOnBackend(groupID!, playlist.id!)
+        const confirmed = window.confirm("Succes! Playlist added to your library. Would you like to view this in your library?");
+        if (confirmed)   
+            navigate("/playlist", { state: { playlist: playlist } })     
+        else   
+            navigate(-1)
     }
 
     const [buttonText, setButtonText] = useState("Export Playlist to your Spotify Library");
@@ -119,13 +127,13 @@ const PlaylistPage: React.FC = () => {
 
     return (
         <div>
-            <Navbar backButtonLocation={pageOrigin == PageOrigin.FromLibrary ? BackButtonLocation.ToHome : BackButtonLocation.ToGroup}/>
+            <Navbar backButtonLocation={pageOrigin == PageOrigin.FromGroup ? BackButtonLocation.ToGroup : BackButtonLocation.None}/>
 
             {loading ? (
-                <p>Loading...</p>
+                <p style={{ textAlign: 'center', paddingTop: '2rem' }}>Loading...</p>
             ) : 
-            <>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem' }}>
+            <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '2rem', textAlign: 'center' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1rem', padding: '1rem' }}>
                     <img 
                         src={playlist.cover} 
                         alt={playlist.title}
@@ -138,7 +146,7 @@ const PlaylistPage: React.FC = () => {
 
                 <h2>Actions</h2>
 
-                {pageOrigin === PageOrigin.FromGroup && (
+                {pageOrigin === PageOrigin.FromGroup && userID && playlist.owner_id !== userID && (
                     <div>
                         <p>You have {userCoins} coins.</p>
                     
@@ -161,7 +169,7 @@ const PlaylistPage: React.FC = () => {
                 {playlistItems.map((song, index) => 
                     <SongItem key={index} song={song} isBlurred={index >= playlistItemsBlurIndex && pageOrigin === PageOrigin.FromGroup}/>
                 )}
-            </>}
+            </div>}
 
         </div>
         );

@@ -67,7 +67,7 @@ function JoinGroupByCode() {
 
   return (
     <div className="join-group-by-code">
-      <Navbar backButtonLocation={BackButtonLocation.ToHome} />
+      <Navbar/>
 
       <main className="join-group-content">
         <section className="join-group-card">
@@ -76,7 +76,7 @@ function JoinGroupByCode() {
             Enter the invite code shared by a group member to join their group.
           </p>
 
-          <form className="join-group-form" onSubmit={handleSubmit}>
+          <form className="join-group-form" onSubmit={handleSubmit} autoComplete='off'>
             <label htmlFor="invite-code">Invite Code</label>
             <input
               id="invite-code"

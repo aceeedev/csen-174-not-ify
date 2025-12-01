@@ -1,10 +1,12 @@
-from typing import Any
+from typing import Any, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from FireStoreInterface import FirebaseManager
 
 #Changelog
 #Update Code: Editor, date
 #UC1: Katie, 10/29/2025
 
-#TODO: Change owner_id to creator_id, because theoretically anybody can 'own' a copy of the playlist
 
 class Playlist:
     def __init__(self, spotify_id: str, owner_id: str, title: str, cover: str, description: str, songs: list[str]) -> None:
@@ -37,9 +39,10 @@ class Playlist:
             songs=data['songs']  
         )
     
-    def to_dict_with_id(self, firebase_id: str) -> dict[str, Any]:
+    def to_dict_with_id_and_owner_name(self, firebase_manager: "FirebaseManager", firebase_id: str) -> dict[str, Any]:
         as_dict: dict[str, Any] = self.to_dict()
 
         as_dict["id"] = firebase_id
+        as_dict["owner_name"] = firebase_manager.get_user_info(self.owner_id).name
 
         return as_dict

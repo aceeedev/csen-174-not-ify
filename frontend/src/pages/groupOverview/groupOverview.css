@@ -7,6 +7,20 @@ body{
   padding: 0;
 }
 
+.groups-overview-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Main Content */
+.groups-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  width: 100%;
+}
+
 /* Navigation */
 .profile-navbar {
   background: rgba(255, 255, 255, 0.05);
@@ -154,15 +168,6 @@ body{
 }
 
 /* Settings stuff */
-
-.my-groups-section-title{
-  font-size: 1.75rem;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.9);
-  margin-bottom: 1.5rem;
-  margin-top: 1.5rem;
-  text-align: center;
-}
 
 .settings-subsection-title {
   grid-column: 1 / -1; /* spans the full width of the grid */

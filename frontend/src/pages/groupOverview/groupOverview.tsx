@@ -36,22 +36,29 @@ export default function GroupsOverview() {
   }
 
   return (
-    <div>
+    <div className="groups-overview-container">
       <Navbar></Navbar>
-      {/** Settings */}
-      <section id="user-settings" className="user-settings-section">
-        <h2 className="my-groups-section-title">My Groups</h2>
+      <div className="groups-content">
+        {/** Settings */}
+        <section id="user-settings" className="user-settings-section">
+          <h2 className="title-section">My Groups</h2>
 
-        <div className='user-groups-grid'>
-            {/* Render a GroupOverRow for each group */}
-            {groups.map(group => (
-              <GroupOverRow
-                key={group.id}
-                group={group}
-              />
-            ))}
-        </div>
-      </section>
+          <div className='user-groups-grid'>
+              {groups.length == 0 && (
+                <p style={{ gridColumn: '1 / -1', textAlign: 'center' }}>You aren't in any groups! Either <Link to="/new-group">create a group</Link> or <Link to="/join-group">join a group</Link>.</p>
+              )}
+
+              {/* Render a GroupOverRow for each group */}
+              {groups.map(group => (
+                <GroupOverRow
+                  key={group.id}
+                  group={group}
+                />
+              ))}
+          </div>
+          
+        </section>
+      </div>
     </div>
   );
 }

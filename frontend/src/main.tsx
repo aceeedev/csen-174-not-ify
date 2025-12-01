@@ -26,13 +26,13 @@ createRoot(document.getElementById('root')!).render(
       <Route path="/playlist" element={<PlaylistPage />} />
       
       <Route path="/profile" element={<UserProfileView />} />
-      <Route path="/library" element={<LibraryView />} />
+      <Route path="/my-library" element={<LibraryView />} />
 
       <Route path="/group" element={<GroupView />} />
       <Route path="/group/settings" element={<GroupSettingView />} />
       <Route path="/new-group" element={<AddGroupView />} />
       <Route path="/join-group" element={<JoinGroupByCode />} />
-      <Route path="/group-overview" element={<GroupOverview />}/>
+      <Route path="/my-groups" element={<GroupOverview />}/>
     </Routes>
   </BrowserRouter>,
 )

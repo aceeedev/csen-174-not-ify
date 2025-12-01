@@ -4,11 +4,12 @@ import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import './groupView.css';
 import { auth, getUserFromFirebase,getCurrentUserFromFirebase } from '../../firebase';
-import { takePlaylistFromGroupOnBackend, inviteToGroupOnBackend, getGroupPlaylistsOnBackend, getGroupInviteCodeOnBackend } from '../../backendInterface';
+import { takePlaylistFromGroupOnBackend, inviteToGroupOnBackend, getGroupPlaylistsOnBackend, getGroupMembersListOnBackend, getGroupInviteCodeOnBackend } from '../../backendInterface';
 import type { Group, firebaseUser } from '../../models';
 import { signInWithPopup, onAuthStateChanged, signOut, type User } from "firebase/auth";
 import { getGroupsOnBackend, editGroupOnBackend } from "../../backendInterface";
 import Navbar, { BackButtonLocation } from '../../components/Navbar';
+import PlaylistCard from '../../components/PlaylistCard';
 
 
 /**
@@ -23,10 +24,11 @@ function GroupView() {
   const navigate = useNavigate();
   const location = useLocation();
   
-  const group = location.state?.group as Group | undefined;
-  const groupId = group?.id;
+  const initialGroup = location.state?.group as Group | undefined;
+  const groupId = initialGroup?.id;
 
-  const [members, setMembers] = useState<any[]>([]);
+  const [group, setGroup] = useState<Group | undefined>(initialGroup);
+  const [members, setMembers] = useState<firebaseUser[]>([]);
 
   const [playlists, setPlaylists] = useState<any[]>([]);
 
@@ -34,14 +36,8 @@ function GroupView() {
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
-  const [ownerName, setOwnerName] = useState <string>('');
   
   const [aUser, setUser] = useState<User | null>(null) //google authentication user
-  const [fUser, setfUser] = useState<firebaseUser | null>(null)        //firebase user object
-  const [groups, setGroups] = useState<Group[]>([]);     // Full group objects for display
-  const [fullGroup, setFullGroup] = useState<Group | null>(null);
-
 
   useEffect(() => {
     let isMounted = true;
@@ -49,14 +45,9 @@ function GroupView() {
       setUser(currentUser);                           //updates the user variable on login/out
 
       if (currentUser !== null){
-        getUserObjectData(currentUser);               //call this function at the start of the load. keep
+        setIsOwner(group?.owner_id == currentUser.uid)
       }
         });
-
-  const getUserObjectData= async (user: User) =>{     //firebase user
-    setfUser (await getCurrentUserFromFirebase());
-    setGroups (await getGroupsOnBackend() ?? []);
-  }
 
     const fetchGroupDetails = async () => {
       if (!groupId) {
@@ -67,74 +58,24 @@ function GroupView() {
       setIsLoading(true);
       setErrorMessage(null);
 
-      try {
-        // If group data is incomplete, fetch it from backend
-        let completeGroup = group;
-        if (!group || !group.group_member_data || !group.owner_id) {
-          const allGroups = await getGroupsOnBackend();
-          const foundGroup = allGroups?.find(g => g.id === groupId);
-          if (foundGroup) {
-            completeGroup = foundGroup;
-            setFullGroup(foundGroup);
-          } else {
-            throw new Error('Group not found');
-          }
-        } else {
-          setFullGroup(group);
-        }
-
-        const currentUserId = auth.currentUser?.uid ?? null;
-
-        if (isMounted && completeGroup) {
-          setIsOwner(
-            currentUserId != null && completeGroup.owner_id === currentUserId,
-          );
-
-          const memberEntries = completeGroup.group_member_data
-            ? Object.entries(completeGroup.group_member_data)
-            : [];
-
-          const formattedMembers = memberEntries.map(
-            ([memberId, memberData]: [string, any]) => ({
-              id: memberId,
-              coins: memberData?.coins ?? 0,
-              lastPostingTimestamp: memberData?.last_posting_timestamp ?? null,
-              takenPlaylists: memberData?.taken_playlists ?? [],
-              postedPlaylists: memberData?.posted_playlists ?? [],
-              isOwner: memberId === completeGroup.owner_id,
-            }),
-          );
-
-          setMembers(formattedMembers);
-          
-          // Fetch owner name
-          handleGetOwnerName(completeGroup);
-        }
-
-        try {
-
-          const playlistResponse = await getGroupPlaylistsOnBackend(groupId);
-
-          if (playlistResponse && isMounted) {
-              setPlaylists(playlistResponse);
-          } else {
-            console.warn('Unable to load group playlists.');
-          }
-        } catch (playlistError) {
-          console.error('Error loading playlists:', playlistError);
-        }
-      } catch (error) {
-        console.error('Failed to load group data:', error);
-        if (isMounted) {
-          setErrorMessage(
-            error instanceof Error ? error.message : 'Failed to load group.',
-          );
-        }
-      } finally {
-        if (isMounted) {
-          setIsLoading(false);
-        }
+      // refetch group and update state
+      const groups = await getGroupsOnBackend() ?? [];
+      const updatedGroup = groups.find((item) => item.id === groupId);
+      if (updatedGroup) {
+        setGroup(updatedGroup);
       }
+
+      setMembers(await getGroupMembersListOnBackend(groupId) ?? []);
+
+      const playlistResponse = await getGroupPlaylistsOnBackend(groupId);
+
+      if (playlistResponse && isMounted) {
+          setPlaylists(playlistResponse);
+      } else {
+        console.warn('Unable to load group playlists.');
+      }
+        
+      setIsLoading(false);
     };
 
     if (groupId) {
@@ -144,7 +85,7 @@ function GroupView() {
     return () => {
       isMounted = false;
     };
-  }, [groupId, group]);
+  }, []);
 
   const handleAddPlaylist = () => {
     if (!groupId) return;
@@ -168,7 +109,6 @@ function GroupView() {
   
       if (response.success) {
         // Only remove from state after backend confirms success
-        setGroups (await getGroupsOnBackend() ?? []);
         navigate("/")
       } else {
         alert("Could not leave group: " + response.message);
@@ -248,22 +188,6 @@ function GroupView() {
     });
   };
 
-  const handleGetOwnerName = async (group?: Group) => {
-    if (!group?.owner_id) {
-      setOwnerName("unknown");
-      return;
-    }
-
-    const owner = await getUserFromFirebase(group.owner_id);
-
-    if (!owner) {
-      setOwnerName("unkown");
-      return;
-    }
-    setOwnerName(owner.name);
-  };
-  handleGetOwnerName(group)
-
 
   const handleTakePlaylist = async (playlistId: string, event: React.MouseEvent) => {
     event.stopPropagation(); // Prevent triggering the card click
@@ -286,10 +210,6 @@ function GroupView() {
     }
   };
 
-  const handleViewMember = (_memberId: string) => {
-    // TODO: Navigate to member profile
-  };
-
 
   const handleSettings = () => {
     if (!groupId) return;
@@ -299,7 +219,7 @@ function GroupView() {
 
   return (
     <div className="group-view-container">
-      <Navbar backButtonLocation={BackButtonLocation.ToHome} />
+      <Navbar />
 
       {isLoading ? (
         <div className="group-status-message">Loading group...</div>
@@ -311,30 +231,48 @@ function GroupView() {
         </div>
       ) : (
       <>
+      
       {/* Group Header */}
       <section className="group-header">
         <div className="group-header-content">
-          <div className="group-icon-large">🎵</div>
-          <div className="group-info">
-            <h1 className="group-title">{(fullGroup || group)?.group_name || 'Group Name'}</h1>
-            <p className="group-description">{(fullGroup || group)?.description || 'No description available'}</p>
-            <div className="group-meta">
-              <span className="meta-item">👤 {members.length || 0} members</span>
-              <span className="meta-item">🎵 {playlists.length || 0} playlists</span>
-              {group?.owner_id && (
-                <span className="meta-item">👑 Owner: {ownerName}</span>
-              )}
+          <div style={{
+            textAlign: 'center'
+          }}>
+            {/* Group Name */}
+            <span style={{
+              fontSize: '3rem',
+              textAlign: 'center'
+            }}>
+              {group?.group_name || 'Group Name'}
+            </span>
+
+            {/* Group Descritpion */}
+            <p className="group-description">{group?.description || 'No description available'}</p>
+            
+            {/* Group Stats (Based on user stats) */}
+            <div className="stats-container">
+              <div className='stats-left'>
+                <div>Group Members </div>
+                <div>{members.length || 0}</div>
+              </div>
+              <div className="stats-center">♪</div>
+              <div className='stats-right'>
+                <div>Posted Playlists </div>
+                <div>{playlists.length || 0}</div>
+              </div>
+            </div>
+
+            {/* Coins that you have */}
+            <div style = {{
+              marginTop:  '1rem',
+            }}> 
+              {group && aUser && (
+              <p>Your Coins: {group.group_member_data[aUser!.uid].coins}</p>
+            )}
             </div>
           </div>
+          
           <div className="group-actions-header">
-            <button className="btn-primary" onClick={handleAddPlaylist}>
-              + Add Playlist
-            </button>
-            {!isOwner && (
-              <button className="btn-secondary" onClick={handleInviteMember}>
-                Invite Member
-              </button>
-            )}
             {isOwner && (
               <button className="btn-secondary" onClick={handleSettings}>
                 Group Settings
@@ -357,138 +295,98 @@ function GroupView() {
 
           {playlists.length === 0 ? (
             <div className="empty-state">
-              <div className="empty-icon">🎵</div>
               <p className="empty-text">No playlists in this group yet</p>
               <button className="btn-primary" onClick={handleAddPlaylist}>
-                Add First Playlist
+                Add A Playlist
               </button>
             </div>
           ) : (
             <div className="playlist-board-grid">
               {playlists.map((playlist) => (
-                <div
-                  key={playlist.id}
-                  className="playlist-card"
-                  onClick={() => handleViewPlaylist(playlist.id)}
-                >
-                  <div>
-                    {playlist.cover ? (
-                      <img src={playlist.cover} alt={playlist.title} className="playlist-cover" />
-                    ) : (
-                      <div className="playlist-placeholder">🎵</div>
-                    )}
-                  </div>
-                  <div className="playlist-info">
-                    <h3 className="playlist-title">{playlist.title || 'Untitled Playlist'}</h3>
-                    <p className="playlist-owner">
-                      {playlist.is_owner ? 'Your playlist' : `by ${playlist.owner_id || 'Unknown'}`}
-                    </p>
-                    <p className="playlist-songs">{playlist.songs?.length || 0} songs</p>
-                    {playlist.is_taken ? (
-                      <div style={{ marginTop: '0.5rem', padding: '0.5rem', background: 'rgba(34, 197, 94, 0.2)', borderRadius: '4px', fontSize: '0.85rem', color: 'rgba(255, 255, 255, 0.7)' }}>
-                        Already Taken
-                      </div>
-                    ) : playlist.can_take ? (
-                      <button 
-                        className="btn-primary" 
-                        onClick={(e) => handleTakePlaylist(playlist.id, e)}
-                        style={{ marginTop: '0.5rem' }}
-                      >
-                        Take Playlist (1 coin)
-                      </button>
-                    ) : null}
-                    {playlist.is_owner && !playlist.is_taken && (
-                      <div style={{ marginTop: '0.25rem', fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.5)' }}>
-                        Your playlist
-                      </div>
-                    )}
-                  </div>
-                </div>
+                <PlaylistCard playlist={playlist} group={group} groupID={groupId}/>
               ))}
             </div>
           )}
         </section>
 
-        {/* Invite Code Section */}
-        {showInviteCode && inviteCode && (
-          <section className="invite-code-section" style={{
-            background: 'rgba(102, 126, 234, 0.1)',
-            border: '2px solid rgba(102, 126, 234, 0.3)',
-            borderRadius: '12px',
-            padding: '1.5rem',
-            marginBottom: '2rem',
-            textAlign: 'center'
-          }}>
-            <h3 style={{ marginBottom: '1rem', color: 'rgba(255, 255, 255, 0.9)' }}>Group Invite Code</h3>
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '1rem',
-              marginBottom: '1rem'
-            }}>
-              <div style={{
-                fontSize: '2rem',
-                fontWeight: 'bold',
-                letterSpacing: '0.5rem',
-                color: '#667eea',
-                fontFamily: 'monospace',
-                padding: '1rem 2rem',
-                background: 'rgba(0, 0, 0, 0.3)',
-                borderRadius: '8px',
-                border: '2px dashed rgba(102, 126, 234, 0.5)'
-              }}>
-                {inviteCode}
-              </div>
-            </div>
-            <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
-              <button 
-                className="btn-primary" 
-                onClick={handleCopyInviteCode}
-                style={{ marginRight: '0.5rem' }}
-              >
-                📋 Copy Code
-              </button>
-              <button 
-                className="btn-secondary" 
-                onClick={() => setShowInviteCode(false)}
-              >
-                Close
-              </button>
-            </div>
-            <p style={{ marginTop: '1rem', fontSize: '0.9rem', color: 'rgba(255, 255, 255, 0.6)' }}>
-              Share this code with friends to invite them to your group!
-            </p>
-          </section>
-        )}
-
         {/* Members Section */}
         <section className="members-section">
+          {showInviteCode && inviteCode && (
+            <div style={{
+              background: 'rgba(102, 126, 234, 0.1)',
+              border: '2px solid rgba(102, 126, 234, 0.3)',
+              borderRadius: '12px',
+              padding: '1rem',
+              marginBottom: '2rem',
+              textAlign: 'center',
+              maxWidth: '500px',
+              margin: '0 auto 2rem',
+              position: 'relative',
+              height: 'fit-content'
+            }}>
+              <h3 style={{ marginBottom: '0.5rem', color: 'rgba(255, 255, 255, 0.9)' }}>Group Invite Code</h3>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '1rem',
+                marginBottom: '0.75rem'
+              }}>
+                <div style={{
+                  fontSize: '1.5rem',
+                  fontWeight: 'bold',
+                  letterSpacing: '0.5rem',
+                  color: '#667eea',
+                  fontFamily: 'monospace',
+                  padding: '0.75rem 1.5rem',
+                  background: 'rgba(0, 0, 0, 0.3)',
+                  borderRadius: '8px',
+                  border: '2px dashed rgba(102, 126, 234, 0.5)'
+                }}>
+                  {inviteCode}
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', marginBottom: '0.5rem' }}>
+                <button 
+                  className="btn-primary" 
+                  onClick={handleCopyInviteCode}
+                  style={{ marginRight: '0.5rem' }}
+                >
+                  Copy Code
+                </button>
+                <button 
+                  className="btn-secondary" 
+                  onClick={() => setShowInviteCode(false)}
+                >
+                  Close
+                </button>
+              </div>
+              <p style={{ marginTop: '0.5rem', marginBottom: '0', fontSize: '0.85rem', color: 'rgba(255, 255, 255, 0.6)' }}>
+                Share this code with friends to invite them to your group!
+              </p>
+            </div>
+          )}
           <div className="section-header">
             <h2 className="section-title">Members ({members.length || 0})</h2>
-            {isOwner && (
-              <button className="btn-secondary" onClick={handleInviteMember}>
-                📤 Share Invite Code
-              </button>
-            )}
+            {!showInviteCode && <button className="btn-secondary" onClick={handleInviteMember}>
+              Share Invite Code
+            </button>}
           </div>
 
           {members.length === 0 ? (
             <div className="empty-state">
-              <div className="empty-icon">👥</div>
               <p className="empty-text">No members in this group</p>
             </div>
           ) : (
             <div className="members-list">
-              {members.map((member) => (
+              {members.map((member, index) => (
                 <div
-                  key={member.id}
+                  key={index}
                   className="member-card"
-                  onClick={() => handleViewMember(member.id)}
                 >
                   <div className="member-avatar">
-                    {member.profilePic ? (
-                      <img src={member.profilePic} alt={member.name} />
+                    {member.profile_pic ? (
+                      <img src={member.profile_pic} alt={member.name} />
                     ) : (
                       <div className="member-placeholder">
                         {member.name?.charAt(0) || 'U'}
@@ -497,13 +395,8 @@ function GroupView() {
                   </div>
                   <div className="member-info">
                     <h3 className="member-name">{member.name || 'Unknown User'}</h3>
-                    <p className="member-role">
-                      {member.isOwner ? '👑 Owner' : 'Member'}
-                    </p>
                   </div>
-                  {member.isOwner && (
-                    <div className="owner-badge">👑</div>
-                  )}
+                  <p>Coins: {group.group_member_data[member.id!].coins}</p>
                 </div>
               ))}
             </div>

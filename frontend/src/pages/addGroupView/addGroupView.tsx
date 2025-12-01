@@ -50,7 +50,7 @@ function AddGroupView() {
 
   return (
     <div className="add-group-view">
-      <Navbar backButtonLocation={BackButtonLocation.ToHome}/>
+      <Navbar />
 
       <main className="add-group-content">
         <section className="add-group-card">
@@ -60,7 +60,7 @@ function AddGroupView() {
             playlists together.
           </p>
 
-          <form className="add-group-form" onSubmit={handleSubmit}>
+          <form className="add-group-form" onSubmit={handleSubmit} autoComplete='off'>
             <label htmlFor="group-name">Group name</label>
             <input
               id="group-name"

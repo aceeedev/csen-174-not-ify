@@ -2,12 +2,6 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: linear-gradient(
-    135deg,
-    rgba(102, 126, 234, 0.08) 0%,
-    rgba(118, 75, 162, 0.08) 100%
-  );
-  color: #1c1c1c;
 }
 
 .add-group-content {
@@ -20,24 +14,27 @@
 
 .add-group-card {
   width: min(600px, 100%);
-  background: rgba(255, 255, 255, 0.92);
+  background: rgba(24, 24, 24, 0.92);
   border-radius: 16px;
   padding: 2.5rem;
-  box-shadow: 0 20px 45px rgba(102, 126, 234, 0.15);
+  /* box-shadow: 0 20px 45px rgba(102, 126, 234, 0.15); */
   backdrop-filter: blur(8px);
-  color: #2c2c54;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+
+  /* color: #2c2c54; */
 }
 
 .add-group-card h1 {
   margin: 0 0 0.75rem;
   font-size: 2rem;
   font-weight: 700;
-  color: #2c2c54;
+  color: white;
 }
 
 .add-group-description {
   margin-bottom: 2rem;
-  color: rgba(44, 44, 84, 0.75);
+  color:white;
   line-height: 1.6;
 }
 
@@ -49,7 +46,7 @@
 
 .add-group-form label {
   font-weight: 600;
-  color: #2c2c54;
+  color: white
 }
 
 .add-group-form input,
@@ -58,14 +55,14 @@
   border-radius: 10px;
   border: 1px solid rgba(102, 126, 234, 0.3);
   font-size: 1rem;
+  font-family: inherit;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
-  background: rgba(255, 255, 255, 0.9);
-  color: #1c1c1c;
+  background: rgba(255, 255, 255, 0.2);
 }
 
 .add-group-form input::placeholder,
 .add-group-form textarea::placeholder {
-  color: rgba(44, 44, 84, 0.6);
+  color: rgba(255, 255, 255, 0.7);
 }
 
 .add-group-form input:focus,
@@ -94,35 +91,36 @@
   margin-top: 0.5rem;
 }
 
-.add-group-button {
-  padding: 0.75rem 1.75rem;
+.add-group-button {  
   border-radius: 8px;
-  font-size: 1rem;
-  font-weight: 600;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: #1a1a1a;
   cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  border: none;
+  transition: border-color 0.25s;
+
 }
 
 .add-group-button.primary {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: #ffffff;
+  /* Empty, as to inherit the add-group-button code. */
 }
 
 .add-group-button.primary:hover:not(:disabled) {
-  transform: translateY(-2px);
   box-shadow: 0 10px 25px rgba(102, 126, 234, 0.35);
+  color: hsl(229, 100%, 72%);
 }
 
 .add-group-button.secondary {
-  background: rgba(255, 255, 255, 0.8);
-  color: #2c2c54;
-  border: 1px solid rgba(102, 126, 234, 0.25);
+  /* Empty, as to inherit the add-group-button code. */
 }
 
 .add-group-button.secondary:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 20px rgba(102, 126, 234, 0.2);
+  box-shadow: 0 10px 25px rgba(255, 112, 112, 0.35);
+  color: rgb(255, 112, 112);
+  border-color: rgb(255, 112, 112)
 }
 
 .add-group-button:disabled {

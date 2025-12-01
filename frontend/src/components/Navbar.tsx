@@ -79,22 +79,7 @@ const Navbar: React.FC<NavbarProps> = ({ backButtonLocation = BackButtonLocation
       <header style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 20px', background: 'black', color: 'white'}}>
         <div style={{display: 'flex', alignItems: 'center', gap: 16}}>
           <Link to={"/"} style={{fontWeight: 700, fontSize: 20, textDecoration: 'none', color: 'white', userSelect: 'none', cursor: 'pointer'}}>Bop Swap</Link>
-          {/* COMMENTED OUT FOR NOW, since u can access everything from home page */}
-          {/* {user ? (
-            <>            
-            <nav style={{display: 'flex', gap: 12}}>
-              <Link 
-              to={"/group-overview"} style={{cursor: 'pointer', textDecoration: 'none', color: 'white', padding: '8px 12px', borderRadius: '4px', transition: 'background-color 0.2s'}} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
-                  Groups
-              </Link>
-              <Link to={"/library"} style={{cursor: 'pointer', textDecoration: 'none', color: 'white', padding: '8px 12px', borderRadius: '4px', transition: 'background-color 0.2s'}} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
-                  Library
-              </Link>
-            </nav>
-          </>
-          ) : (
-            <></>
-          )} */}
+          
           {user && backButtonLocation ? (
             <>
             <nav>
@@ -121,6 +106,22 @@ const Navbar: React.FC<NavbarProps> = ({ backButtonLocation = BackButtonLocation
             ) : (
             <>
             </>
+          )}
+          
+          {user ? (
+            <>            
+            <nav style={{display: 'flex', gap: 12}}>
+              <Link 
+              to={"/my-groups"} style={{cursor: 'pointer', textDecoration: 'none', color: 'white', padding: '8px 12px', borderRadius: '4px', transition: 'background-color 0.2s'}} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
+                  Groups
+              </Link>
+              <Link to={"/my-library"} style={{cursor: 'pointer', textDecoration: 'none', color: 'white', padding: '8px 12px', borderRadius: '4px', transition: 'background-color 0.2s'}} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
+                  Library
+              </Link>
+            </nav>
+          </>
+          ) : (
+            <></>
           )}
         </div>
 
