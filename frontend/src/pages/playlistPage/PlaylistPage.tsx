@@ -127,7 +127,7 @@ const PlaylistPage: React.FC = () => {
             <Navbar backButtonLocation={pageOrigin == PageOrigin.FromGroup ? BackButtonLocation.ToGroup : BackButtonLocation.None}/>
 
             {loading ? (
-                <p>Loading...</p>
+                <p style={{ textAlign: 'center', paddingTop: '2rem' }}>Loading...</p>
             ) : 
             <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '2rem', textAlign: 'center' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1rem', padding: '1rem' }}>
